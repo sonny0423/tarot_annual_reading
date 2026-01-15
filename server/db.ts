@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, users, tarotCards, TarotCard } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -89,4 +89,50 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+// Tarot card queries
+export async function getAllTarotCards(): Promise<TarotCard[]> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get tarot cards: database not available");
+    return [];
+  }
+
+  const result = await db.select().from(tarotCards);
+  return result;
+}
+
+export async function getTarotCardById(id: number): Promise<TarotCard | undefined> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get tarot card: database not available");
+    return undefined;
+  }
+
+  const result = await db.select().from(tarotCards).where(eq(tarotCards.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getTarotCardsByIds(ids: number[]): Promise<TarotCard[]> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get tarot cards: database not available");
+    return [];
+  }
+
+  if (ids.length === 0) return [];
+
+  const result = await db.select().from(tarotCards).where(
+    eq(tarotCards.id, ids[0])
+  );
+  
+  // For multiple IDs, we need to query each one
+  if (ids.length === 1) return result;
+  
+  const allResults: TarotCard[] = [];
+  for (const id of ids) {
+    const card = await getTarotCardById(id);
+    if (card) allResults.push(card);
+  }
+  
+  return allResults;
+}

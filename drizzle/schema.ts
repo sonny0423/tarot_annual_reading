@@ -2,16 +2,9 @@ import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-or
 
 /**
  * Core user table backing auth flow.
- * Extend this file with additional tables as your product grows.
- * Columns use camelCase to match both database fields and generated types.
  */
 export const users = mysqlTable("users", {
-  /**
-   * Surrogate primary key. Auto-incremented numeric value managed by the database.
-   * Use this for relations between tables.
-   */
   id: int("id").autoincrement().primaryKey(),
-  /** Manus OAuth identifier (openId) returned from the OAuth callback. Unique per user. */
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
@@ -25,4 +18,41 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-// TODO: Add your tables here
+/**
+ * Tarot cards master table - 22 major arcana cards
+ */
+export const tarotCards = mysqlTable("tarot_cards", {
+  id: int("id").primaryKey(), // 0-21
+  name: varchar("name", { length: 50 }).notNull(),
+  positiveTraits: text("positive_traits").notNull(),
+  negativeTraits: text("negative_traits").notNull(),
+  meaning: text("meaning").notNull(),
+  upright: text("upright").notNull(),
+  reversed: text("reversed").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type TarotCard = typeof tarotCards.$inferSelect;
+export type InsertTarotCard = typeof tarotCards.$inferInsert;
+
+/**
+ * User reading history - store calculated readings
+ */
+export const readings = mysqlTable("readings", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("user_id"),
+  birthYear: int("birth_year").notNull(),
+  birthMonth: int("birth_month").notNull(),
+  birthDay: int("birth_day").notNull(),
+  isLunar: int("is_lunar").default(0).notNull(), // 0: solar, 1: lunar
+  innerCardId: int("inner_card_id").notNull(), // 內心
+  outerCardId: int("outer_card_id").notNull(), // 外顯
+  coreCardId: int("core_card_id").notNull(), // 本性
+  benefactorInnerCardId: int("benefactor_inner_card_id").notNull(),
+  benefactorOuterCardId: int("benefactor_outer_card_id").notNull(),
+  benefactorCoreCardId: int("benefactor_core_card_id").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Reading = typeof readings.$inferSelect;
+export type InsertReading = typeof readings.$inferInsert;
