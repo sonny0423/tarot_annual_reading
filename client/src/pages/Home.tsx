@@ -79,7 +79,7 @@ export default function Home() {
           </div>
 
           <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-secondary/20 to-primary/20 blur-3xl opacity-30 animate-pulse" />
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-secondary/20 to-primary/20 blur-3xl opacity-30 animate-pulse pointer-events-none" />
             <BirthdayForm onSubmit={handleFormSubmit} loading={isLoading} />
           </div>
         </section>

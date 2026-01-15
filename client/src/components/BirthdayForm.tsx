@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Sparkles } from "lucide-react";
 
 interface BirthdayFormProps {
@@ -72,103 +71,80 @@ export function BirthdayForm({ onSubmit, loading = false }: BirthdayFormProps) {
 
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-          <Tabs value={calendarType} onValueChange={(v) => setCalendarType(v as "solar" | "lunar")}>
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="solar">國曆 (西曆)</TabsTrigger>
-              <TabsTrigger value="lunar">農曆</TabsTrigger>
-            </TabsList>
+          {/* Calendar Type Toggle */}
+          <div className="flex gap-2 p-1 bg-muted rounded-lg">
+            <button
+              type="button"
+              onClick={() => setCalendarType("solar")}
+              className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                calendarType === "solar"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              國曆 (西曆)
+            </button>
+            <button
+              type="button"
+              onClick={() => setCalendarType("lunar")}
+              className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                calendarType === "lunar"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              農曆
+            </button>
+          </div>
 
-            <TabsContent value="solar" className="space-y-4 mt-6">
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="solar-year">年份</Label>
-                  <Input
-                    id="solar-year"
-                    type="number"
-                    placeholder="1990"
-                    value={year}
-                    onChange={(e) => setYear(e.target.value)}
-                    min={1900}
-                    max={2100}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="solar-month">月份</Label>
-                  <Input
-                    id="solar-month"
-                    type="number"
-                    placeholder="4"
-                    value={month}
-                    onChange={(e) => setMonth(e.target.value)}
-                    min={1}
-                    max={12}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="solar-day">日期</Label>
-                  <Input
-                    id="solar-day"
-                    type="number"
-                    placeholder="23"
-                    value={day}
-                    onChange={(e) => setDay(e.target.value)}
-                    min={1}
-                    max={31}
-                    required
-                  />
-                </div>
-              </div>
-            </TabsContent>
+          {/* Input Fields */}
+          <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="year">年份</Label>
+              <Input
+                id="year"
+                type="number"
+                placeholder="1990"
+                value={year}
+                onChange={(e) => setYear(e.target.value)}
+                min={1900}
+                max={2100}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="month">月份</Label>
+              <Input
+                id="month"
+                type="number"
+                placeholder="4"
+                value={month}
+                onChange={(e) => setMonth(e.target.value)}
+                min={1}
+                max={12}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="day">日期</Label>
+              <Input
+                id="day"
+                type="number"
+                placeholder="23"
+                value={day}
+                onChange={(e) => setDay(e.target.value)}
+                min={1}
+                max={31}
+                required
+              />
+            </div>
+          </div>
 
-            <TabsContent value="lunar" className="space-y-4 mt-6">
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="lunar-year">年份</Label>
-                  <Input
-                    id="lunar-year"
-                    type="number"
-                    placeholder="1990"
-                    value={year}
-                    onChange={(e) => setYear(e.target.value)}
-                    min={1900}
-                    max={2100}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lunar-month">月份</Label>
-                  <Input
-                    id="lunar-month"
-                    type="number"
-                    placeholder="3"
-                    value={month}
-                    onChange={(e) => setMonth(e.target.value)}
-                    min={1}
-                    max={12}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lunar-day">日期</Label>
-                  <Input
-                    id="lunar-day"
-                    type="number"
-                    placeholder="19"
-                    value={day}
-                    onChange={(e) => setDay(e.target.value)}
-                    min={1}
-                    max={30}
-                    required
-                  />
-                </div>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                * 農曆日期請確認是否為閏月，目前系統暫不支援閏月校正
-              </p>
-            </TabsContent>
-          </Tabs>
+          {calendarType === "lunar" && (
+            <p className="text-sm text-muted-foreground">
+              * 農曆日期請確認是否為閏月，目前系統暫不支援閏月校正
+            </p>
+          )}
 
           <Button
             type="submit"
