@@ -15,12 +15,20 @@ function Input({
   const dialogComposition = useDialogComposition();
 
   // Add composition event handlers to support input method editor (IME) for CJK languages.
+  // Skip composition handling for number inputs as they don't need IME support
+  const skipComposition = type === "number";
+  
   const {
     onCompositionStart: handleCompositionStart,
     onCompositionEnd: handleCompositionEnd,
     onKeyDown: handleKeyDown,
   } = useComposition<HTMLInputElement>({
     onKeyDown: (e) => {
+      if (skipComposition) {
+        onKeyDown?.(e);
+        return;
+      }
+      
       // Check if this is an Enter key that should be blocked
       const isComposing = (e.nativeEvent as any).isComposing || dialogComposition.justEndedComposing();
 
@@ -34,10 +42,18 @@ function Input({
       onKeyDown?.(e);
     },
     onCompositionStart: e => {
+      if (skipComposition) {
+        onCompositionStart?.(e);
+        return;
+      }
       dialogComposition.setComposing(true);
       onCompositionStart?.(e);
     },
     onCompositionEnd: e => {
+      if (skipComposition) {
+        onCompositionEnd?.(e);
+        return;
+      }
       // Mark that composition just ended - this helps handle the Enter key that confirms input
       dialogComposition.markCompositionEnd();
       // Delay setting composing to false to handle Safari's event order
