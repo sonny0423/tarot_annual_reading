@@ -95,9 +95,13 @@ export default function Home() {
             </div>
           ) : readingData ? (
             <ReadingResult
+              birthYear={birthData?.year ?? 0}
+              birthMonth={birthData?.month ?? 0}
+              birthDay={birthData?.day ?? 0}
               cards={readingData.cards}
               onReset={handleReset}
               onCardClick={setSelectedCard}
+              allCards={readingData.allCards || []}
             />
           ) : (
             <div className="text-center py-24">

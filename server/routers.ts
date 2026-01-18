@@ -80,6 +80,9 @@ export const appRouter = router({
         // 建立卡片映射
         const cardMap = new Map(cards.map(card => [card.id, card]));
 
+        // 取得所有塔羅牌供前端計算多年流年和每月流日
+        const allCards = await getAllTarotCards();
+
         return {
           reading,
           cards: {
@@ -93,6 +96,7 @@ export const appRouter = router({
             month: cardMap.get(reading.monthCard),
             day: cardMap.get(reading.dayCard),
           },
+          allCards,
         };
       }),
   }),
