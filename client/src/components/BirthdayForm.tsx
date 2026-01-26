@@ -330,7 +330,7 @@ export function BirthdayForm({ onSubmit }: BirthdayFormProps) {
 
           <Button type="submit" className="w-full gap-2 text-lg py-6" disabled={solarToLunarMutation.isPending || lunarToSolarMutation.isPending}>
             <Sparkles className="w-5 h-5" />
-            開始占卜
+            開始計算
           </Button>
         </form>
       </CardContent>
