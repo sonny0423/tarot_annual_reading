@@ -55,26 +55,40 @@ export function ReadingResult({
     lunarBirthDay: lunarDay,
   });
 
-  // 計算多年流年運勢
+  // 計算多年流年運勢與心境
   const calculateMultiYearFortune = () => {
     const currentYear = new Date().getFullYear();
     const years = [];
     
     for (let i = 0; i < 5; i++) {
       const targetYear = currentYear + i;
-      const benefactorSum = birthMonth + birthDay;
-      const yearSum = targetYear + benefactorSum;
-      const digitSum = yearSum.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
-      let yearCard = digitSum;
-      while (yearCard > 21) {
-        yearCard = yearCard.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
+      
+      // 國曆流年運勢
+      const solarBenefactorSum = birthMonth + birthDay;
+      const solarYearSum = targetYear + solarBenefactorSum;
+      const solarDigitSum = solarYearSum.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
+      let solarYearCard = solarDigitSum;
+      while (solarYearCard > 21) {
+        solarYearCard = solarYearCard.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
       }
       
-      const card = allCards.find(c => c.id === yearCard);
+      // 農曆流年心境
+      const lunarBenefactorSum = lunarMonth + lunarDay;
+      const lunarYearSum = targetYear + lunarBenefactorSum;
+      const lunarDigitSum = lunarYearSum.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
+      let lunarYearCard = lunarDigitSum;
+      while (lunarYearCard > 21) {
+        lunarYearCard = lunarYearCard.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
+      }
+      
+      const solarCard = allCards.find(c => c.id === solarYearCard);
+      const lunarCard = allCards.find(c => c.id === lunarYearCard);
       years.push({
         year: targetYear,
-        cardNumber: yearCard,
-        card,
+        solarCardNumber: solarYearCard,
+        solarCard,
+        lunarCardNumber: lunarYearCard,
+        lunarCard,
       });
     }
     
@@ -444,37 +458,98 @@ export function ReadingResult({
             </div>
           </TabsContent>
 
-          <TabsContent value="multi-year" className="mt-6 space-y-4">
-            <h4 className="text-lg font-semibold text-center">未來五年流年運勢</h4>
-            <p className="text-sm text-muted-foreground text-center">
-              查看未來五年的流年牌卡，了解長期運勢走向
-            </p>
+          <TabsContent value="multi-year" className="mt-6 space-y-6">
+            <div className="text-center space-y-2">
+              <h4 className="text-lg font-semibold">未來五年流年走勢</h4>
+              <p className="text-sm text-muted-foreground">
+                查看未來五年的運勢與心境變化，了解長期走向
+              </p>
+            </div>
+
+            {/* 視覺化圖表 */}
+            <Card className="bg-gradient-to-br from-card to-primary/5">
+              <CardHeader>
+                <CardTitle className="text-center text-lg">運勢與心境走勢圖</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-64 flex items-end justify-around gap-2 px-4">
+                  {multiYearFortune.map((item, index) => (
+                    <div key={item.year} className="flex-1 flex flex-col items-center gap-2">
+                      <div className="text-xs text-muted-foreground font-medium">
+                        {item.year}
+                      </div>
+                      <div className="w-full flex gap-1">
+                        {/* 運勢條 */}
+                        <div 
+                          className="flex-1 bg-gradient-to-t from-primary to-primary/50 rounded-t cursor-pointer hover:opacity-80 transition-opacity relative group"
+                          style={{ height: `${(item.solarCardNumber / 21) * 200}px` }}
+                          onClick={() => item.solarCard && onCardClick?.(item.solarCard)}
+                        >
+                          <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                            {item.solarCardNumber}
+                          </div>
+                        </div>
+                        {/* 心境條 */}
+                        <div 
+                          className="flex-1 bg-gradient-to-t from-accent to-accent/50 rounded-t cursor-pointer hover:opacity-80 transition-opacity relative group"
+                          style={{ height: `${(item.lunarCardNumber / 21) * 200}px` }}
+                          onClick={() => item.lunarCard && onCardClick?.(item.lunarCard)}
+                        >
+                          <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-bold text-accent opacity-0 group-hover:opacity-100 transition-opacity">
+                            {item.lunarCardNumber}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-center justify-center gap-6 mt-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-primary rounded"></div>
+                    <span>運勢（國曆）</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-accent rounded"></div>
+                    <span>心境（農曆）</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* 詳細表格 */}
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="bg-primary/10">
                     <th className="border border-border p-3 text-center font-semibold">年份</th>
-                    <th className="border border-border p-3 text-center font-semibold">流年牌</th>
-                    <th className="border border-border p-3 text-center font-semibold">牌卡名稱</th>
+                    <th className="border border-border p-3 text-center font-semibold">運勢（國曆）</th>
+                    <th className="border border-border p-3 text-center font-semibold">心境（農曆）</th>
                   </tr>
                 </thead>
                 <tbody>
                   {multiYearFortune.map((item, index) => (
                     <tr 
                       key={item.year} 
-                      className={`hover:bg-muted/50 transition-colors cursor-pointer ${index === 0 ? 'bg-primary/5' : ''}`}
-                      onClick={() => item.card && onCardClick?.(item.card)}
+                      className={`hover:bg-muted/50 transition-colors ${index === 0 ? 'bg-primary/5' : ''}`}
                     >
                       <td className="border border-border p-3 text-center font-medium">
                         {item.year} {index === 0 && <span className="text-xs text-primary ml-2">(本年)</span>}
                       </td>
-                      <td className="border border-border p-3 text-center">
-                        <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 font-bold text-primary">
-                          {item.cardNumber}
+                      <td className="border border-border p-3 text-center cursor-pointer hover:bg-primary/5" onClick={() => item.solarCard && onCardClick?.(item.solarCard)}>
+                        <div className="flex flex-col items-center gap-2">
+                          <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 font-bold text-primary">
+                            {item.solarCardNumber}
+                          </div>
+                          <div className="text-sm">{item.solarCard?.name || ""}</div>
                         </div>
                       </td>
-                      <td className="border border-border p-3 text-center">
-                        {item.card?.name || ""}
+                      <td className="border border-border p-3 text-center cursor-pointer hover:bg-accent/5" onClick={() => item.lunarCard && onCardClick?.(item.lunarCard)}>
+                        <div className="flex flex-col items-center gap-2">
+                          <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-accent/10 font-bold text-accent">
+                            {item.lunarCardNumber}
+                          </div>
+                          <div className="text-sm">{item.lunarCard?.name || ""}</div>
+                        </div>
                       </td>
                     </tr>
                   ))}
