@@ -209,16 +209,23 @@ export interface TarotReading {
   benefactorCore: number;
   benefactorOuter: number;
   benefactorInner: number;
-  // 流年運勢
+  // 流年運勢（國曆）
   yearCard: number;
   monthCard: number;
   dayCard: number;
+  // 流年心境（農曆）
+  lunarYearCard: number;
+  lunarMonthCard: number;
+  lunarDayCard: number;
 }
 
 export function calculateFullReading(
   birthYear: number,
   birthMonth: number,
   birthDay: number,
+  lunarBirthYear: number,
+  lunarBirthMonth: number,
+  lunarBirthDay: number,
   targetYear?: number,
   targetMonth?: number,
   targetDay?: number
@@ -236,9 +243,15 @@ export function calculateFullReading(
   const benefactorOuter = calculateBenefactorOuterCard(outerCard);
   const benefactorInner = calculateBenefactorInnerCard(innerCard);
 
+  // 國曆流年運勢
   const yearCard = calculateYearCard(birthMonth, birthDay, year);
   const monthCard = calculateMonthCard(birthYear, birthMonth, birthDay, year, month);
   const dayCard = calculateDayCard(birthYear, birthMonth, birthDay, year, month, day);
+
+  // 農曆流年心境
+  const lunarYearCard = calculateYearCard(lunarBirthMonth, lunarBirthDay, year);
+  const lunarMonthCard = calculateMonthCard(lunarBirthYear, lunarBirthMonth, lunarBirthDay, year, month);
+  const lunarDayCard = calculateDayCard(lunarBirthYear, lunarBirthMonth, lunarBirthDay, year, month, day);
 
   return {
     coreCard,
@@ -250,5 +263,8 @@ export function calculateFullReading(
     yearCard,
     monthCard,
     dayCard,
+    lunarYearCard,
+    lunarMonthCard,
+    lunarDayCard,
   };
 }

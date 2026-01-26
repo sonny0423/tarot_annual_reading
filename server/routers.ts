@@ -74,6 +74,9 @@ export const appRouter = router({
           birthYear: z.number().min(1900).max(2100),
           birthMonth: z.number().min(1).max(12),
           birthDay: z.number().min(1).max(31),
+          lunarBirthYear: z.number().min(1900).max(2100),
+          lunarBirthMonth: z.number().min(1).max(12),
+          lunarBirthDay: z.number().min(1).max(31),
           targetYear: z.number().min(1900).max(2100).optional(),
           targetMonth: z.number().min(1).max(12).optional(),
           targetDay: z.number().min(1).max(31).optional(),
@@ -84,6 +87,9 @@ export const appRouter = router({
           input.birthYear,
           input.birthMonth,
           input.birthDay,
+          input.lunarBirthYear,
+          input.lunarBirthMonth,
+          input.lunarBirthDay,
           input.targetYear,
           input.targetMonth,
           input.targetDay
@@ -100,6 +106,9 @@ export const appRouter = router({
           reading.yearCard,
           reading.monthCard,
           reading.dayCard,
+          reading.lunarYearCard,
+          reading.lunarMonthCard,
+          reading.lunarDayCard,
         ];
 
         const uniqueCardIds = Array.from(new Set(cardIds));
@@ -123,6 +132,9 @@ export const appRouter = router({
             year: cardMap.get(reading.yearCard),
             month: cardMap.get(reading.monthCard),
             day: cardMap.get(reading.dayCard),
+            lunarYear: cardMap.get(reading.lunarYearCard),
+            lunarMonth: cardMap.get(reading.lunarMonthCard),
+            lunarDay: cardMap.get(reading.lunarDayCard),
           },
           allCards,
         };

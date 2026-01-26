@@ -24,6 +24,9 @@ interface ReadingResultProps {
     year?: TarotCardType;
     month?: TarotCardType;
     day?: TarotCardType;
+    lunarYear?: TarotCardType;
+    lunarMonth?: TarotCardType;
+    lunarDay?: TarotCardType;
   };
   onReset: () => void;
   onCardClick?: (card: TarotCardType) => void;
@@ -47,6 +50,9 @@ export function ReadingResult({
     birthYear: lunarYear,
     birthMonth: lunarMonth,
     birthDay: lunarDay,
+    lunarBirthYear: lunarYear,
+    lunarBirthMonth: lunarMonth,
+    lunarBirthDay: lunarDay,
   });
 
   // 計算多年流年運勢
@@ -356,15 +362,17 @@ export function ReadingResult({
             <p className="text-muted-foreground text-center">
               流年、流月、流日牌卡顯示您在不同時間週期的運勢走向與建議
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            {/* 運勢與心境 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
               {cards.year && (
                 <Card className="border-2 border-primary/30 bg-gradient-to-br from-card to-primary/5">
                   <CardHeader>
                     <div className="flex items-center gap-2 mb-2">
                       <Sun className="w-5 h-5 text-primary" />
-                      <CardTitle className="font-serif">流年運勢</CardTitle>
+                      <CardTitle className="font-serif">運勢</CardTitle>
                     </div>
-                    <CardDescription>{currentYear}年整年度的運勢主題</CardDescription>
+                    <CardDescription>國曆 · {currentYear}年整年度的運勢主題</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <TarotCard
@@ -375,6 +383,28 @@ export function ReadingResult({
                   </CardContent>
                 </Card>
               )}
+              {cards.lunarYear && (
+                <Card className="border-2 border-accent/30 bg-gradient-to-br from-card to-accent/10">
+                  <CardHeader>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Moon className="w-5 h-5 text-accent" />
+                      <CardTitle className="font-serif">心境</CardTitle>
+                    </div>
+                    <CardDescription>農曆 · {currentYear}年整年度的心境主題</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <TarotCard
+                      card={cards.lunarYear}
+                      onClick={() => onCardClick?.(cards.lunarYear!)}
+                      className="border-accent/40"
+                    />
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+            
+            {/* 流月與流日 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {cards.month && (
                 <Card className="border-2 border-secondary/30 bg-gradient-to-br from-card to-secondary/5">
                   <CardHeader>

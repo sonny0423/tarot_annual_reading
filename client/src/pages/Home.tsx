@@ -25,6 +25,9 @@ export default function Home() {
       birthYear: birthData?.solarYear ?? 0,
       birthMonth: birthData?.solarMonth ?? 0,
       birthDay: birthData?.solarDay ?? 0,
+      lunarBirthYear: birthData?.lunarYear ?? 0,
+      lunarBirthMonth: birthData?.lunarMonth ?? 0,
+      lunarBirthDay: birthData?.lunarDay ?? 0,
     },
     {
       enabled: !!birthData,
