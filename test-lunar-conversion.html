@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>測試農曆轉換API</title>
+</head>
+<body>
+    <h1>測試農曆轉換API</h1>
+    <button onclick="testSolarToLunar()">測試國曆轉農曆 (1981/4/23)</button>
+    <div id="result"></div>
+
+    <script>
+        async function testSolarToLunar() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '正在測試...';
+            
+            try {
+                const response = await fetch('/api/trpc/tarot.solarToLunar?batch=1', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        "0": {
+                            "year": 1981,
+                            "month": 4,
+                            "day": 23
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                console.log('API Response:', data);
+                resultDiv.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.innerHTML = '錯誤: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -39,7 +39,9 @@ export function BirthdayForm({ onSubmit }: BirthdayFormProps) {
   const solarToLunarMutation = trpc.tarot.solarToLunar.useMutation({
     onSuccess: (data) => {
       if (data) {
-        setConvertedDate(`農曆：${data.year}年${data.isLeapMonth ? '閏' : ''}${data.month}月${data.day}日`);
+        // 使用阿拉伯數字顯示，月份需要取絕對值（處理閏月負數）
+        const month = Math.abs(data.month);
+        setConvertedDate(`農曆：${data.year}年${data.isLeapMonth ? '閏' : ''}${month}月${data.day}日`);
       }
     },
   });
@@ -53,8 +55,8 @@ export function BirthdayForm({ onSubmit }: BirthdayFormProps) {
     },
   });
 
-  // 當國曆輸入完整時自動轉換
-  useEffect(() => {
+  // 手動觸發國曆轉農曆
+  const handleSolarToLunar = () => {
     if (calendarType === "solar" && solarYear && solarMonth && solarDay) {
       const year = parseInt(solarYear);
       const month = parseInt(solarMonth);
@@ -64,10 +66,10 @@ export function BirthdayForm({ onSubmit }: BirthdayFormProps) {
         solarToLunarMutation.mutate({ year, month, day });
       }
     }
-  }, [solarYear, solarMonth, solarDay, calendarType]);
+  };
 
-  // 當農曆輸入完整時自動轉換
-  useEffect(() => {
+  // 手動觸發農曆轉國曆
+  const handleLunarToSolar = () => {
     if (calendarType === "lunar" && lunarYear && lunarMonth && lunarDay) {
       const year = parseInt(lunarYear);
       const month = parseInt(lunarMonth);
@@ -77,7 +79,7 @@ export function BirthdayForm({ onSubmit }: BirthdayFormProps) {
         lunarToSolarMutation.mutate({ year, month, day, isLeapMonth });
       }
     }
-  }, [lunarYear, lunarMonth, lunarDay, isLeapMonth, calendarType]);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -225,6 +227,7 @@ export function BirthdayForm({ onSubmit }: BirthdayFormProps) {
                     placeholder="1990"
                     value={solarYear}
                     onChange={(e) => setSolarYear(e.target.value)}
+                    onBlur={handleSolarToLunar}
                     min="1900"
                     max="2100"
                   />
@@ -237,6 +240,7 @@ export function BirthdayForm({ onSubmit }: BirthdayFormProps) {
                     placeholder="4"
                     value={solarMonth}
                     onChange={(e) => setSolarMonth(e.target.value)}
+                    onBlur={handleSolarToLunar}
                     min="1"
                     max="12"
                   />
@@ -249,6 +253,7 @@ export function BirthdayForm({ onSubmit }: BirthdayFormProps) {
                     placeholder="23"
                     value={solarDay}
                     onChange={(e) => setSolarDay(e.target.value)}
+                    onBlur={handleSolarToLunar}
                     min="1"
                     max="31"
                   />
@@ -271,6 +276,7 @@ export function BirthdayForm({ onSubmit }: BirthdayFormProps) {
                     placeholder="1990"
                     value={lunarYear}
                     onChange={(e) => setLunarYear(e.target.value)}
+                    onBlur={handleLunarToSolar}
                     min="1900"
                     max="2100"
                   />
@@ -283,6 +289,7 @@ export function BirthdayForm({ onSubmit }: BirthdayFormProps) {
                     placeholder="3"
                     value={lunarMonth}
                     onChange={(e) => setLunarMonth(e.target.value)}
+                    onBlur={handleLunarToSolar}
                     min="1"
                     max="12"
                   />
@@ -295,6 +302,7 @@ export function BirthdayForm({ onSubmit }: BirthdayFormProps) {
                     placeholder="20"
                     value={lunarDay}
                     onChange={(e) => setLunarDay(e.target.value)}
+                    onBlur={handleLunarToSolar}
                     min="1"
                     max="31"
                   />
