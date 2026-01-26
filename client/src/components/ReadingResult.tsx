@@ -260,7 +260,7 @@ export function ReadingResult({
               <CardDescription>給人的感覺 · 外在貴人</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="flex flex-col gap-4">
                 {cards.benefactorCore && (
                   <div className="space-y-2">
                     <TarotCard
@@ -302,7 +302,7 @@ export function ReadingResult({
               <CardDescription>另一面特性 · 內在貴人</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="flex flex-col gap-4">
                 {lunarReadingData?.cards.benefactorCore && (
                   <div className="space-y-2">
                     <TarotCard
