@@ -48,6 +48,68 @@ export const appRouter = router({
         return lunarToSolar(input.year, input.month, input.day, input.isLeapMonth);
       }),
 
+    // 批次計算本月流日
+    calculateMonthlyDayFortune: publicProcedure
+      .input(
+        z.object({
+          solarBirthYear: z.number(),
+          solarBirthMonth: z.number(),
+          solarBirthDay: z.number(),
+          lunarBirthYear: z.number(),
+          lunarBirthMonth: z.number(),
+          lunarBirthDay: z.number(),
+          targetYear: z.number(),
+          targetMonth: z.number(),
+        })
+      )
+      .query(async ({ input }) => {
+        const { solarBirthYear, solarBirthMonth, solarBirthDay, lunarBirthYear, lunarBirthMonth, lunarBirthDay, targetYear, targetMonth } = input;
+        const daysInMonth = new Date(targetYear, targetMonth, 0).getDate();
+        const days = [];
+        
+        // 國曆流日計算
+        const solarBirthSum = solarBirthYear + solarBirthMonth + solarBirthDay;
+        const solarMonthSum = solarBirthSum + targetYear + targetMonth;
+        
+        for (let day = 1; day <= daysInMonth; day++) {
+          // 國曆轉農曆
+          const lunarDate = solarToLunar(targetYear, targetMonth, day);
+          if (!lunarDate) {
+            continue; // 跳過無效日期
+          }
+          
+          // 計算國曆流日牌
+          const solarDaySum = solarMonthSum + day;
+          const solarDigitSum = solarDaySum.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
+          let solarDayCard = solarDigitSum;
+          if (solarDigitSum >= 22) {
+            solarDayCard = solarDigitSum - 21;
+          }
+          
+          // 計算農曆流日牌
+          const lunarBirthSum = lunarBirthYear + lunarBirthMonth + lunarBirthDay;
+          const lunarMonthSum = lunarBirthSum + lunarDate.year + lunarDate.month;
+          const lunarDaySum = lunarMonthSum + lunarDate.day;
+          const lunarDigitSum = lunarDaySum.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
+          let lunarDayCard = lunarDigitSum;
+          if (lunarDigitSum >= 22) {
+            lunarDayCard = lunarDigitSum - 21;
+          }
+          
+          days.push({
+            solarDay: day,
+            lunarYear: lunarDate.year,
+            lunarMonth: lunarDate.month,
+            lunarDay: lunarDate.day,
+            isLeapMonth: lunarDate.isLeapMonth,
+            solarCardNumber: solarDayCard,
+            lunarCardNumber: lunarDayCard,
+          });
+        }
+        
+        return days;
+      }),
+
     // 取得所有塔羅牌
     getAllCards: publicProcedure.query(async () => {
       return await getAllTarotCards();

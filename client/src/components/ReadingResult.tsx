@@ -96,56 +96,33 @@ export function ReadingResult({
     return years;
   };
 
-  // 計算當月每日流日運勢
-  const calculateMonthlyDayFortune = () => {
-    const currentYear = new Date().getFullYear();
-    const currentMonth = new Date().getMonth() + 1;
-    const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
-    const days = [];
-    
-    // 國曆流日計算
-    const solarBirthSum = birthYear + birthMonth + birthDay;
-    const solarMonthSum = solarBirthSum + currentYear + currentMonth;
-    
-    // 農曆流日計算
-    const lunarBirthSum = lunarYear + lunarMonth + lunarDay;
-    const lunarMonthSum = lunarBirthSum + currentYear + currentMonth;
-    
-    for (let day = 1; day <= daysInMonth; day++) {
-      // 國曆流日
-      const solarDaySum = solarMonthSum + day;
-      const solarDigitSum = solarDaySum.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
-      let solarDayCard = solarDigitSum;
-      if (solarDigitSum >= 22) {
-        solarDayCard = solarDigitSum - 21;
-      }
-      const solarCard = allCards.find(c => c.id === solarDayCard);
-      
-      // 農曆流日
-      const lunarDaySum = lunarMonthSum + day;
-      const lunarDigitSum = lunarDaySum.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
-      let lunarDayCard = lunarDigitSum;
-      if (lunarDigitSum >= 22) {
-        lunarDayCard = lunarDigitSum - 21;
-      }
-      const lunarCard = allCards.find(c => c.id === lunarDayCard);
-      
-      days.push({
-        day,
-        solarCardNumber: solarDayCard,
-        solarCard,
-        lunarCardNumber: lunarDayCard,
-        lunarCard,
-      });
-    }
-    
-    return days;
-  };
-
-  const multiYearFortune = calculateMultiYearFortune();
-  const monthlyDayFortune = calculateMonthlyDayFortune();
+  // 使用後端批次API計算當月每日流日運勢
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
+  const { data: monthlyDayFortuneData } = trpc.tarot.calculateMonthlyDayFortune.useQuery({
+    solarBirthYear: birthYear,
+    solarBirthMonth: birthMonth,
+    solarBirthDay: birthDay,
+    lunarBirthYear: lunarYear,
+    lunarBirthMonth: lunarMonth,
+    lunarBirthDay: lunarDay,
+    targetYear: currentYear,
+    targetMonth: currentMonth,
+  });
+  
+  const monthlyDayFortune = monthlyDayFortuneData?.map(item => ({
+    day: item.solarDay,
+    lunarYear: item.lunarYear,
+    lunarMonth: item.lunarMonth,
+    lunarDay: item.lunarDay,
+    isLeapMonth: item.isLeapMonth,
+    solarCardNumber: item.solarCardNumber,
+    solarCard: allCards.find(c => c.id === item.solarCardNumber),
+    lunarCardNumber: item.lunarCardNumber,
+    lunarCard: allCards.find(c => c.id === item.lunarCardNumber),
+  })) || [];
+
+  const multiYearFortune = calculateMultiYearFortune();
   const currentDay = new Date().getDate();
 
   return (
@@ -662,7 +639,7 @@ export function ReadingResult({
                           {item.solarCard?.name || ""}
                         </td>
                         <td className="border border-border p-2 text-center font-medium bg-accent/5">
-                          {lunarMonth}月{item.day}日
+                          {item.lunarMonth}月{item.lunarDay}日 {item.isLeapMonth && <span className="text-xs text-accent ml-1">(閏)</span>}
                         </td>
                         <td className="border border-border p-2 text-center cursor-pointer hover:bg-accent/10" onClick={() => item.lunarCard && onCardClick?.(item.lunarCard)}>
                           <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-accent/10 font-bold text-accent">
