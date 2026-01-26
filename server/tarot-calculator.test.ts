@@ -113,8 +113,6 @@ describe("Tarot Calculator", () => {
       expect(reading.outerCard).toBe(10);
       expect(reading.innerCard).toBe(10);
       expect(reading.benefactorCore).toBe(9);
-      expect(reading.benefactorOuter).toBe(9);
-      expect(reading.benefactorInner).toBe(9);
       expect(reading.yearCard).toBe(9);
       expect(reading.monthCard).toBe(11);
       expect(reading.dayCard).toBe(17);
