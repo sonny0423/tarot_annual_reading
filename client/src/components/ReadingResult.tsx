@@ -467,63 +467,67 @@ export function ReadingResult({
               </p>
             </div>
 
-            {/* 視覺化圖表 */}
-            <Card className="bg-gradient-to-br from-card to-primary/5">
-              <CardHeader>
-                <CardTitle className="text-center text-lg">近年運勢與心境走勢圖</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-64 flex items-end justify-around gap-2 px-4">
-                  {multiYearFortune.map((item, index) => {
-                    const isCurrentYear = item.year === new Date().getFullYear();
-                    return (
-                    <div key={item.year} className="flex-1 flex flex-col items-center gap-2">
-                      <div className={`text-xs font-medium ${
+            {/* 時間軸卡片展示 */}
+            <div className="overflow-x-auto">
+              <div className="flex gap-3 pb-4 min-w-max">
+                {multiYearFortune.map((item) => {
+                  const isCurrentYear = item.year === new Date().getFullYear();
+                  return (
+                    <Card 
+                      key={item.year} 
+                      className={`flex-shrink-0 w-32 ${
                         isCurrentYear 
-                          ? 'text-primary font-bold' 
-                          : 'text-muted-foreground'
-                      }`}>
-                        {item.year}
-                        {isCurrentYear && <div className="text-[10px]">（今年）</div>}
-                      </div>
-                      <div className="w-full flex gap-1">
-                        {/* 運勢條 */}
+                          ? 'border-2 border-primary shadow-lg' 
+                          : 'border border-border'
+                      }`}
+                    >
+                      <CardHeader className="p-3 pb-2">
+                        <CardTitle className={`text-center text-sm ${
+                          isCurrentYear ? 'text-primary font-bold' : ''
+                        }`}>
+                          {item.year}
+                          {isCurrentYear && <div className="text-[10px] text-primary">(今年)</div>}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-3 pt-0 space-y-3">
+                        {/* 運勢牌 */}
                         <div 
-                          className="flex-1 bg-gradient-to-t from-primary to-primary/50 rounded-t cursor-pointer hover:opacity-80 transition-opacity relative group"
-                          style={{ height: `${(item.solarCardNumber / 21) * 200}px` }}
+                          className="cursor-pointer hover:bg-primary/5 p-2 rounded transition-colors"
                           onClick={() => item.solarCard && onCardClick?.(item.solarCard)}
                         >
-                          <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="flex items-center gap-1 mb-1">
+                            <Sun className="w-3 h-3 text-primary" />
+                            <span className="text-[10px] text-muted-foreground">運勢</span>
+                          </div>
+                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 font-bold text-primary text-xs mx-auto mb-1">
                             {item.solarCardNumber}
                           </div>
-                        </div>
-                        {/* 心境條 */}
-                        <div 
-                          className="flex-1 bg-gradient-to-t from-accent to-accent/50 rounded-t cursor-pointer hover:opacity-80 transition-opacity relative group"
-                          style={{ height: `${(item.lunarCardNumber / 21) * 200}px` }}
-                          onClick={() => item.lunarCard && onCardClick?.(item.lunarCard)}
-                        >
-                          <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-bold text-accent opacity-0 group-hover:opacity-100 transition-opacity">
-                            {item.lunarCardNumber}
+                          <div className="text-[10px] text-center line-clamp-2">
+                            {item.solarCard?.name || ""}
                           </div>
                         </div>
-                      </div>
-                    </div>
+                        {/* 心境牌 */}
+                        <div 
+                          className="cursor-pointer hover:bg-accent/5 p-2 rounded transition-colors"
+                          onClick={() => item.lunarCard && onCardClick?.(item.lunarCard)}
+                        >
+                          <div className="flex items-center gap-1 mb-1">
+                            <Moon className="w-3 h-3 text-accent" />
+                            <span className="text-[10px] text-muted-foreground">心境</span>
+                          </div>
+                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-accent/10 font-bold text-accent text-xs mx-auto mb-1">
+                            {item.lunarCardNumber}
+                          </div>
+                          <div className="text-[10px] text-center line-clamp-2">
+                            {item.lunarCard?.name || ""}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
                   );
-                  })}
-                </div>
-                <div className="flex items-center justify-center gap-6 mt-4 text-sm">
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-primary rounded"></div>
-                    <span>運勢（國曆）</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-accent rounded"></div>
-                    <span>心境（農曆）</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                })}
+              </div>
+            </div>
 
             {/* 詳細表格 */}
             <div className="overflow-x-auto">
