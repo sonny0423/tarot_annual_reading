@@ -91,20 +91,30 @@ export function calculateInnerCard(year: number, month: number, day: number): nu
 
 /**
  * 計算貴人本性牌
- * Excel: B6 = SUM(B4:B5) = 月+日
- * 然後同樣的數字拆分邏輯
+ * 貴人本性 = 本性牌 + 5
  */
-export function calculateBenefactorCoreCard(month: number, day: number): number {
-  const sum = month + day;
-  return reduceToTarotNumber(sum);
+export function calculateBenefactorCoreCard(coreCard: number): number {
+  const benefactor = coreCard + 5;
+  // 如果超過22，折返到1-22的範圍
+  return benefactor > 22 ? benefactor - 22 : benefactor;
 }
 
 /**
- * 計算貴人牌（簡化版）
- * 貴人只有一張牌，與calculateBenefactorCoreCard相同
+ * 計算貴人外顯牌
+ * 貴人外顯 = 外顯牌 + 5
  */
-export function calculateBenefactorCard(month: number, day: number): number {
-  return calculateBenefactorCoreCard(month, day);
+export function calculateBenefactorOuterCard(outerCard: number): number {
+  const benefactor = outerCard + 5;
+  return benefactor > 22 ? benefactor - 22 : benefactor;
+}
+
+/**
+ * 計算貴人內心牌
+ * 貴人內心 = 內心牌 + 5
+ */
+export function calculateBenefactorInnerCard(innerCard: number): number {
+  const benefactor = innerCard + 5;
+  return benefactor > 22 ? benefactor - 22 : benefactor;
 }
 
 /**
@@ -195,8 +205,10 @@ export interface TarotReading {
   coreCard: number;
   outerCard: number;
   innerCard: number;
-  // 貴人牌（只有一張）
+  // 貴人牌組（本命牌+5）
   benefactorCore: number;
+  benefactorOuter: number;
+  benefactorInner: number;
   // 流年運勢
   yearCard: number;
   monthCard: number;
@@ -220,7 +232,9 @@ export function calculateFullReading(
   const outerCard = calculateOuterCard(birthYear, birthMonth, birthDay);
   const innerCard = calculateInnerCard(birthYear, birthMonth, birthDay);
 
-  const benefactorCore = calculateBenefactorCoreCard(birthMonth, birthDay);
+  const benefactorCore = calculateBenefactorCoreCard(coreCard);
+  const benefactorOuter = calculateBenefactorOuterCard(outerCard);
+  const benefactorInner = calculateBenefactorInnerCard(innerCard);
 
   const yearCard = calculateYearCard(birthMonth, birthDay, year);
   const monthCard = calculateMonthCard(birthYear, birthMonth, birthDay, year, month);
@@ -231,6 +245,8 @@ export function calculateFullReading(
     outerCard,
     innerCard,
     benefactorCore,
+    benefactorOuter,
+    benefactorInner,
     yearCard,
     monthCard,
     dayCard,

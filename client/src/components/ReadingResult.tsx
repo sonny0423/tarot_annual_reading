@@ -260,15 +260,35 @@ export function ReadingResult({
               <CardDescription>給人的感覺 · 外在貴人</CardDescription>
             </CardHeader>
             <CardContent>
-              {cards.benefactorCore && (
-                <div className="space-y-2">
-                  <TarotCard
-                    card={cards.benefactorCore}
-                    onClick={() => onCardClick?.(cards.benefactorCore!)}
-                  />
-                  <p className="text-xs text-center text-muted-foreground">貴人特質</p>
-                </div>
-              )}
+              <div className="grid grid-cols-3 gap-4">
+                {cards.benefactorCore && (
+                  <div className="space-y-2">
+                    <TarotCard
+                      card={cards.benefactorCore}
+                      onClick={() => onCardClick?.(cards.benefactorCore!)}
+                    />
+                    <p className="text-xs text-center text-muted-foreground">貴人本性</p>
+                  </div>
+                )}
+                {cards.benefactorOuter && (
+                  <div className="space-y-2">
+                    <TarotCard
+                      card={cards.benefactorOuter}
+                      onClick={() => onCardClick?.(cards.benefactorOuter!)}
+                    />
+                    <p className="text-xs text-center text-muted-foreground">貴人外顯</p>
+                  </div>
+                )}
+                {cards.benefactorInner && (
+                  <div className="space-y-2">
+                    <TarotCard
+                      card={cards.benefactorInner}
+                      onClick={() => onCardClick?.(cards.benefactorInner!)}
+                    />
+                    <p className="text-xs text-center text-muted-foreground">貴人內心</p>
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
 
@@ -282,15 +302,35 @@ export function ReadingResult({
               <CardDescription>另一面特性 · 內在貴人</CardDescription>
             </CardHeader>
             <CardContent>
-              {lunarReadingData?.cards.benefactorCore && (
-                <div className="space-y-2">
-                  <TarotCard
-                    card={lunarReadingData.cards.benefactorCore}
-                    onClick={() => onCardClick?.(lunarReadingData.cards.benefactorCore!)}
-                  />
-                  <p className="text-xs text-center text-muted-foreground">貴人特質</p>
-                </div>
-              )}
+              <div className="grid grid-cols-3 gap-4">
+                {lunarReadingData?.cards.benefactorCore && (
+                  <div className="space-y-2">
+                    <TarotCard
+                      card={lunarReadingData.cards.benefactorCore}
+                      onClick={() => onCardClick?.(lunarReadingData.cards.benefactorCore!)}
+                    />
+                    <p className="text-xs text-center text-muted-foreground">貴人本性</p>
+                  </div>
+                )}
+                {lunarReadingData?.cards.benefactorOuter && (
+                  <div className="space-y-2">
+                    <TarotCard
+                      card={lunarReadingData.cards.benefactorOuter}
+                      onClick={() => onCardClick?.(lunarReadingData.cards.benefactorOuter!)}
+                    />
+                    <p className="text-xs text-center text-muted-foreground">貴人外顯</p>
+                  </div>
+                )}
+                {lunarReadingData?.cards.benefactorInner && (
+                  <div className="space-y-2">
+                    <TarotCard
+                      card={lunarReadingData.cards.benefactorInner}
+                      onClick={() => onCardClick?.(lunarReadingData.cards.benefactorInner!)}
+                    />
+                    <p className="text-xs text-center text-muted-foreground">貴人內心</p>
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>
