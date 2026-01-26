@@ -39,7 +39,7 @@ export function BirthdayForm({ onSubmit }: BirthdayFormProps) {
   const solarToLunarMutation = trpc.tarot.solarToLunar.useMutation({
     onSuccess: (data) => {
       if (data) {
-        setConvertedDate(`農曆：${data.yearInChinese}年${data.isLeapMonth ? '閏' : ''}${data.monthInChinese}${data.dayInChinese}`);
+        setConvertedDate(`農曆：${data.year}年${data.isLeapMonth ? '閏' : ''}${data.month}月${data.day}日`);
       }
     },
   });
