@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 
-describe("多年流年視覺化圖表計算", () => {
-  it("應該正確計算未來五年的運勢與心境牌卡", () => {
-    // 模擬前端的calculateMultiYearFortune邏輯
+describe("近年運勢視覺化圖表計算", () => {
+  it("應該正確計算近七年（往前2年+今年+往後4年）的運勢與心境牌卡", () => {
+    // 模擬calculateMultiYearFortune邏輯
     const birthMonth = 4;
     const birthDay = 23;
     const lunarMonth = 3;
@@ -11,7 +11,8 @@ describe("多年流年視覺化圖表計算", () => {
     
     const years = [];
     
-    for (let i = 0; i < 5; i++) {
+    // 從前2年開始，到後4年結束
+    for (let i = -2; i <= 4; i++) {
       const targetYear = currentYear + i;
       
       // 國曆流年運勢
@@ -39,8 +40,8 @@ describe("多年流年視覺化圖表計算", () => {
       });
     }
     
-    // 驗證返回5年的資料
-    expect(years).toHaveLength(5);
+    // 驗證返回7年的資料
+    expect(years).toHaveLength(7);
     
     // 驗證每年的牌卡編號在有效範圍內
     years.forEach((year) => {
@@ -55,7 +56,7 @@ describe("多年流年視覺化圖表計算", () => {
       expect(years[i].year).toBe(years[i - 1].year + 1);
     }
     
-    console.log("未來五年運勢與心境:");
+    console.log("近七年運勢與心境:");
     years.forEach((year) => {
       console.log(`${year.year}: 運勢=${year.solarCardNumber}, 心境=${year.lunarCardNumber}`);
     });

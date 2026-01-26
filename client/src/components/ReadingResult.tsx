@@ -55,12 +55,13 @@ export function ReadingResult({
     lunarBirthDay: lunarDay,
   });
 
-  // 計算多年流年運勢與心境
+  // 計算近年運勢（往前2年+今年+往後4年，共7年）
   const calculateMultiYearFortune = () => {
     const currentYear = new Date().getFullYear();
     const years = [];
     
-    for (let i = 0; i < 5; i++) {
+    // 從前2年開始，到後4年結束
+    for (let i = -2; i <= 4; i++) {
       const targetYear = currentYear + i;
       
       // 國曆流年運勢
@@ -460,23 +461,30 @@ export function ReadingResult({
 
           <TabsContent value="multi-year" className="mt-6 space-y-6">
             <div className="text-center space-y-2">
-              <h4 className="text-lg font-semibold">未來五年流年走勢</h4>
+              <h4 className="text-lg font-semibold">近年運勢走勢</h4>
               <p className="text-sm text-muted-foreground">
-                查看未來五年的運勢與心境變化，了解長期走向
+                查看近七年（往前2年+今年+往後4年）的運勢與心境變化
               </p>
             </div>
 
             {/* 視覺化圖表 */}
             <Card className="bg-gradient-to-br from-card to-primary/5">
               <CardHeader>
-                <CardTitle className="text-center text-lg">運勢與心境走勢圖</CardTitle>
+                <CardTitle className="text-center text-lg">近年運勢與心境走勢圖</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="h-64 flex items-end justify-around gap-2 px-4">
-                  {multiYearFortune.map((item, index) => (
+                  {multiYearFortune.map((item, index) => {
+                    const isCurrentYear = item.year === new Date().getFullYear();
+                    return (
                     <div key={item.year} className="flex-1 flex flex-col items-center gap-2">
-                      <div className="text-xs text-muted-foreground font-medium">
+                      <div className={`text-xs font-medium ${
+                        isCurrentYear 
+                          ? 'text-primary font-bold' 
+                          : 'text-muted-foreground'
+                      }`}>
                         {item.year}
+                        {isCurrentYear && <div className="text-[10px]">（今年）</div>}
                       </div>
                       <div className="w-full flex gap-1">
                         {/* 運勢條 */}
@@ -501,7 +509,8 @@ export function ReadingResult({
                         </div>
                       </div>
                     </div>
-                  ))}
+                  );
+                  })}
                 </div>
                 <div className="flex items-center justify-center gap-6 mt-4 text-sm">
                   <div className="flex items-center gap-2">
@@ -527,13 +536,15 @@ export function ReadingResult({
                   </tr>
                 </thead>
                 <tbody>
-                  {multiYearFortune.map((item, index) => (
+                  {multiYearFortune.map((item, index) => {
+                    const isCurrentYear = item.year === new Date().getFullYear();
+                    return (
                     <tr 
                       key={item.year} 
-                      className={`hover:bg-muted/50 transition-colors ${index === 0 ? 'bg-primary/5' : ''}`}
+                      className={`hover:bg-muted/50 transition-colors ${isCurrentYear ? 'bg-primary/5' : ''}`}
                     >
                       <td className="border border-border p-3 text-center font-medium">
-                        {item.year} {index === 0 && <span className="text-xs text-primary ml-2">(本年)</span>}
+                        {item.year} {isCurrentYear && <span className="text-xs text-primary ml-2">(今年)</span>}
                       </td>
                       <td className="border border-border p-3 text-center cursor-pointer hover:bg-primary/5" onClick={() => item.solarCard && onCardClick?.(item.solarCard)}>
                         <div className="flex flex-col items-center gap-2">
@@ -552,7 +563,8 @@ export function ReadingResult({
                         </div>
                       </td>
                     </tr>
-                  ))}
+                  );
+                  })}
                 </tbody>
               </table>
             </div>
