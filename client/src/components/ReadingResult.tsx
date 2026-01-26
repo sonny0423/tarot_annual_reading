@@ -5,11 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RefreshCw, User, Heart, Eye, Star, Calendar, Moon, Sun, TrendingUp } from "lucide-react";
 import type { TarotCard as TarotCardType } from "../../../drizzle/schema";
+import { trpc } from "@/lib/trpc";
 
 interface ReadingResultProps {
   birthYear: number;
   birthMonth: number;
   birthDay: number;
+  lunarYear: number;
+  lunarMonth: number;
+  lunarDay: number;
   cards: {
     core?: TarotCardType;
     outer?: TarotCardType;
@@ -26,7 +30,25 @@ interface ReadingResultProps {
   allCards: TarotCardType[];
 }
 
-export function ReadingResult({ birthYear, birthMonth, birthDay, cards, onReset, onCardClick, allCards }: ReadingResultProps) {
+export function ReadingResult({ 
+  birthYear, 
+  birthMonth, 
+  birthDay,
+  lunarYear,
+  lunarMonth,
+  lunarDay,
+  cards, 
+  onReset, 
+  onCardClick, 
+  allCards 
+}: ReadingResultProps) {
+  // 計算農曆本命牌組
+  const { data: lunarReadingData } = trpc.tarot.calculateReading.useQuery({
+    birthYear: lunarYear,
+    birthMonth: lunarMonth,
+    birthDay: lunarDay,
+  });
+
   // 計算多年流年運勢
   const calculateMultiYearFortune = () => {
     const currentYear = new Date().getFullYear();
@@ -96,55 +118,122 @@ export function ReadingResult({ birthYear, birthMonth, birthDay, cards, onReset,
         <h2 className="text-4xl md:text-5xl font-serif bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent">
           您的塔羅靈數運勢
         </h2>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
-          生日：{birthYear}年{birthMonth}月{birthDay}日
-        </p>
+        <div className="space-y-2">
+          <p className="text-muted-foreground">
+            國曆生日：{birthYear}年{birthMonth}月{birthDay}日
+          </p>
+          <p className="text-muted-foreground">
+            農曆生日：{lunarYear}年{lunarMonth}月{lunarDay}日
+          </p>
+        </div>
         <Button variant="outline" onClick={onReset} className="gap-2">
           <RefreshCw className="w-4 h-4" />
           重新占卜
         </Button>
       </div>
 
-      {/* 本命牌組 */}
+      {/* 雙重性格分析 */}
       <section className="space-y-6">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 justify-center">
           <User className="w-6 h-6 text-primary" />
-          <h3 className="text-2xl font-serif text-foreground">本命形象和個性</h3>
+          <h3 className="text-2xl font-serif text-foreground">雙重性格分析</h3>
         </div>
-        <p className="text-muted-foreground">
-          本命牌組代表您的核心特質與人格面向，包含本性、外顯與內心三個層面
+        <p className="text-muted-foreground text-center max-w-3xl mx-auto">
+          國曆生日代表您「給人的感覺」，是外在展現的人格特質；農曆生日代表您的「另一面特性」，是內在隱藏的性格面向
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {cards.core && (
-            <div className="space-y-2">
-              <TarotCard
-                card={cards.core}
-                label="本性"
-                onClick={() => onCardClick?.(cards.core!)}
-              />
-              <p className="text-xs text-center text-muted-foreground">核心靈數</p>
-            </div>
-          )}
-          {cards.outer && (
-            <div className="space-y-2">
-              <TarotCard
-                card={cards.outer}
-                label="外顯"
-                onClick={() => onCardClick?.(cards.outer!)}
-              />
-              <p className="text-xs text-center text-muted-foreground">外在表現</p>
-            </div>
-          )}
-          {cards.inner && (
-            <div className="space-y-2">
-              <TarotCard
-                card={cards.inner}
-                label="內心"
-                onClick={() => onCardClick?.(cards.inner!)}
-              />
-              <p className="text-xs text-center text-muted-foreground">內在特質</p>
-            </div>
-          )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* 國曆性格 - 給人的感覺 */}
+          <Card className="border-2 border-primary/30 bg-gradient-to-br from-card to-primary/5">
+            <CardHeader className="text-center">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Sun className="w-5 h-5 text-primary" />
+                <CardTitle className="text-xl font-serif text-primary">國曆性格</CardTitle>
+              </div>
+              <CardDescription>給人的感覺 · 外在人格</CardDescription>
+              <p className="text-sm font-medium pt-2">
+                {birthYear}年{birthMonth}月{birthDay}日
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {cards.core && (
+                <div className="space-y-2">
+                  <TarotCard
+                    card={cards.core}
+                    label="本性"
+                    onClick={() => onCardClick?.(cards.core!)}
+                  />
+                  <p className="text-xs text-center text-muted-foreground">核心特質</p>
+                </div>
+              )}
+              {cards.outer && (
+                <div className="space-y-2">
+                  <TarotCard
+                    card={cards.outer}
+                    label="外顯"
+                    onClick={() => onCardClick?.(cards.outer!)}
+                  />
+                  <p className="text-xs text-center text-muted-foreground">外在表現</p>
+                </div>
+              )}
+              {cards.inner && (
+                <div className="space-y-2">
+                  <TarotCard
+                    card={cards.inner}
+                    label="內心"
+                    onClick={() => onCardClick?.(cards.inner!)}
+                  />
+                  <p className="text-xs text-center text-muted-foreground">內在特質</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* 農曆性格 - 另一面特性 */}
+          <Card className="border-2 border-secondary/30 bg-gradient-to-br from-card to-secondary/5">
+            <CardHeader className="text-center">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Moon className="w-5 h-5 text-secondary" />
+                <CardTitle className="text-xl font-serif text-secondary">農曆性格</CardTitle>
+              </div>
+              <CardDescription>另一面特性 · 內在人格</CardDescription>
+              <p className="text-sm font-medium pt-2">
+                {lunarYear}年{lunarMonth}月{lunarDay}日
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {lunarReadingData?.cards.core && (
+                <div className="space-y-2">
+                  <TarotCard
+                    card={lunarReadingData.cards.core}
+                    label="本性"
+                    onClick={() => onCardClick?.(lunarReadingData.cards.core!)}
+                  />
+                  <p className="text-xs text-center text-muted-foreground">核心特質</p>
+                </div>
+              )}
+              {lunarReadingData?.cards.outer && (
+                <div className="space-y-2">
+                  <TarotCard
+                    card={lunarReadingData.cards.outer}
+                    label="外顯"
+                    onClick={() => onCardClick?.(lunarReadingData.cards.outer!)}
+                  />
+                  <p className="text-xs text-center text-muted-foreground">外在表現</p>
+                </div>
+              )}
+              {lunarReadingData?.cards.inner && (
+                <div className="space-y-2">
+                  <TarotCard
+                    card={lunarReadingData.cards.inner}
+                    label="內心"
+                    onClick={() => onCardClick?.(lunarReadingData.cards.inner!)}
+                  />
+                  <p className="text-xs text-center text-muted-foreground">內在特質</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </section>
 
@@ -181,71 +270,6 @@ export function ReadingResult({ birthYear, birthMonth, birthDay, cards, onReset,
               onClick={() => onCardClick?.(cards.benefactorInner!)}
             />
           )}
-        </div>
-      </section>
-
-      <Separator className="my-12" />
-
-      {/* 本命與貴人對照 */}
-      <section className="space-y-6">
-        <div className="flex items-center gap-3">
-          <TrendingUp className="w-6 h-6 text-primary" />
-          <h3 className="text-2xl font-serif text-foreground">本命與貴人對照</h3>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="border-primary/30">
-            <CardHeader>
-              <CardTitle className="text-center">本命牌組</CardTitle>
-              <CardDescription className="text-center">與生俱來的特質</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex justify-between items-center p-3 bg-muted/50 rounded">
-                <span className="font-medium">本性:</span>
-                <span className="text-primary font-semibold">
-                  {cards.core?.id} - {cards.core?.name}
-                </span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-muted/50 rounded">
-                <span className="font-medium">外顯:</span>
-                <span className="text-primary font-semibold">
-                  {cards.outer?.id} - {cards.outer?.name}
-                </span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-muted/50 rounded">
-                <span className="font-medium">內心:</span>
-                <span className="text-primary font-semibold">
-                  {cards.inner?.id} - {cards.inner?.name}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-secondary/30">
-            <CardHeader>
-              <CardTitle className="text-center">貴人牌組</CardTitle>
-              <CardDescription className="text-center">能助您的人的特質</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex justify-between items-center p-3 bg-muted/50 rounded">
-                <span className="font-medium">貴人本性:</span>
-                <span className="text-secondary font-semibold">
-                  {cards.benefactorCore?.id} - {cards.benefactorCore?.name}
-                </span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-muted/50 rounded">
-                <span className="font-medium">貴人外顯:</span>
-                <span className="text-secondary font-semibold">
-                  {cards.benefactorOuter?.id} - {cards.benefactorOuter?.name}
-                </span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-muted/50 rounded">
-                <span className="font-medium">貴人內心:</span>
-                <span className="text-secondary font-semibold">
-                  {cards.benefactorInner?.id} - {cards.benefactorInner?.name}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </section>
 

@@ -5,6 +5,7 @@ import { publicProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import { getAllTarotCards, getTarotCardById, getTarotCardsByIds } from "./db";
 import { calculateFullReading } from "./tarot-calculator";
+import { solarToLunar, lunarToSolar } from "./lunar-converter";
 
 export const appRouter = router({
   system: systemRouter,
@@ -20,6 +21,33 @@ export const appRouter = router({
   }),
 
   tarot: router({
+    // 國曆轉農曆
+    solarToLunar: publicProcedure
+      .input(
+        z.object({
+          year: z.number().min(1900).max(2100),
+          month: z.number().min(1).max(12),
+          day: z.number().min(1).max(31),
+        })
+      )
+      .mutation(async ({ input }) => {
+        return solarToLunar(input.year, input.month, input.day);
+      }),
+
+    // 農曆轉國曆
+    lunarToSolar: publicProcedure
+      .input(
+        z.object({
+          year: z.number().min(1900).max(2100),
+          month: z.number().min(1).max(12),
+          day: z.number().min(1).max(31),
+          isLeapMonth: z.boolean().optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        return lunarToSolar(input.year, input.month, input.day, input.isLeapMonth);
+      }),
+
     // 取得所有塔羅牌
     getAllCards: publicProcedure.query(async () => {
       return await getAllTarotCards();

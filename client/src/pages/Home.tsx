@@ -11,16 +11,20 @@ import type { TarotCard } from "../../../drizzle/schema";
 export default function Home() {
   const [selectedCard, setSelectedCard] = useState<TarotCard | null>(null);
   const [birthData, setBirthData] = useState<{
-    year: number;
-    month: number;
-    day: number;
+    solarYear: number;
+    solarMonth: number;
+    solarDay: number;
+    lunarYear: number;
+    lunarMonth: number;
+    lunarDay: number;
+    isLeapMonth: boolean;
   } | null>(null);
 
   const { data: readingData, isLoading } = trpc.tarot.calculateReading.useQuery(
     {
-      birthYear: birthData?.year ?? 0,
-      birthMonth: birthData?.month ?? 0,
-      birthDay: birthData?.day ?? 0,
+      birthYear: birthData?.solarYear ?? 0,
+      birthMonth: birthData?.solarMonth ?? 0,
+      birthDay: birthData?.solarDay ?? 0,
     },
     {
       enabled: !!birthData,
@@ -28,17 +32,15 @@ export default function Home() {
   );
 
   const handleFormSubmit = (data: {
-    year: number;
-    month: number;
-    day: number;
-    isLunar: boolean;
+    solarYear: number;
+    solarMonth: number;
+    solarDay: number;
+    lunarYear: number;
+    lunarMonth: number;
+    lunarDay: number;
+    isLeapMonth: boolean;
   }) => {
-    // 暫時不處理農曆轉換，直接使用輸入的日期
-    setBirthData({
-      year: data.year,
-      month: data.month,
-      day: data.day,
-    });
+    setBirthData(data);
   };
 
   const handleReset = () => {
@@ -80,7 +82,7 @@ export default function Home() {
 
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-secondary/20 to-primary/20 blur-3xl opacity-30 animate-pulse pointer-events-none" />
-            <BirthdayForm onSubmit={handleFormSubmit} loading={isLoading} />
+            <BirthdayForm onSubmit={handleFormSubmit} />
           </div>
         </section>
       )}
@@ -95,9 +97,12 @@ export default function Home() {
             </div>
           ) : readingData ? (
             <ReadingResult
-              birthYear={birthData?.year ?? 0}
-              birthMonth={birthData?.month ?? 0}
-              birthDay={birthData?.day ?? 0}
+              birthYear={birthData?.solarYear ?? 0}
+              birthMonth={birthData?.solarMonth ?? 0}
+              birthDay={birthData?.solarDay ?? 0}
+              lunarYear={birthData?.lunarYear ?? 0}
+              lunarMonth={birthData?.lunarMonth ?? 0}
+              lunarDay={birthData?.lunarDay ?? 0}
               cards={readingData.cards}
               onReset={handleReset}
               onCardClick={setSelectedCard}
