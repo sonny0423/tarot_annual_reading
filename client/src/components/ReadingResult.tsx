@@ -176,6 +176,7 @@ export function ReadingResult({
                     card={cards.core}
                     label="本性"
                     onClick={() => onCardClick?.(cards.core!)}
+                    compact
                   />
                   <p className="text-xs text-center text-muted-foreground">核心特質</p>
                 </div>
@@ -186,6 +187,7 @@ export function ReadingResult({
                     card={cards.outer}
                     label="外顯"
                     onClick={() => onCardClick?.(cards.outer!)}
+                    compact
                   />
                   <p className="text-xs text-center text-muted-foreground">外在表現</p>
                 </div>
@@ -196,6 +198,7 @@ export function ReadingResult({
                     card={cards.inner}
                     label="內心"
                     onClick={() => onCardClick?.(cards.inner!)}
+                    compact
                   />
                   <p className="text-xs text-center text-muted-foreground">內在特質</p>
                 </div>
@@ -222,6 +225,7 @@ export function ReadingResult({
                     card={lunarReadingData.cards.core}
                     label="本性"
                     onClick={() => onCardClick?.(lunarReadingData.cards.core!)}
+                    compact
                   />
                   <p className="text-xs text-center text-muted-foreground">核心特質</p>
                 </div>
@@ -232,6 +236,7 @@ export function ReadingResult({
                     card={lunarReadingData.cards.outer}
                     label="外顯"
                     onClick={() => onCardClick?.(lunarReadingData.cards.outer!)}
+                    compact
                   />
                   <p className="text-xs text-center text-muted-foreground">外在表現</p>
                 </div>
@@ -242,6 +247,7 @@ export function ReadingResult({
                     card={lunarReadingData.cards.inner}
                     label="內心"
                     onClick={() => onCardClick?.(lunarReadingData.cards.inner!)}
+                    compact
                   />
                   <p className="text-xs text-center text-muted-foreground">內在特質</p>
                 </div>

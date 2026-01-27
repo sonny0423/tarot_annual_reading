@@ -9,6 +9,7 @@ interface TarotCardProps {
   onClick?: () => void;
   className?: string;
   displayMode?: 'traits' | 'annual'; // 'traits' for personality traits, 'annual' for annual fortune
+  compact?: boolean; // If true, hide trait details and only show card name
 }
 
 const CARD_NAMES_EN = [
@@ -36,7 +37,7 @@ const CARD_NAMES_EN = [
   "The World",
 ];
 
-export function TarotCard({ card, label, onClick, className = "", displayMode = 'traits' }: TarotCardProps) {
+export function TarotCard({ card, label, onClick, className = "", displayMode = 'traits', compact = false }: TarotCardProps) {
   const englishName = CARD_NAMES_EN[card.id] || "";
 
   return (
@@ -54,16 +55,17 @@ export function TarotCard({ card, label, onClick, className = "", displayMode = 
         )}
         <div className="flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-primary" />
-          <CardTitle className="text-2xl font-serif bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+          <CardTitle className={`font-serif bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent ${compact ? 'text-3xl' : 'text-2xl'}`}>
             {card.name}
           </CardTitle>
         </div>
-        <CardDescription className="text-sm font-medium text-muted-foreground">
+        <CardDescription className={`font-medium text-muted-foreground ${compact ? 'text-base' : 'text-sm'}`}>
           {englishName} · No. {card.id}
         </CardDescription>
       </CardHeader>
 
-      <CardContent className="relative z-10 space-y-3">
+      {!compact && (
+        <CardContent className="relative z-10 space-y-3">
         {displayMode === 'traits' ? (
           <>
             <div className="space-y-2">
@@ -111,7 +113,8 @@ export function TarotCard({ card, label, onClick, className = "", displayMode = 
             )}
           </>
         )}
-      </CardContent>
+        </CardContent>
+      )}
 
       <div className="absolute bottom-0 right-0 w-32 h-32 bg-gradient-to-tl from-primary/10 to-transparent rounded-tl-full opacity-50" />
     </Card>
