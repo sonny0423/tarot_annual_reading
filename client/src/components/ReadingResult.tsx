@@ -286,6 +286,7 @@ export function ReadingResult({
                     <TarotCard
                       card={cards.benefactorCore}
                       onClick={() => onCardClick?.(cards.benefactorCore!)}
+                      compact
                     />
                     <p className="text-xs text-center text-muted-foreground">貴人本性</p>
                   </div>
@@ -295,6 +296,7 @@ export function ReadingResult({
                     <TarotCard
                       card={cards.benefactorOuter}
                       onClick={() => onCardClick?.(cards.benefactorOuter!)}
+                      compact
                     />
                     <p className="text-xs text-center text-muted-foreground">貴人外顯</p>
                   </div>
@@ -304,6 +306,7 @@ export function ReadingResult({
                     <TarotCard
                       card={cards.benefactorInner}
                       onClick={() => onCardClick?.(cards.benefactorInner!)}
+                      compact
                     />
                     <p className="text-xs text-center text-muted-foreground">貴人內心</p>
                   </div>
@@ -328,6 +331,7 @@ export function ReadingResult({
                     <TarotCard
                       card={lunarReadingData.cards.benefactorCore}
                       onClick={() => onCardClick?.(lunarReadingData.cards.benefactorCore!)}
+                      compact
                     />
                     <p className="text-xs text-center text-muted-foreground">貴人本性</p>
                   </div>
@@ -337,6 +341,7 @@ export function ReadingResult({
                     <TarotCard
                       card={lunarReadingData.cards.benefactorOuter}
                       onClick={() => onCardClick?.(lunarReadingData.cards.benefactorOuter!)}
+                      compact
                     />
                     <p className="text-xs text-center text-muted-foreground">貴人外顯</p>
                   </div>
@@ -346,6 +351,7 @@ export function ReadingResult({
                     <TarotCard
                       card={lunarReadingData.cards.benefactorInner}
                       onClick={() => onCardClick?.(lunarReadingData.cards.benefactorInner!)}
+                      compact
                     />
                     <p className="text-xs text-center text-muted-foreground">貴人內心</p>
                   </div>
