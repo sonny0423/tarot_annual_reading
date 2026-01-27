@@ -15,6 +15,13 @@
       "when": 1768462899756,
       "tag": "0001_brown_archangel",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1769478716275,
+      "tag": "0002_curly_liz_osborn",
+      "breakpoints": true
     }
   ]
 }

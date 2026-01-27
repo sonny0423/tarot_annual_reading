@@ -8,6 +8,7 @@ interface TarotCardProps {
   label?: string;
   onClick?: () => void;
   className?: string;
+  displayMode?: 'traits' | 'annual'; // 'traits' for personality traits, 'annual' for annual fortune
 }
 
 const CARD_NAMES_EN = [
@@ -35,7 +36,7 @@ const CARD_NAMES_EN = [
   "The World",
 ];
 
-export function TarotCard({ card, label, onClick, className = "" }: TarotCardProps) {
+export function TarotCard({ card, label, onClick, className = "", displayMode = 'traits' }: TarotCardProps) {
   const englishName = CARD_NAMES_EN[card.id] || "";
 
   return (
@@ -63,25 +64,53 @@ export function TarotCard({ card, label, onClick, className = "" }: TarotCardPro
       </CardHeader>
 
       <CardContent className="relative z-10 space-y-3">
-        <div className="space-y-2">
-          <h4 className="text-sm font-semibold text-primary flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-            正面特質
-          </h4>
-          <p className="text-sm text-foreground/80 leading-relaxed">
-            {card.positiveTraits}
-          </p>
-        </div>
+        {displayMode === 'traits' ? (
+          <>
+            <div className="space-y-2">
+              <h4 className="text-sm font-semibold text-primary flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                正面特質
+              </h4>
+              <p className="text-sm text-foreground/80 leading-relaxed">
+                {card.positiveTraits}
+              </p>
+            </div>
 
-        <div className="space-y-2">
-          <h4 className="text-sm font-semibold text-destructive flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-destructive" />
-            負面特質
-          </h4>
-          <p className="text-sm text-foreground/70 leading-relaxed">
-            {card.negativeTraits}
-          </p>
-        </div>
+            <div className="space-y-2">
+              <h4 className="text-sm font-semibold text-destructive flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-destructive" />
+                負面特質
+              </h4>
+              <p className="text-sm text-foreground/70 leading-relaxed">
+                {card.negativeTraits}
+              </p>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="space-y-2">
+              <h4 className="text-sm font-semibold text-primary flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                正位特質
+              </h4>
+              <p className="text-sm text-foreground/80 leading-relaxed">
+                {card.annualUpright || card.positiveTraits}
+              </p>
+            </div>
+
+            {card.annualReversed && (
+              <div className="space-y-2">
+                <h4 className="text-sm font-semibold text-destructive flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-destructive" />
+                  逆位特質
+                </h4>
+                <p className="text-sm text-foreground/70 leading-relaxed">
+                  {card.annualReversed}
+                </p>
+              </div>
+            )}
+          </>
+        )}
       </CardContent>
 
       <div className="absolute bottom-0 right-0 w-32 h-32 bg-gradient-to-tl from-primary/10 to-transparent rounded-tl-full opacity-50" />

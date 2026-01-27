@@ -390,6 +390,7 @@ export function ReadingResult({
                         card={cards.year}
                         onClick={() => onCardClick?.(cards.year!)}
                         className="border-primary/40"
+                        displayMode="annual"
                       />
                     )}
                     
@@ -445,6 +446,7 @@ export function ReadingResult({
                         card={cards.lunarYear}
                         onClick={() => onCardClick?.(cards.lunarYear!)}
                         className="border-accent/40"
+                        displayMode="annual"
                       />
                     )}
                     
