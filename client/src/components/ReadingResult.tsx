@@ -150,7 +150,7 @@ export function ReadingResult({
       <section className="space-y-6">
         <div className="flex items-center gap-3 justify-center">
           <User className="w-6 h-6 text-primary" />
-          <h3 className="text-2xl font-serif text-foreground">雙重性格分析</h3>
+          <h3 className="text-2xl font-serif text-foreground">內、外在性格分析</h3>
         </div>
         <p className="text-muted-foreground text-center max-w-3xl mx-auto">
           國曆生日代表您「給人的感覺」，是外在展現的人格特質；農曆生日代表您的「另一面特性」，是內在隱藏的性格面向
