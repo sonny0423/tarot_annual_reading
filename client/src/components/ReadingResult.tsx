@@ -469,7 +469,7 @@ export function ReadingResult({
                           <Moon className="w-4 h-4 text-accent" />
                           <h4 className="text-sm font-medium">流月心境</h4>
                         </div>
-                        <p className="text-xs text-muted-foreground">農曆{lunarMonth}月份的心境重點</p>
+                        <p className="text-xs text-muted-foreground">{lunarMonth}月份的心境重點</p>
                         <TarotCard
                           card={lunarReadingData.cards.month}
                           onClick={() => onCardClick?.(lunarReadingData.cards.month!)}
