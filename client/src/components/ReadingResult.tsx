@@ -1,4 +1,5 @@
 import { TarotCard } from "./TarotCard";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -46,14 +47,23 @@ export function ReadingResult({
   allCards 
 }: ReadingResultProps) {
   // 計算農曆本命牌組
-  const { data: lunarReadingData } = trpc.tarot.calculateReading.useQuery({
-    birthYear: lunarYear,
-    birthMonth: lunarMonth,
-    birthDay: lunarDay,
-    lunarBirthYear: lunarYear,
-    lunarBirthMonth: lunarMonth,
-    lunarBirthDay: lunarDay,
+  const [lunarReadingData, setLunarReadingData] = useState<any>(null);
+  const lunarCalculateMutation = trpc.tarot.calculateReading.useMutation({
+    onSuccess: (data) => {
+      setLunarReadingData(data);
+    },
   });
+
+  useEffect(() => {
+    lunarCalculateMutation.mutate({
+      birthYear: lunarYear,
+      birthMonth: lunarMonth,
+      birthDay: lunarDay,
+      lunarBirthYear: lunarYear,
+      lunarBirthMonth: lunarMonth,
+      lunarBirthDay: lunarDay,
+    });
+  }, [lunarYear, lunarMonth, lunarDay]);
 
   // 計算近年運勢（往前2年+今年+往後4年，共7年）
   const calculateMultiYearFortune = () => {

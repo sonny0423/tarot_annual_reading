@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { BirthdayForm } from "@/components/BirthdayForm";
 import { ReadingResult } from "@/components/ReadingResult";
@@ -20,19 +20,25 @@ export default function Home() {
     isLeapMonth: boolean;
   } | null>(null);
 
-  const { data: readingData, isLoading } = trpc.tarot.calculateReading.useQuery(
-    {
-      birthYear: birthData?.solarYear ?? 0,
-      birthMonth: birthData?.solarMonth ?? 0,
-      birthDay: birthData?.solarDay ?? 0,
-      lunarBirthYear: birthData?.lunarYear ?? 0,
-      lunarBirthMonth: birthData?.lunarMonth ?? 0,
-      lunarBirthDay: birthData?.lunarDay ?? 0,
+  const [readingData, setReadingData] = useState<any>(null);
+  const calculateMutation = trpc.tarot.calculateReading.useMutation({
+    onSuccess: (data) => {
+      setReadingData(data);
     },
-    {
-      enabled: !!birthData,
+  });
+
+  useEffect(() => {
+    if (birthData) {
+      calculateMutation.mutate({
+        birthYear: birthData.solarYear,
+        birthMonth: birthData.solarMonth,
+        birthDay: birthData.solarDay,
+        lunarBirthYear: birthData.lunarYear,
+        lunarBirthMonth: birthData.lunarMonth,
+        lunarBirthDay: birthData.lunarDay,
+      });
     }
-  );
+  }, [birthData]);
 
   const handleFormSubmit = (data: {
     solarYear: number;
@@ -93,7 +99,7 @@ export default function Home() {
       {/* Results Section */}
       {birthData && (
         <section className="container py-12 md:py-16">
-          {isLoading ? (
+          {calculateMutation.isPending ? (
             <div className="flex flex-col items-center justify-center py-24 space-y-4">
               <Sparkles className="w-16 h-16 text-primary animate-spin" />
               <p className="text-xl text-muted-foreground">正在為您計算塔羅靈數...</p>

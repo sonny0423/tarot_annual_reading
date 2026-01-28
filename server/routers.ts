@@ -144,7 +144,7 @@ export const appRouter = router({
           targetDay: z.number().min(1).max(31).optional(),
         })
       )
-      .query(async ({ input }) => {
+      .mutation(async ({ input }) => {
         const reading = calculateFullReading(
           input.birthYear,
           input.birthMonth,
