@@ -237,7 +237,7 @@ export function BirthdayForm({ onSubmit }: BirthdayFormProps) {
                   <Input
                     id="solar-month"
                     type="number"
-                    placeholder="4"
+                    placeholder="1"
                     value={solarMonth}
                     onChange={(e) => setSolarMonth(e.target.value)}
                     onBlur={handleSolarToLunar}
@@ -250,7 +250,7 @@ export function BirthdayForm({ onSubmit }: BirthdayFormProps) {
                   <Input
                     id="solar-day"
                     type="number"
-                    placeholder="23"
+                    placeholder="1"
                     value={solarDay}
                     onChange={(e) => setSolarDay(e.target.value)}
                     onBlur={handleSolarToLunar}
