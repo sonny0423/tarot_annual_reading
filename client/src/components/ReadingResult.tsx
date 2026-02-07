@@ -49,6 +49,8 @@ export function ReadingResult({
   // 流年總表滾動容器的ref
   const multiYearScrollRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState("current");
+  // 展開的年份狀態（儲存年份，為 null 表示沒有展開）
+  const [expandedYear, setExpandedYear] = useState<number | null>(null);
   
   // 計算農曆本命牌組
   const [lunarReadingData, setLunarReadingData] = useState<any>(null);
@@ -111,6 +113,43 @@ export function ReadingResult({
     }
     
     return years;
+  };
+
+  // 計算指定年份12個月的流月運勢
+  const calculateYearMonths = (targetYear: number) => {
+    const months = [];
+    
+    for (let month = 1; month <= 12; month++) {
+      // 國曆流月運勢
+      const solarBenefactorSum = birthMonth + birthDay;
+      const solarMonthSum = targetYear + month + solarBenefactorSum;
+      const solarDigitSum = solarMonthSum.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
+      let solarMonthCard = solarDigitSum;
+      while (solarMonthCard > 21) {
+        solarMonthCard = solarMonthCard.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
+      }
+      
+      // 農曆流月心境
+      const lunarBenefactorSum = lunarMonth + lunarDay;
+      const lunarMonthSum = targetYear + month + lunarBenefactorSum;
+      const lunarDigitSum = lunarMonthSum.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
+      let lunarMonthCard = lunarDigitSum;
+      while (lunarMonthCard > 21) {
+        lunarMonthCard = lunarMonthCard.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
+      }
+      
+      const solarCard = allCards.find(c => c.id === solarMonthCard);
+      const lunarCard = allCards.find(c => c.id === lunarMonthCard);
+      months.push({
+        month,
+        solarCardNumber: solarMonthCard,
+        solarCard,
+        lunarCardNumber: lunarMonthCard,
+        lunarCard,
+      });
+    }
+    
+    return months;
   };
 
   // 使用後端批次API計算當月每日流日運勢
@@ -542,16 +581,22 @@ export function ReadingResult({
               <div className="flex gap-3 pb-4 min-w-max">
                 {multiYearFortune.map((item) => {
                   const isCurrentYear = item.isCurrentYear;
+                  const isExpanded = expandedYear === item.year;
+                  const yearMonths = isExpanded ? calculateYearMonths(item.year) : [];
+                  
                   return (
-                    <Card 
-                      key={item.year}
-                      data-current-year={isCurrentYear}
-                      className={`flex-shrink-0 w-32 ${
-                        isCurrentYear 
-                          ? 'border-2 border-primary shadow-lg' 
-                          : 'border border-border'
-                      }`}
-                    >
+                    <div key={item.year} className="flex-shrink-0">
+                      <Card 
+                        data-current-year={isCurrentYear}
+                        className={`w-32 cursor-pointer transition-all ${
+                          isCurrentYear 
+                            ? 'border-2 border-primary shadow-lg' 
+                            : 'border border-border'
+                        } ${
+                          isExpanded ? 'ring-2 ring-primary/50' : ''
+                        }`}
+                        onClick={() => setExpandedYear(isExpanded ? null : item.year)}
+                      >
                       <CardHeader className="p-3 pb-2">
                         <CardTitle className={`text-center text-sm ${
                           isCurrentYear ? 'text-primary font-bold' : ''
@@ -596,6 +641,67 @@ export function ReadingResult({
                         </div>
                       </CardContent>
                     </Card>
+                    
+                    {/* 展開的流月表 */}
+                    {isExpanded && (
+                      <Card className="mt-3 w-[600px] border-primary/50">
+                        <CardHeader className="p-3">
+                          <CardTitle className="text-sm text-center">
+                            {item.year}年 流月運勢表
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-3">
+                          <div className="grid grid-cols-3 gap-2">
+                            {yearMonths.map((monthItem) => (
+                              <div key={monthItem.month} className="border rounded p-2 space-y-2">
+                                <div className="text-xs font-semibold text-center">
+                                  {monthItem.month}月
+                                </div>
+                                {/* 國曆流月 */}
+                                <div 
+                                  className="cursor-pointer hover:bg-primary/5 p-1 rounded transition-colors"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    monthItem.solarCard && onCardClick?.(monthItem.solarCard);
+                                  }}
+                                >
+                                  <div className="flex items-center gap-1 mb-1">
+                                    <Sun className="w-2 h-2 text-primary" />
+                                    <span className="text-[9px] text-muted-foreground">國曆</span>
+                                  </div>
+                                  <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 font-bold text-primary text-[10px] mx-auto mb-1">
+                                    {monthItem.solarCardNumber}
+                                  </div>
+                                  <div className="text-[9px] text-center line-clamp-1">
+                                    {monthItem.solarCard?.name || ""}
+                                  </div>
+                                </div>
+                                {/* 農曆流月 */}
+                                <div 
+                                  className="cursor-pointer hover:bg-accent/5 p-1 rounded transition-colors"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    monthItem.lunarCard && onCardClick?.(monthItem.lunarCard);
+                                  }}
+                                >
+                                  <div className="flex items-center gap-1 mb-1">
+                                    <Moon className="w-2 h-2 text-accent" />
+                                    <span className="text-[9px] text-muted-foreground">農曆</span>
+                                  </div>
+                                  <div className="flex items-center justify-center w-6 h-6 rounded-full bg-accent/10 font-bold text-accent text-[10px] mx-auto mb-1">
+                                    {monthItem.lunarCardNumber}
+                                  </div>
+                                  <div className="text-[9px] text-center line-clamp-1">
+                                    {monthItem.lunarCard?.name || ""}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
                   );
                 })}
               </div>
