@@ -65,14 +65,15 @@ export function ReadingResult({
     });
   }, [lunarYear, lunarMonth, lunarDay]);
 
-  // 計算近年運勢（往前2年+今年+往後4年，共7年）
+  // 計算流年總表（0-100歲完整生命週期）
   const calculateMultiYearFortune = () => {
     const currentYear = new Date().getFullYear();
+    const currentAge = currentYear - birthYear;
     const years = [];
     
-    // 從前2年開始，到後4年結束
-    for (let i = -2; i <= 4; i++) {
-      const targetYear = currentYear + i;
+    // 從0歲開始，到100歲結束
+    for (let age = 0; age <= 100; age++) {
+      const targetYear = birthYear + age;
       
       // 國曆流年運勢
       const solarBenefactorSum = birthMonth + birthDay;
@@ -96,6 +97,8 @@ export function ReadingResult({
       const lunarCard = allCards.find(c => c.id === lunarYearCard);
       years.push({
         year: targetYear,
+        age: age,
+        isCurrentYear: age === currentAge,
         solarCardNumber: solarYearCard,
         solarCard,
         lunarCardNumber: lunarYearCard,
@@ -511,9 +514,9 @@ export function ReadingResult({
 
           <TabsContent value="multi-year" className="mt-6 space-y-6">
             <div className="text-center space-y-2">
-              <h4 className="text-lg font-semibold">近年運勢走勢</h4>
+              <h4 className="text-lg font-semibold">流年總表</h4>
               <p className="text-sm text-muted-foreground">
-                查看近七年（往前2年+今年+往後4年）的運勢與心境變化
+                查看0-100歲完整生命週期的運勢與心境變化，左右滾動瀏覽
               </p>
             </div>
 
@@ -521,7 +524,7 @@ export function ReadingResult({
             <div className="overflow-x-auto">
               <div className="flex gap-3 pb-4 min-w-max">
                 {multiYearFortune.map((item) => {
-                  const isCurrentYear = item.year === new Date().getFullYear();
+                  const isCurrentYear = item.isCurrentYear;
                   return (
                     <Card 
                       key={item.year} 
@@ -537,6 +540,7 @@ export function ReadingResult({
                         }`}>
                           {item.year}
                           {isCurrentYear && <div className="text-[10px] text-primary">(今年)</div>}
+                          <div className="text-[10px] text-muted-foreground mt-1">{item.age}歲</div>
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="p-3 pt-0 space-y-3">
@@ -579,49 +583,7 @@ export function ReadingResult({
               </div>
             </div>
 
-            {/* 詳細表格 */}
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="bg-primary/10">
-                    <th className="border border-border p-3 text-center font-semibold">年份</th>
-                    <th className="border border-border p-3 text-center font-semibold">運勢（國曆）</th>
-                    <th className="border border-border p-3 text-center font-semibold">心境（農曆）</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {multiYearFortune.map((item, index) => {
-                    const isCurrentYear = item.year === new Date().getFullYear();
-                    return (
-                    <tr 
-                      key={item.year} 
-                      className={`hover:bg-muted/50 transition-colors ${isCurrentYear ? 'bg-primary/5' : ''}`}
-                    >
-                      <td className="border border-border p-3 text-center font-medium">
-                        {item.year} {isCurrentYear && <span className="text-xs text-primary ml-2">(今年)</span>}
-                      </td>
-                      <td className="border border-border p-3 text-center cursor-pointer hover:bg-primary/5" onClick={() => item.solarCard && onCardClick?.(item.solarCard)}>
-                        <div className="flex flex-col items-center gap-2">
-                          <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 font-bold text-primary">
-                            {item.solarCardNumber}
-                          </div>
-                          <div className="text-sm">{item.solarCard?.name || ""}</div>
-                        </div>
-                      </td>
-                      <td className="border border-border p-3 text-center cursor-pointer hover:bg-accent/5" onClick={() => item.lunarCard && onCardClick?.(item.lunarCard)}>
-                        <div className="flex flex-col items-center gap-2">
-                          <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-accent/10 font-bold text-accent">
-                            {item.lunarCardNumber}
-                          </div>
-                          <div className="text-sm">{item.lunarCard?.name || ""}</div>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                  })}
-                </tbody>
-              </table>
-            </div>
+
           </TabsContent>
 
           <TabsContent value="monthly" className="mt-6 space-y-4">
