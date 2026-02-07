@@ -1,5 +1,5 @@
 import { TarotCard } from "./TarotCard";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -46,6 +46,10 @@ export function ReadingResult({
   onCardClick, 
   allCards 
 }: ReadingResultProps) {
+  // 流年總表滾動容器的ref
+  const multiYearScrollRef = useRef<HTMLDivElement>(null);
+  const [activeTab, setActiveTab] = useState("current");
+  
   // 計算農曆本命牌組
   const [lunarReadingData, setLunarReadingData] = useState<any>(null);
   const lunarCalculateMutation = trpc.tarot.calculateReading.useMutation({
@@ -134,6 +138,19 @@ export function ReadingResult({
     lunarCardNumber: item.lunarCardNumber,
     lunarCard: allCards.find(c => c.id === item.lunarCardNumber),
   })) || [];
+
+  // 當切換到多年流年頁籤時，自動滾動到當前年齡的位置
+  useEffect(() => {
+    if (activeTab === "multi-year" && multiYearScrollRef.current) {
+      // 等待DOM渲染完成
+      setTimeout(() => {
+        const currentYearCard = multiYearScrollRef.current?.querySelector('[data-current-year="true"]');
+        if (currentYearCard) {
+          currentYearCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+      }, 100);
+    }
+  }, [activeTab]);
 
   const multiYearFortune = calculateMultiYearFortune();
   const currentDay = new Date().getDate();
@@ -384,7 +401,7 @@ export function ReadingResult({
           <h3 className="text-2xl font-serif text-foreground">流年運勢</h3>
         </div>
         
-        <Tabs defaultValue="current" className="w-full">
+        <Tabs defaultValue="current" className="w-full" onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="current">本年運勢</TabsTrigger>
             <TabsTrigger value="multi-year">多年流年</TabsTrigger>
@@ -521,13 +538,14 @@ export function ReadingResult({
             </div>
 
             {/* 時間軸卡片展示 */}
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto" ref={multiYearScrollRef}>
               <div className="flex gap-3 pb-4 min-w-max">
                 {multiYearFortune.map((item) => {
                   const isCurrentYear = item.isCurrentYear;
                   return (
                     <Card 
-                      key={item.year} 
+                      key={item.year}
+                      data-current-year={isCurrentYear}
                       className={`flex-shrink-0 w-32 ${
                         isCurrentYear 
                           ? 'border-2 border-primary shadow-lg' 
