@@ -1,5 +1,5 @@
 import { TarotCard } from "./TarotCard";
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -628,7 +628,7 @@ export function ReadingResult({
 
             {/* 時間軸卡片展示 */}
             <div className="overflow-x-auto" ref={multiYearScrollRef}>
-              <div className="flex gap-3 pb-4 min-w-max">
+              <div className="flex gap-2 pb-4 min-w-max justify-center">
                 {multiYearFortune.map((item) => {
                   const isCurrentYear = item.isCurrentYear;
                   const isExpanded = expandedYear === item.year;
@@ -694,146 +694,155 @@ export function ReadingResult({
                     
                     {/* 展開的流月表 */}
                     {isExpanded && (
-                      <Card className="mt-3 w-[600px] border-primary/50">
+                      <Card className="mt-3 w-full max-w-2xl mx-auto border-primary/50">
                         <CardHeader className="p-3">
                           <CardTitle className="text-sm text-center">
                             {item.year}年 流月運勢表
                           </CardTitle>
                         </CardHeader>
                         <CardContent className="p-3">
-                          <div className="grid grid-cols-3 gap-2">
-                            {yearMonths.map((monthItem) => {
-                              const isMonthExpanded = expandedMonth?.year === item.year && expandedMonth?.month === monthItem.month;
-                              const monthDays = isMonthExpanded ? calculateMonthDays(item.year, monthItem.month) : [];
-                              
-                              return (
-                              <div key={monthItem.month} className="space-y-2">
-                                <div 
-                                  className={`border rounded p-2 space-y-2 cursor-pointer transition-all ${
-                                    isMonthExpanded ? 'ring-2 ring-primary/50 bg-primary/5' : 'hover:bg-muted/50'
-                                  }`}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setExpandedMonth(isMonthExpanded ? null : { year: item.year, month: monthItem.month });
-                                  }}
-                                >
-                                  <div className="text-xs font-semibold text-center">
-                                    {monthItem.month}月 {isMonthExpanded && '(點擊收合)'}
-                                  </div>
-                                {/* 國曆流月 */}
-                                <div 
-                                  className="cursor-pointer hover:bg-primary/5 p-1 rounded transition-colors"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    monthItem.solarCard && onCardClick?.(monthItem.solarCard);
-                                  }}
-                                >
-                                  <div className="flex items-center gap-1 mb-1">
-                                    <Sun className="w-2 h-2 text-primary" />
-                                    <span className="text-[9px] text-muted-foreground">國曆</span>
-                                  </div>
-                                  <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 font-bold text-primary text-[10px] mx-auto mb-1">
-                                    {monthItem.solarCardNumber}
-                                  </div>
-                                  <div className="text-[9px] text-center line-clamp-1">
-                                    {monthItem.solarCard?.name || ""}
-                                  </div>
-                                </div>
-                                {/* 農曆流月 */}
-                                <div 
-                                  className="cursor-pointer hover:bg-accent/5 p-1 rounded transition-colors"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    monthItem.lunarCard && onCardClick?.(monthItem.lunarCard);
-                                  }}
-                                >
-                                  <div className="flex items-center gap-1 mb-1">
-                                    <Moon className="w-2 h-2 text-accent" />
-                                    <span className="text-[9px] text-muted-foreground">農曆</span>
-                                  </div>
-                                  <div className="flex items-center justify-center w-6 h-6 rounded-full bg-accent/10 font-bold text-accent text-[10px] mx-auto mb-1">
-                                    {monthItem.lunarCardNumber}
-                                  </div>
-                                  <div className="text-[9px] text-center line-clamp-1">
-                                    {monthItem.lunarCard?.name || ""}
-                                  </div>
-                                </div>
-                              </div>
-                              
-                              {/* 展開的流日表 */}
-                              {isMonthExpanded && (
-                                <Card className="border-accent/50 col-span-3">
-                                  <CardHeader className="p-2">
-                                    <CardTitle className="text-xs text-center">
-                                      {item.year}年{monthItem.month}月 流日運勢表
-                                    </CardTitle>
-                                  </CardHeader>
-                                  <CardContent className="p-2">
-                                    <div className="grid grid-cols-7 gap-1 max-h-[400px] overflow-y-auto">
-                                      {monthDays.map((dayItem) => (
-                                        <div key={dayItem.day} className="border rounded p-1 space-y-1">
-                                          <div className="text-[9px] font-semibold text-center">
-                                            {dayItem.day}日
+                          <div className="overflow-x-auto">
+                            <table className="w-full border-collapse">
+                              <thead>
+                                <tr className="bg-muted/50">
+                                  <th className="border p-2 text-xs font-semibold">國曆月</th>
+                                  <th className="border p-2 text-xs font-semibold">流月牌</th>
+                                  <th className="border p-2 text-xs font-semibold">農曆</th>
+                                  <th className="border p-2 text-xs font-semibold">流月牌</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {yearMonths.map((monthItem) => {
+                                  const isMonthExpanded = expandedMonth?.year === item.year && expandedMonth?.month === monthItem.month;
+                                  
+                                  return (
+                                    <React.Fragment key={monthItem.month}>
+                                      <tr 
+                                        className={`cursor-pointer transition-colors ${
+                                          isMonthExpanded ? 'bg-primary/5' : 'hover:bg-muted/30'
+                                        }`}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setExpandedMonth(isMonthExpanded ? null : { year: item.year, month: monthItem.month });
+                                        }}
+                                      >
+                                        <td className="border p-2 text-center">
+                                          <div className="text-sm font-medium">{monthItem.month}月</div>
+                                        </td>
+                                        <td 
+                                          className="border p-2 text-center cursor-pointer hover:bg-primary/10"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            monthItem.solarCard && onCardClick?.(monthItem.solarCard);
+                                          }}
+                                        >
+                                          <div className="flex flex-col items-center gap-1">
+                                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 font-bold text-primary text-sm">
+                                              {monthItem.solarCardNumber}
+                                            </div>
+                                            <div className="text-xs">{monthItem.solarCard?.name || ""}</div>
                                           </div>
-                                          {/* 國曆流日 */}
-                                          <div 
-                                            className="cursor-pointer hover:bg-primary/5 p-0.5 rounded transition-colors"
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              dayItem.solarCard && onCardClick?.(dayItem.solarCard);
-                                            }}
-                                          >
-                                            <div className="flex items-center justify-center gap-0.5 mb-0.5">
-                                              <Sun className="w-1.5 h-1.5 text-primary" />
-                                              <span className="text-[8px] text-muted-foreground">國</span>
+                                        </td>
+                                        <td className="border p-2 text-center">
+                                          <div className="text-sm">農曆{monthItem.month}月</div>
+                                        </td>
+                                        <td 
+                                          className="border p-2 text-center cursor-pointer hover:bg-accent/10"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            monthItem.lunarCard && onCardClick?.(monthItem.lunarCard);
+                                          }}
+                                        >
+                                          <div className="flex flex-col items-center gap-1">
+                                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-accent/10 font-bold text-accent text-sm">
+                                              {monthItem.lunarCardNumber}
                                             </div>
-                                            <div className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/10 font-bold text-primary text-[9px] mx-auto mb-0.5">
-                                              {dayItem.solarCardNumber}
-                                            </div>
-                                            <div className="text-[8px] text-center line-clamp-1">
-                                              {dayItem.solarCard?.name || ""}
-                                            </div>
+                                            <div className="text-xs">{monthItem.lunarCard?.name || ""}</div>
                                           </div>
-                                          {/* 農曆流日 */}
-                                          <div 
-                                            className="cursor-pointer hover:bg-accent/5 p-0.5 rounded transition-colors"
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              dayItem.lunarCard && onCardClick?.(dayItem.lunarCard);
-                                            }}
-                                          >
-                                            <div className="flex items-center justify-center gap-0.5 mb-0.5">
-                                              <Moon className="w-1.5 h-1.5 text-accent" />
-                                              <span className="text-[8px] text-muted-foreground">農</span>
-                                            </div>
-                                            <div className="flex items-center justify-center w-5 h-5 rounded-full bg-accent/10 font-bold text-accent text-[9px] mx-auto mb-0.5">
-                                              {dayItem.lunarCardNumber}
-                                            </div>
-                                            <div className="text-[8px] text-center line-clamp-1">
-                                              {dayItem.lunarCard?.name || ""}
-                                            </div>
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              )}
-                            </div>
-                              );
-                            })}
+                                        </td>
+                                      </tr>
+                                      {/* 展開的流日表 */}
+                                      {isMonthExpanded && (() => {
+                                        const monthDays = calculateMonthDays(item.year, monthItem.month);
+                                        return (
+                                          <tr>
+                                            <td colSpan={4} className="border-0 p-0">
+                                              <div className="bg-accent/5 p-3">
+                                                <div className="text-xs font-semibold text-center mb-2">
+                                                  {item.year}年{monthItem.month}月 流日運勢表
+                                                </div>
+                                                <div className="overflow-x-auto">
+                                                  <table className="w-full border-collapse text-xs">
+                                                    <thead>
+                                                      <tr className="bg-muted/50">
+                                                        <th className="border p-1.5 font-semibold">國曆日</th>
+                                                        <th className="border p-1.5 font-semibold">流日牌</th>
+                                                        <th className="border p-1.5 font-semibold">農曆</th>
+                                                        <th className="border p-1.5 font-semibold">流日牌</th>
+                                                      </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                      {monthDays.map((dayItem) => (
+                                                        <tr key={dayItem.day} className="hover:bg-muted/30 transition-colors">
+                                                          <td className="border p-1.5 text-center">
+                                                            <div className="text-xs font-medium">{dayItem.day}日</div>
+                                                          </td>
+                                                          <td 
+                                                            className="border p-1.5 text-center cursor-pointer hover:bg-primary/10"
+                                                            onClick={(e) => {
+                                                              e.stopPropagation();
+                                                              dayItem.solarCard && onCardClick?.(dayItem.solarCard);
+                                                            }}
+                                                          >
+                                                            <div className="flex flex-col items-center gap-0.5">
+                                                              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 font-bold text-primary text-xs">
+                                                                {dayItem.solarCardNumber}
+                                                              </div>
+                                                              <div className="text-[10px]">{dayItem.solarCard?.name || ""}</div>
+                                                            </div>
+                                                          </td>
+                                                          <td className="border p-1.5 text-center">
+                                                            <div className="text-xs">農曆</div>
+                                                          </td>
+                                                          <td 
+                                                            className="border p-1.5 text-center cursor-pointer hover:bg-accent/10"
+                                                            onClick={(e) => {
+                                                              e.stopPropagation();
+                                                              dayItem.lunarCard && onCardClick?.(dayItem.lunarCard);
+                                                            }}
+                                                          >
+                                                            <div className="flex flex-col items-center gap-0.5">
+                                                              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-accent/10 font-bold text-accent text-xs">
+                                                                {dayItem.lunarCardNumber}
+                                                              </div>
+                                                              <div className="text-[10px]">{dayItem.lunarCard?.name || ""}</div>
+                                                            </div>
+                                                          </td>
+                                                        </tr>
+                                                      ))}
+                                                    </tbody>
+                                                  </table>
+                                                </div>
+                                              </div>
+                                            </td>
+                                          </tr>
+                                        );
+                                      })()}
+                                    </React.Fragment>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
                           </div>
                         </CardContent>
                       </Card>
                     )}
                   </div>
-                  );
-                })}
-              </div>
+                );
+              })}
             </div>
-
-
-          </TabsContent>
+          </div>
+        </TabsContent>
 
           <TabsContent value="monthly" className="mt-6 space-y-4">
             <h4 className="text-lg font-semibold text-center">
