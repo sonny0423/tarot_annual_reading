@@ -265,15 +265,29 @@ export function ReadingResult({
         </Button>
       </div>
 
-      {/* 雙重性格分析 */}
+      {/* 性格分析與貴人區塊（標籤頁） */}
       <section className="space-y-6">
         <div className="flex items-center gap-3 justify-center">
           <User className="w-6 h-6 text-primary" />
-          <h3 className="text-2xl font-serif text-foreground">內、外在性格分析</h3>
+          <h3 className="text-2xl font-serif text-foreground">性格與貴人分析</h3>
         </div>
-        <p className="text-muted-foreground text-center max-w-3xl mx-auto">
-          國曆生日代表您「給人的感覺」，是外在展現的人格特質；農曆生日代表您的「另一面特性」，是內在隱藏的性格面向
-        </p>
+        
+        <Tabs defaultValue="personality" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
+            <TabsTrigger value="personality" className="gap-2">
+              <User className="w-4 h-4" />
+              內、外在性格
+            </TabsTrigger>
+            <TabsTrigger value="benefactor" className="gap-2">
+              <Star className="w-4 h-4" />
+              生命中的貴人
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="personality" className="space-y-6 mt-6">
+            <p className="text-muted-foreground text-center max-w-3xl mx-auto">
+              國曆生日代表您「給人的感覺」，是外在展現的人格特質；農曆生日代表您的「另一面特性」，是內在隱藏的性格面向
+            </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* 國曆性格 - 給人的感覺 */}
@@ -374,19 +388,12 @@ export function ReadingResult({
             </CardContent>
           </Card>
         </div>
-      </section>
+          </TabsContent>
 
-      <Separator className="my-12" />
-
-      {/* 生命中的貴人 */}
-      <section className="space-y-6">
-        <div className="flex items-center gap-3 justify-center">
-          <Star className="w-6 h-6 text-secondary" />
-          <h3 className="text-2xl font-serif text-foreground">生命中的貴人</h3>
-        </div>
-        <p className="text-muted-foreground text-center max-w-3xl mx-auto">
-          貴人牌顯示能夠幫助您、支持您的人所具備的特質，同樣分為國曆與農曆兩個面向
-        </p>
+          <TabsContent value="benefactor" className="space-y-6 mt-6">
+            <p className="text-muted-foreground text-center max-w-3xl mx-auto">
+              貴人牌顯示能夠幫助您、支持您的人所具備的特質，同樣分為國曆與農曆兩個面向
+            </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* 國曆貴人 - 給人的感覺 */}
@@ -479,6 +486,8 @@ export function ReadingResult({
             </CardContent>
           </Card>
         </div>
+          </TabsContent>
+        </Tabs>
       </section>
 
       <Separator className="my-12" />
