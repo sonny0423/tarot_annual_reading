@@ -642,15 +642,16 @@ export function ReadingResult({
             </div>
 
             {/* 時間軸卡片展示 */}
-            <div className="overflow-x-auto" ref={multiYearScrollRef}>
-              <div className="flex gap-0 pb-4 min-w-max justify-center flex-wrap">
+            <div className="space-y-6">
+              <div className="overflow-x-auto" ref={multiYearScrollRef}>
+                <div className="flex gap-0 pb-4 min-w-max justify-center">
                 {multiYearFortune.map((item) => {
                   const isCurrentYear = item.isCurrentYear;
                   const isExpanded = expandedYear === item.year;
                   const yearMonths = isExpanded ? calculateYearMonths(item.year) : [];
                   
                   return (
-                    <div key={item.year} className={`flex-shrink-0 ${isExpanded ? 'w-full' : ''}`} data-year={item.year}>
+                    <div key={item.year} className="flex-shrink-0" data-year={item.year}>
                       <Card 
                         data-current-year={isCurrentYear}
                         className={`w-32 cursor-pointer transition-all ${
@@ -706,10 +707,18 @@ export function ReadingResult({
                         </div>
                       </CardContent>
                     </Card>
-                    
-                    {/* 展開的流月表 */}
-                    {isExpanded && (
-                      <div className="mt-3 w-full px-4">
+                    </div>
+                  );})}
+                </div>
+              </div>
+              
+              {/* 展開的流月表 */}
+              {expandedYear && (() => {
+                const item = multiYearFortune.find(y => y.year === expandedYear);
+                if (!item) return null;
+                const yearMonths = calculateYearMonths(item.year);
+                return (
+                  <div className="w-full">
                         <div className="text-center mb-3">
                           <h4 className="text-sm font-semibold">{item.year}年 流月運勢表</h4>
                         </div>
@@ -846,13 +855,10 @@ export function ReadingResult({
                               </tbody>
                             </table>
                         </div>
-                      </div>
-                    )}
                   </div>
                 );
-              })}
+              })()}
             </div>
-          </div>
         </TabsContent>
 
           <TabsContent value="monthly" className="mt-6 space-y-4">
