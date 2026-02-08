@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RefreshCw, User, Heart, Eye, Star, Calendar, Moon, Sun, TrendingUp } from "lucide-react";
 import type { TarotCard as TarotCardType } from "../../../drizzle/schema";
 import { trpc } from "@/lib/trpc";
+import { Solar } from "lunar-javascript";
 
 interface ReadingResultProps {
   birthYear: number;
@@ -122,6 +123,10 @@ export function ReadingResult({
     const months = [];
     
     for (let month = 1; month <= 12; month++) {
+      // 計算國曆每個月份對應的農曆月份（取該月中旬）
+      const solar = Solar.fromYmd(targetYear, month, 15);
+      const lunar = solar.getLunar();
+      const lunarMonthValue = Math.abs(lunar.getMonth()); // 取絕對值，闰月是負數
       // 國曆流月運勢
       const solarBenefactorSum = birthMonth + birthDay;
       const solarMonthSum = targetYear + month + solarBenefactorSum;
@@ -144,6 +149,7 @@ export function ReadingResult({
       const lunarCard = allCards.find(c => c.id === lunarMonthCard);
       months.push({
         month,
+        lunarMonth: lunarMonthValue,
         solarCardNumber: solarMonthCard,
         solarCard,
         lunarCardNumber: lunarMonthCard,
@@ -637,14 +643,14 @@ export function ReadingResult({
 
             {/* 時間軸卡片展示 */}
             <div className="overflow-x-auto" ref={multiYearScrollRef}>
-              <div className="flex gap-0 pb-4 min-w-max justify-center">
+              <div className="flex gap-0 pb-4 min-w-max justify-center flex-wrap">
                 {multiYearFortune.map((item) => {
                   const isCurrentYear = item.isCurrentYear;
                   const isExpanded = expandedYear === item.year;
                   const yearMonths = isExpanded ? calculateYearMonths(item.year) : [];
                   
                   return (
-                    <div key={item.year} className="flex-shrink-0" data-year={item.year}>
+                    <div key={item.year} className={`flex-shrink-0 ${isExpanded ? 'w-full' : ''}`} data-year={item.year}>
                       <Card 
                         data-current-year={isCurrentYear}
                         className={`w-32 cursor-pointer transition-all ${
@@ -703,14 +709,11 @@ export function ReadingResult({
                     
                     {/* 展開的流月表 */}
                     {isExpanded && (
-                      <Card className="mt-3 w-full mx-auto border-primary/50">
-                        <CardHeader className="p-3">
-                          <CardTitle className="text-sm text-center">
-                            {item.year}年 流月運勢表
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-3">
-                          <div className="overflow-x-auto">
+                      <div className="mt-3 w-full px-4">
+                        <div className="text-center mb-3">
+                          <h4 className="text-sm font-semibold">{item.year}年 流月運勢表</h4>
+                        </div>
+                        <div className="overflow-x-auto">
                             <table className="w-full border-collapse">
                               <thead>
                                 <tr className="bg-muted/50">
@@ -753,7 +756,7 @@ export function ReadingResult({
                                           </div>
                                         </td>
                                         <td className="border p-2 text-center">
-                                          <div className="text-sm">農曆{monthItem.month}月</div>
+                                          <div className="text-sm">農曆{monthItem.lunarMonth}月</div>
                                         </td>
                                         <td 
                                           className="border p-2 text-center cursor-pointer hover:bg-accent/10"
@@ -842,9 +845,8 @@ export function ReadingResult({
                                 })}
                               </tbody>
                             </table>
-                          </div>
-                        </CardContent>
-                      </Card>
+                        </div>
+                      </div>
                     )}
                   </div>
                 );
