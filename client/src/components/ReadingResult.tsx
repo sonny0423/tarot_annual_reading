@@ -128,8 +128,8 @@ export function ReadingResult({
       const lunar = solar.getLunar();
       const lunarMonthValue = Math.abs(lunar.getMonth()); // 取絕對值，闰月是負數
       // 國曆流月運勢
-      const solarBenefactorSum = birthMonth + birthDay;
-      const solarMonthSum = targetYear + month + solarBenefactorSum;
+      const solarBirthSum = birthYear + birthMonth + birthDay;
+      const solarMonthSum = solarBirthSum + targetYear + month;
       const solarDigitSum = solarMonthSum.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
       let solarMonthCard = solarDigitSum;
       while (solarMonthCard > 21) {
@@ -137,8 +137,8 @@ export function ReadingResult({
       }
       
       // 農曆流月心境
-      const lunarBenefactorSum = lunarMonth + lunarDay;
-      const lunarMonthSum = targetYear + month + lunarBenefactorSum;
+      const lunarBirthSum = lunarYear + lunarMonth + lunarDay;
+      const lunarMonthSum = lunarBirthSum + targetYear + lunarMonthValue;
       const lunarDigitSum = lunarMonthSum.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
       let lunarMonthCard = lunarDigitSum;
       while (lunarMonthCard > 21) {
@@ -166,9 +166,17 @@ export function ReadingResult({
     const days = [];
     
     for (let day = 1; day <= daysInMonth; day++) {
+      // 轉換為農曆日期
+      const solar = Solar.fromYmd(targetYear, targetMonth, day);
+      const lunar = solar.getLunar();
+      const lunarYearValue = lunar.getYear();
+      const lunarMonthValue = Math.abs(lunar.getMonth());
+      const lunarDayValue = lunar.getDay();
+      
       // 國曆流日運勢
-      const solarBenefactorSum = birthMonth + birthDay;
-      const solarDaySum = targetYear + targetMonth + day + solarBenefactorSum;
+      const solarBirthSum = birthYear + birthMonth + birthDay;
+      const solarMonthSum = solarBirthSum + targetYear + targetMonth;
+      const solarDaySum = solarMonthSum + day;
       const solarDigitSum = solarDaySum.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
       let solarDayCard = solarDigitSum;
       while (solarDayCard > 21) {
@@ -176,8 +184,9 @@ export function ReadingResult({
       }
       
       // 農曆流日心境
-      const lunarBenefactorSum = lunarMonth + lunarDay;
-      const lunarDaySum = targetYear + targetMonth + day + lunarBenefactorSum;
+      const lunarBirthSum = lunarYear + lunarMonth + lunarDay;
+      const lunarMonthSum = lunarBirthSum + lunarYearValue + lunarMonthValue;
+      const lunarDaySum = lunarMonthSum + lunarDayValue;
       const lunarDigitSum = lunarDaySum.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
       let lunarDayCard = lunarDigitSum;
       while (lunarDayCard > 21) {
