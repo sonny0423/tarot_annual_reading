@@ -637,7 +637,7 @@ export function ReadingResult({
 
             {/* 時間軸卡片展示 */}
             <div className="overflow-x-auto" ref={multiYearScrollRef}>
-              <div className="flex gap-2 pb-4 min-w-max justify-center">
+              <div className="flex gap-0 pb-4 min-w-max justify-center">
                 {multiYearFortune.map((item) => {
                   const isCurrentYear = item.isCurrentYear;
                   const isExpanded = expandedYear === item.year;
@@ -652,7 +652,7 @@ export function ReadingResult({
                             ? 'border-2 border-primary shadow-lg' 
                             : 'border border-border'
                         } ${
-                          isExpanded ? 'ring-2 ring-primary/50' : ''
+                          isExpanded ? 'ring-2 ring-orange-500/50 border-orange-500' : ''
                         }`}
                         onClick={() => setExpandedYear(isExpanded ? null : item.year)}
                       >
@@ -703,7 +703,7 @@ export function ReadingResult({
                     
                     {/* 展開的流月表 */}
                     {isExpanded && (
-                      <Card className="mt-3 w-full max-w-2xl mx-auto border-primary/50">
+                      <Card className="mt-3 w-full mx-auto border-primary/50">
                         <CardHeader className="p-3">
                           <CardTitle className="text-sm text-center">
                             {item.year}年 流月運勢表
