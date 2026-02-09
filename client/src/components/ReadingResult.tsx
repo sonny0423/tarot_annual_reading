@@ -123,9 +123,10 @@ export function ReadingResult({
     const months = [];
     
     for (let month = 1; month <= 12; month++) {
-      // 計算國曆每個月份對應的農曆月份（取該月中旬）
-      const solar = Solar.fromYmd(targetYear, month, 15);
+      // 計算國曆每個月份對應的農曆月份（取該月月初1號）
+      const solar = Solar.fromYmd(targetYear, month, 1);
       const lunar = solar.getLunar();
+      const lunarYearValue = lunar.getYear();
       const lunarMonthValue = Math.abs(lunar.getMonth()); // 取絕對值，闰月是負數
       // 國曆流月運勢
       const solarBirthSum = birthYear + birthMonth + birthDay;
@@ -149,6 +150,7 @@ export function ReadingResult({
       const lunarCard = allCards.find(c => c.id === lunarMonthCard);
       months.push({
         month,
+        lunarYear: lunarYearValue,
         lunarMonth: lunarMonthValue,
         solarCardNumber: solarMonthCard,
         solarCard,
@@ -774,7 +776,7 @@ export function ReadingResult({
                                           </div>
                                         </td>
                                         <td className="border p-2 text-center">
-                                          <div className="text-sm">農曆{monthItem.lunarMonth}月</div>
+                                          <div className="text-sm">{monthItem.lunarYear}年{monthItem.lunarMonth}月</div>
                                         </td>
                                         <td 
                                           className="border p-2 text-center cursor-pointer hover:bg-accent/10"
