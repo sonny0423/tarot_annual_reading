@@ -556,7 +556,7 @@ export function ReadingResult({
         <Tabs defaultValue="current" className="w-full" onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="current">本年運勢</TabsTrigger>
-            <TabsTrigger value="multi-year">多年流年</TabsTrigger>
+            <TabsTrigger value="multi-year">0-100歲流年</TabsTrigger>
             <TabsTrigger value="monthly">本月流日</TabsTrigger>
           </TabsList>
 
