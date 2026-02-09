@@ -1,0 +1,40 @@
+{
+  "query": "SELECT id, name, SUBSTRING(positive_traits, 1, 60) as positive_preview, SUBSTRING(negative_traits, 1, 60) as negative_preview FROM tarot_cards WHERE id IN (0, 5, 10, 15, 20) ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4GFzRbhPiYVZCss.3deedf4049ff --database j4VLg7dBq8DZmAm9gmNKgS --execute SELECT id, name, SUBSTRING(positive_traits, 1, 60) as positive_preview, SUBSTRING(negative_traits, 1, 60) as negative_preview FROM tarot_cards WHERE id IN (0, 5, 10, 15, 20) ORDER BY id;",
+  "rows": [
+    {
+      "id": "0",
+      "name": "愚人",
+      "positive_preview": "憨厚耿直，做事誠懇，相信人性本善。樂觀開朗，有創意，沒有世俗框架。活在當下，享受生活，崇尚自由。不記仇，不會把難過的事情",
+      "negative_preview": "容易被騙，耳根子軟。沒有危機意識，不計劃未來。時間觀與常人不同，記憶力差，容易翻舊帳的感覺。"
+    },
+    {
+      "id": "5",
+      "name": "教宗",
+      "positive_preview": "很會聊天，會開話題。有品味，氣質不凡。重道德，有正義感。清心寡慾，追求心靈。適合做組織行銷，靠團隊。",
+      "negative_preview": "話匣子打開會聊到明天。沒什麼事業心（除非搭配世俗數字）。比較保守，愛說教。不喜歡世俗競爭，比較悲觀，先從壞的一面看。"
+    },
+    {
+      "id": "10",
+      "name": "幸運",
+      "positive_preview": "漂亮、帥，有人緣。天之驕子/驕女，命帶富貴。助力多，遇到困難會有貴人。努力一分可以得到十分。自帶幸運星，容易發生好事。",
+      "negative_preview": "生命經驗值薄弱，不惜福，不珍惜。喜歡享受，沒有太大的受挫經驗。"
+    },
+    {
+      "id": "15",
+      "name": "惡魔",
+      "positive_preview": "最會媚惑，蠱惑人心。擅長人際關係，號召力強。精力旺盛（尤其晚上），愛講話。有偏財運，可以投機。容易取得世俗成功。",
+      "negative_preview": "夜行性動物。天生有優越感，覺得自己高人一等。慾望強烈，不滿足。棄道德，比較沒有道德，利益擺在道德之前。容易忽略內在精神，"
+    },
+    {
+      "id": "20",
+      "name": "審判",
+      "positive_preview": "霸氣，心臟很強。完美主義，非常自律，有自我管理能力。適合當職業軍人、教官、審查者。一板一眼。從商或從政能力強（男性）。",
+      "negative_preview": "會一直審判別人，從雞蛋裡挑骨頭。有強烈的自我優越意識，斤斤計較。主觀意識很強，只要求別人。女性命苦，太強太能忍。"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tpositive_preview\tnegative_preview\n0\t愚人\t憨厚耿直，做事誠懇，相信人性本善。樂觀開朗，有創意，沒有世俗框架。活在當下，享受生活，崇尚自由。不記仇，不會把難過的事情\t容易被騙，耳根子軟。沒有危機意識，不計劃未來。時間觀與常人不同，記憶力差，容易翻舊帳的感覺。\n5\t教宗\t很會聊天，會開話題。有品味，氣質不凡。重道德，有正義感。清心寡慾，追求心靈。適合做組織行銷，靠團隊。\t話匣子打開會聊到明天。沒什麼事業心（除非搭配世俗數字）。比較保守，愛說教。不喜歡世俗競爭，比較悲觀，先從壞的一面看。\n10\t幸運\t漂亮、帥，有人緣。天之驕子/驕女，命帶富貴。助力多，遇到困難會有貴人。努力一分可以得到十分。自帶幸運星，容易發生好事。\t生命經驗值薄弱，不惜福，不珍惜。喜歡享受，沒有太大的受挫經驗。\n15\t惡魔\t最會媚惑，蠱惑人心。擅長人際關係，號召力強。精力旺盛（尤其晚上），愛講話。有偏財運，可以投機。容易取得世俗成功。\t夜行性動物。天生有優越感，覺得自己高人一等。慾望強烈，不滿足。棄道德，比較沒有道德，利益擺在道德之前。容易忽略內在精神，\n20\t審判\t霸氣，心臟很強。完美主義，非常自律，有自我管理能力。適合當職業軍人、教官、審查者。一板一眼。從商或從政能力強（男性）。\t會一直審判別人，從雞蛋裡挑骨頭。有強烈的自我優越意識，斤斤計較。主觀意識很強，只要求別人。女性命苦，太強太能忍。\n",
+  "stderr": "",
+  "execution_time_ms": 1598
+}

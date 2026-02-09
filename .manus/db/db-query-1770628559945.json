@@ -1,0 +1,40 @@
+{
+  "query": "SELECT id, name, SUBSTRING(positive_traits, 1, 80) as positive_preview, SUBSTRING(negative_traits, 1, 80) as negative_preview FROM tarot_cards ORDER BY id LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4GFzRbhPiYVZCss.3deedf4049ff --database j4VLg7dBq8DZmAm9gmNKgS --execute SELECT id, name, SUBSTRING(positive_traits, 1, 80) as positive_preview, SUBSTRING(negative_traits, 1, 80) as negative_preview FROM tarot_cards ORDER BY id LIMIT 5;",
+  "rows": [
+    {
+      "id": "0",
+      "name": "愚人",
+      "positive_preview": "憨厚耿直，誠懇實，相信人本善。",
+      "negative_preview": "容易相信人，易受騙，耳根子軟。"
+    },
+    {
+      "id": "1",
+      "name": "魔法師",
+      "positive_preview": "喜歡變化，活潑外向，反應快，聰明。",
+      "negative_preview": "情緒波動大，易善變，以貌取人，需多充實自己。"
+    },
+    {
+      "id": "2",
+      "name": "女祭師",
+      "positive_preview": "氣質脫俗，重精神生活，有智慧，有靈性，注重精神層面，很聰明，男性會比較女性化一點。",
+      "negative_preview": "完全主義，脆弱，易憂鬱及壓抑，與世隔絕，憤世嫉俗，淡泊名利。"
+    },
+    {
+      "id": "3",
+      "name": "女皇",
+      "positive_preview": "有群眾魅力，有身分地位，有貴氣，心胸寬大，帶財富權勢，主管階級多，娶這女生好，男生會較圓融。",
+      "negative_preview": "征服欲強，易揮霍感情和金錢，自戀。"
+    },
+    {
+      "id": "4",
+      "name": "國王",
+      "positive_preview": "行事果決，有領導才能，霸氣，絕對領導者，對事不對人，老來發。",
+      "negative_preview": "一意孤行，不易放下身段，自尊心強，脾氣不好，吃軟不吃硬。"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tpositive_preview\tnegative_preview\n0\t愚人\t憨厚耿直，誠懇實，相信人本善。\t容易相信人，易受騙，耳根子軟。\n1\t魔法師\t喜歡變化，活潑外向，反應快，聰明。\t情緒波動大，易善變，以貌取人，需多充實自己。\n2\t女祭師\t氣質脫俗，重精神生活，有智慧，有靈性，注重精神層面，很聰明，男性會比較女性化一點。\t完全主義，脆弱，易憂鬱及壓抑，與世隔絕，憤世嫉俗，淡泊名利。\n3\t女皇\t有群眾魅力，有身分地位，有貴氣，心胸寬大，帶財富權勢，主管階級多，娶這女生好，男生會較圓融。\t征服欲強，易揮霍感情和金錢，自戀。\n4\t國王\t行事果決，有領導才能，霸氣，絕對領導者，對事不對人，老來發。\t一意孤行，不易放下身段，自尊心強，脾氣不好，吃軟不吃硬。\n",
+  "stderr": "",
+  "execution_time_ms": 2816
+}
