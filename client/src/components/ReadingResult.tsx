@@ -139,7 +139,7 @@ export function ReadingResult({
       
       // 農曆流月心境
       const lunarBirthSum = lunarYear + lunarMonth + lunarDay;
-      const lunarMonthSum = lunarBirthSum + targetYear + lunarMonthValue;
+      const lunarMonthSum = lunarBirthSum + lunarYearValue + lunarMonthValue;
       const lunarDigitSum = lunarMonthSum.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
       let lunarMonthCard = lunarDigitSum;
       while (lunarMonthCard > 21) {
