@@ -47,6 +47,40 @@ export function ReadingResult({
   onCardClick, 
   allCards 
 }: ReadingResultProps) {
+  // 當前日期的農曆轉換
+  const today = new Date();
+  const todayYear = today.getFullYear();
+  const todayMonth = today.getMonth() + 1;
+  const todayDay = today.getDate();
+  
+  // 轉換當前日期為農曆
+  const todaySolar = Solar.fromYmd(todayYear, todayMonth, todayDay);
+  const todayLunar = todaySolar.getLunar();
+  const todayLunarYear = todayLunar.getYear();
+  const todayLunarMonth = todayLunar.getMonth();
+  const todayLunarDay = todayLunar.getDay();
+  
+  // 計算當前日期的流月牌和流日牌
+  const lunarBirthSum = lunarYear + lunarMonth + lunarDay;
+  
+  // 當前月份的流月牌（農曆）
+  const currentMonthSum = lunarBirthSum + todayLunarYear + todayLunarMonth;
+  let currentMonthDigitSum = currentMonthSum.toString().split('').map(Number).reduce((sum: number, digit: number) => sum + digit, 0);
+  while (currentMonthDigitSum > 21) {
+    currentMonthDigitSum = currentMonthDigitSum.toString().split('').map(Number).reduce((sum: number, digit: number) => sum + digit, 0);
+  }
+  
+  // 今天的流日牌（農曆）
+  const currentDaySum = lunarBirthSum + todayLunarYear + todayLunarMonth + todayLunarDay;
+  let currentDayDigitSum = currentDaySum.toString().split('').map(Number).reduce((sum: number, digit: number) => sum + digit, 0);
+  while (currentDayDigitSum > 21) {
+    currentDayDigitSum = currentDayDigitSum.toString().split('').map(Number).reduce((sum: number, digit: number) => sum + digit, 0);
+  }
+  
+  // 找到對應的牌卡
+  const currentMonthCard = allCards.find(c => c.id === currentMonthDigitSum);
+  const currentDayCard = allCards.find(c => c.id === currentDayDigitSum);
+  
   // 流年總表滾動容器的ref
   const multiYearScrollRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState("current");
@@ -611,32 +645,32 @@ export function ReadingResult({
                     )}
                     
                     {/* 流月心境 */}
-                    {lunarReadingData?.cards.month && (
+                    {currentMonthCard && (
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
                           <Moon className="w-4 h-4 text-accent" />
                           <h4 className="text-sm font-medium">流月心境</h4>
                         </div>
-                        <p className="text-xs text-muted-foreground">{lunarMonth}月份的心境重點</p>
+                        <p className="text-xs text-muted-foreground">{todayLunarYear}年{todayLunarMonth}月份的心境重點</p>
                         <TarotCard
-                          card={lunarReadingData.cards.month}
-                          onClick={() => onCardClick?.(lunarReadingData.cards.month!)}
+                          card={currentMonthCard}
+                          onClick={() => onCardClick?.(currentMonthCard)}
                           className="border-accent/30"
                         />
                       </div>
                     )}
                     
                     {/* 流日心境 */}
-                    {lunarReadingData?.cards.day && (
+                    {currentDayCard && (
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
                           <Eye className="w-4 h-4 text-accent" />
                           <h4 className="text-sm font-medium">流日心境</h4>
                         </div>
-                        <p className="text-xs text-muted-foreground">農曆今日({lunarMonth}/{lunarDay})的心境提示</p>
+                        <p className="text-xs text-muted-foreground">農曆今日({todayLunarYear}年{todayLunarMonth}/{todayLunarDay})的心境提示</p>
                         <TarotCard
-                          card={lunarReadingData.cards.day}
-                          onClick={() => onCardClick?.(lunarReadingData.cards.day!)}
+                          card={currentDayCard}
+                          onClick={() => onCardClick?.(currentDayCard)}
                           className="border-accent/30"
                         />
                       </div>
