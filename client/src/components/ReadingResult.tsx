@@ -199,6 +199,9 @@ export function ReadingResult({
       const lunarCard = allCards.find(c => c.id === lunarDayCard);
       days.push({
         day,
+        lunarYear: lunarYearValue,
+        lunarMonth: lunarMonthValue,
+        lunarDay: lunarDayValue,
         solarCardNumber: solarDayCard,
         solarCard,
         lunarCardNumber: lunarDayCard,
@@ -709,7 +712,7 @@ export function ReadingResult({
                             <Moon className="w-3 h-3 text-accent" />
                             <span className="text-[10px] text-muted-foreground">心境</span>
                           </div>
-                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-accent/10 font-bold text-accent text-xs mx-auto mb-1">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-50 font-bold text-orange-500 text-xs mx-auto mb-1">
                             {item.lunarCardNumber}
                           </div>
                           <div className="text-[10px] text-center line-clamp-2">
@@ -786,7 +789,7 @@ export function ReadingResult({
                                           }}
                                         >
                                           <div className="flex flex-col items-center gap-1">
-                                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-accent/10 font-bold text-accent text-sm">
+                                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-50 font-bold text-orange-500 text-sm">
                                               {monthItem.lunarCardNumber}
                                             </div>
                                             <div className="text-xs">{monthItem.lunarCard?.name || ""}</div>
@@ -834,7 +837,7 @@ export function ReadingResult({
                                                             </div>
                                                           </td>
                                                           <td className="border p-1.5 text-center">
-                                                            <div className="text-xs">農曆</div>
+                                                            <div className="text-xs">{dayItem.lunarYear}年{dayItem.lunarMonth}月{dayItem.lunarDay}日</div>
                                                           </td>
                                                           <td 
                                                             className="border p-1.5 text-center cursor-pointer hover:bg-accent/10"
@@ -844,7 +847,7 @@ export function ReadingResult({
                                                             }}
                                                           >
                                                             <div className="flex flex-col items-center gap-0.5">
-                                                              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-accent/10 font-bold text-accent text-xs">
+                                                              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-orange-50 font-bold text-orange-500 text-xs">
                                                                 {dayItem.lunarCardNumber}
                                                               </div>
                                                               <div className="text-[10px]">{dayItem.lunarCard?.name || ""}</div>
@@ -914,7 +917,7 @@ export function ReadingResult({
                           {item.lunarMonth}月{item.lunarDay}日 {item.isLeapMonth && <span className="text-xs text-accent ml-1">(閏)</span>}
                         </td>
                         <td className="border border-border p-2 text-center cursor-pointer hover:bg-accent/10" onClick={() => item.lunarCard && onCardClick?.(item.lunarCard)}>
-                          <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-accent/10 font-bold text-accent">
+                          <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-orange-50 font-bold text-orange-500">
                             {item.lunarCardNumber}
                           </div>
                         </td>
