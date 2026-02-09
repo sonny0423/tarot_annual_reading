@@ -600,6 +600,7 @@ export function ReadingResult({
                           card={cards.month}
                           onClick={() => onCardClick?.(cards.month!)}
                           className="border-primary/30"
+                          displayMode="annual"
                         />
                       </div>
                     )}
@@ -616,6 +617,7 @@ export function ReadingResult({
                           card={cards.day}
                           onClick={() => onCardClick?.(cards.day!)}
                           className="border-primary/30"
+                          displayMode="annual"
                         />
                       </div>
                     )}
@@ -656,6 +658,7 @@ export function ReadingResult({
                           card={currentMonthCard}
                           onClick={() => onCardClick?.(currentMonthCard)}
                           className="border-accent/30"
+                          displayMode="annual"
                         />
                       </div>
                     )}
@@ -672,6 +675,7 @@ export function ReadingResult({
                           card={currentDayCard}
                           onClick={() => onCardClick?.(currentDayCard)}
                           className="border-accent/30"
+                          displayMode="annual"
                         />
                       </div>
                     )}
