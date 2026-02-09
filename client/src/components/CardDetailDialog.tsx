@@ -107,26 +107,26 @@ export function CardDetailDialog({ card, open, onOpenChange }: CardDetailDialogP
 
           <Separator />
 
-          {/* 正位解讀 */}
+          {/* 正面運勢解讀 */}
           <section className="space-y-3">
             <div className="flex items-center gap-2">
               <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
                 <span className="text-xs text-primary-foreground font-bold">+</span>
               </div>
-              <h3 className="text-lg font-semibold">正位解讀</h3>
+              <h3 className="text-lg font-semibold">正面運勢解讀</h3>
             </div>
             <p className="text-foreground/80 leading-relaxed bg-gradient-to-br from-primary/5 to-transparent p-4 rounded-lg">
               {card.upright}
             </p>
           </section>
 
-          {/* 逆位解讀 */}
+          {/* 反面運勢解讀 */}
           <section className="space-y-3">
             <div className="flex items-center gap-2">
               <div className="w-5 h-5 rounded-full bg-muted flex items-center justify-center">
                 <span className="text-xs text-muted-foreground font-bold">-</span>
               </div>
-              <h3 className="text-lg font-semibold">逆位解讀</h3>
+              <h3 className="text-lg font-semibold">反面運勢解讀</h3>
             </div>
             <p className="text-foreground/70 leading-relaxed bg-gradient-to-br from-muted/30 to-transparent p-4 rounded-lg">
               {card.reversed}
