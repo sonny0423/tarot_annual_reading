@@ -90,24 +90,14 @@ export function TarotCard({ card, label, onClick, className = "", displayMode = 
           </>
         ) : (
           <>
-            <div className="space-y-2">
-              <h4 className="text-sm font-semibold text-primary flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                正位特質
-              </h4>
-              <p className="text-sm text-foreground/80 leading-relaxed">
-                {card.annualUpright || card.positiveTraits}
-              </p>
-            </div>
-
-            {card.annualReversed && (
+            {card.scriptAnalysis && (
               <div className="space-y-2">
-                <h4 className="text-sm font-semibold text-destructive flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-destructive" />
-                  逆位特質
+                <h4 className="text-sm font-semibold text-primary flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                  運勢劇本解析
                 </h4>
-                <p className="text-sm text-foreground/70 leading-relaxed">
-                  {card.annualReversed}
+                <p className="text-sm text-foreground/80 leading-relaxed">
+                  {card.scriptAnalysis}
                 </p>
               </div>
             )}

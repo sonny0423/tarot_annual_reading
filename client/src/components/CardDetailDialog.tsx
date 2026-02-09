@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Sparkles, TrendingUp, TrendingDown, BookOpen } from "lucide-react";
+import { Sparkles, TrendingUp, TrendingDown, BookOpen, Scroll } from "lucide-react";
 import type { TarotCard } from "../../../drizzle/schema";
 
 interface CardDetailDialogProps {
@@ -105,33 +105,22 @@ export function CardDetailDialog({ card, open, onOpenChange }: CardDetailDialogP
             </p>
           </section>
 
-          <Separator />
+          {card.scriptAnalysis && (
+            <>
+              <Separator />
 
-          {/* 正面運勢解讀 */}
-          <section className="space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                <span className="text-xs text-primary-foreground font-bold">+</span>
-              </div>
-              <h3 className="text-lg font-semibold">正面運勢解讀</h3>
-            </div>
-            <p className="text-foreground/80 leading-relaxed bg-gradient-to-br from-primary/5 to-transparent p-4 rounded-lg">
-              {card.upright}
-            </p>
-          </section>
-
-          {/* 反面運勢解讀 */}
-          <section className="space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="w-5 h-5 rounded-full bg-muted flex items-center justify-center">
-                <span className="text-xs text-muted-foreground font-bold">-</span>
-              </div>
-              <h3 className="text-lg font-semibold">反面運勢解讀</h3>
-            </div>
-            <p className="text-foreground/70 leading-relaxed bg-gradient-to-br from-muted/30 to-transparent p-4 rounded-lg">
-              {card.reversed}
-            </p>
-          </section>
+              {/* 運勢劇本解析 */}
+              <section className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Scroll className="w-5 h-5 text-primary" />
+                  <h3 className="text-lg font-semibold">運勢劇本解析</h3>
+                </div>
+                <p className="text-foreground/80 leading-relaxed bg-gradient-to-br from-primary/5 to-transparent p-4 rounded-lg border border-primary/20">
+                  {card.scriptAnalysis}
+                </p>
+              </section>
+            </>
+          )}
         </div>
       </DialogContent>
     </Dialog>

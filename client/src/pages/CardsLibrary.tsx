@@ -45,7 +45,7 @@ export default function CardsLibrary() {
             22張大阿爾克那牌卡
           </h2>
           <p className="text-muted-foreground">
-            探索每張塔羅牌的深層含義、正反面運勢解讀與特質分析
+            探索每張塔羅牌的深層含義、運勢劇本解析與特質分析
           </p>
         </div>
 

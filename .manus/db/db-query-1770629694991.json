@@ -1,0 +1,35 @@
+{
+  "query": "SELECT id, name, SUBSTRING(script_analysis, 1, 80) as script_preview FROM tarot_cards WHERE id IN (0, 5, 10, 15, 20) ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4GFzRbhPiYVZCss.3deedf4049ff --database j4VLg7dBq8DZmAm9gmNKgS --execute SELECT id, name, SUBSTRING(script_analysis, 1, 80) as script_preview FROM tarot_cards WHERE id IN (0, 5, 10, 15, 20) ORDER BY id;",
+  "rows": [
+    {
+      "id": "0",
+      "name": "愚人",
+      "script_preview": "不存在流年。資料明確指出，這個世代的人成年出社會後，不會遇到0的流年。因為「你就是那個愚人」，這張牌代表的是你的本質，而非流年運勢。"
+    },
+    {
+      "id": "5",
+      "name": "教宗",
+      "script_preview": "這一年通常是因為「有事」才會想心靈成長。會面臨「入世」（找到三觀一致的團隊/成為帶領者）或「出世」（覺得人很煩/遠離人群）的選擇。容易遇到貴人或神棍，取決於你的"
+    },
+    {
+      "id": "10",
+      "name": "幸運",
+      "script_preview": "感覺「時間到了」，會很想做些什麼（創業、結婚、離婚等）。資源會主動靠近，讓你過度樂觀。這是一把雙面刃，若德不配位（實力不足卻許大願），隔年（11）會摔得很慘。也"
+    },
+    {
+      "id": "15",
+      "name": "惡魔",
+      "script_preview": "世俗上的好牌，心靈上的壞牌。容易獲得金錢地位，但代價可能是健康、陪伴家人的時間或良心。會面臨酒色財氣的考驗，或被人情/道德綁架。切記不要拿壽命去換財富。"
+    },
+    {
+      "id": "20",
+      "name": "審判",
+      "script_preview": "清算的時刻。認識你的人（包含看不見的）都會來找你。做好事上天堂，做壞事下地獄。老年人遇到可能代表受到召喚（壽命議題）。"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tscript_preview\n0\t愚人\t不存在流年。資料明確指出，這個世代的人成年出社會後，不會遇到0的流年。因為「你就是那個愚人」，這張牌代表的是你的本質，而非流年運勢。\n5\t教宗\t這一年通常是因為「有事」才會想心靈成長。會面臨「入世」（找到三觀一致的團隊/成為帶領者）或「出世」（覺得人很煩/遠離人群）的選擇。容易遇到貴人或神棍，取決於你的\n10\t幸運\t感覺「時間到了」，會很想做些什麼（創業、結婚、離婚等）。資源會主動靠近，讓你過度樂觀。這是一把雙面刃，若德不配位（實力不足卻許大願），隔年（11）會摔得很慘。也\n15\t惡魔\t世俗上的好牌，心靈上的壞牌。容易獲得金錢地位，但代價可能是健康、陪伴家人的時間或良心。會面臨酒色財氣的考驗，或被人情/道德綁架。切記不要拿壽命去換財富。\n20\t審判\t清算的時刻。認識你的人（包含看不見的）都會來找你。做好事上天堂，做壞事下地獄。老年人遇到可能代表受到召喚（壽命議題）。\n",
+  "stderr": "",
+  "execution_time_ms": 1500
+}

@@ -29,8 +29,7 @@ export const tarotCards = mysqlTable("tarot_cards", {
   meaning: text("meaning").notNull(),
   upright: text("upright").notNull(),
   reversed: text("reversed").notNull(),
-  annualUpright: text("annual_upright"),
-  annualReversed: text("annual_reversed"),
+  scriptAnalysis: text("script_analysis"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
