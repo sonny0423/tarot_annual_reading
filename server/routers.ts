@@ -80,20 +80,18 @@ export const appRouter = router({
           
           // 計算國曆流日牌
           const solarDaySum = solarMonthSum + day;
-          const solarDigitSum = solarDaySum.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
-          let solarDayCard = solarDigitSum;
-          if (solarDigitSum >= 22) {
-            solarDayCard = solarDigitSum - 21;
+          let solarDayCard = solarDaySum.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
+          while (solarDayCard > 21) {
+            solarDayCard = solarDayCard.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
           }
           
           // 計算農曆流日牌
           const lunarBirthSum = lunarBirthYear + lunarBirthMonth + lunarBirthDay;
           const lunarMonthSum = lunarBirthSum + lunarDate.year + lunarDate.month;
           const lunarDaySum = lunarMonthSum + lunarDate.day;
-          const lunarDigitSum = lunarDaySum.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
-          let lunarDayCard = lunarDigitSum;
-          if (lunarDigitSum >= 22) {
-            lunarDayCard = lunarDigitSum - 21;
+          let lunarDayCard = lunarDaySum.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
+          while (lunarDayCard > 21) {
+            lunarDayCard = lunarDayCard.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
           }
           
           days.push({
