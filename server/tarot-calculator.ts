@@ -261,10 +261,12 @@ export function calculateFullReading(
   const benefactorOuter = calculateBenefactorOuterCard(outerCard);
   const benefactorInner = calculateBenefactorInnerCard(innerCard);
 
-  // 國曆流年運勢
+  // 國曆流年運勢（使用判斷後的年份）
   const yearCard = calculateYearCard(birthMonth, birthDay, year);
-  const monthCard = calculateMonthCard(birthYear, birthMonth, birthDay, year, month);
-  const dayCard = calculateDayCard(birthYear, birthMonth, birthDay, year, month, day);
+  
+  // 流月和流日使用當前的年月日，不受生日判斷影響
+  const monthCard = calculateMonthCard(birthYear, birthMonth, birthDay, currentYear, currentMonth);
+  const dayCard = calculateDayCard(birthYear, birthMonth, birthDay, currentYear, currentMonth, currentDay);
 
   // 農曆流年心境（也需要判斷農曆生日是否已過）
   let lunarYearForCalculation = currentYear;
@@ -277,8 +279,10 @@ export function calculateFullReading(
     lunarYearForCalculation = targetYear;
   }
   const lunarYearCard = calculateYearCard(lunarBirthMonth, lunarBirthDay, lunarYearForCalculation);
-  const lunarMonthCard = calculateMonthCard(lunarBirthYear, lunarBirthMonth, lunarBirthDay, year, month);
-  const lunarDayCard = calculateDayCard(lunarBirthYear, lunarBirthMonth, lunarBirthDay, year, month, day);
+  
+  // 農曆流月和流日也使用當前的年月日
+  const lunarMonthCard = calculateMonthCard(lunarBirthYear, lunarBirthMonth, lunarBirthDay, currentYear, currentMonth);
+  const lunarDayCard = calculateDayCard(lunarBirthYear, lunarBirthMonth, lunarBirthDay, currentYear, currentMonth, currentDay);
 
   return {
     coreCard,
