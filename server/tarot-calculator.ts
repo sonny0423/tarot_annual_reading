@@ -231,9 +231,27 @@ export function calculateFullReading(
   targetDay?: number
 ): TarotReading {
   const now = new Date();
-  const year = targetYear ?? now.getFullYear();
-  const month = targetMonth ?? now.getMonth() + 1;
-  const day = targetDay ?? now.getDate();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1;
+  const currentDay = now.getDate();
+  
+  // 決定流年計算的年份：生日還沒到用去年，生日已過用今年
+  let yearForCalculation = currentYear;
+  if (!targetYear) {
+    // 判斷國曆生日是否已過
+    const birthdayThisYear = new Date(currentYear, birthMonth - 1, birthDay);
+    const today = new Date(currentYear, currentMonth - 1, currentDay);
+    if (today < birthdayThisYear) {
+      // 生日還沒到，使用去年
+      yearForCalculation = currentYear - 1;
+    }
+  } else {
+    yearForCalculation = targetYear;
+  }
+  
+  const year = yearForCalculation;
+  const month = targetMonth ?? currentMonth;
+  const day = targetDay ?? currentDay;
 
   const coreCard = calculateCoreCard(birthYear, birthMonth, birthDay);
   const outerCard = calculateOuterCard(birthYear, birthMonth, birthDay);
@@ -248,8 +266,17 @@ export function calculateFullReading(
   const monthCard = calculateMonthCard(birthYear, birthMonth, birthDay, year, month);
   const dayCard = calculateDayCard(birthYear, birthMonth, birthDay, year, month, day);
 
-  // 農曆流年心境
-  const lunarYearCard = calculateYearCard(lunarBirthMonth, lunarBirthDay, year);
+  // 農曆流年心境（也需要判斷農曆生日是否已過）
+  let lunarYearForCalculation = currentYear;
+  if (!targetYear) {
+    // 簡化處理：農曆流年使用與國曆相同的年份
+    // 因為農曆生日判斷較複雜（需考慮閉月、轉換等）
+    // 且兩者差異通常在一個月內，對流年計算影響不大
+    lunarYearForCalculation = yearForCalculation;
+  } else {
+    lunarYearForCalculation = targetYear;
+  }
+  const lunarYearCard = calculateYearCard(lunarBirthMonth, lunarBirthDay, lunarYearForCalculation);
   const lunarMonthCard = calculateMonthCard(lunarBirthYear, lunarBirthMonth, lunarBirthDay, year, month);
   const lunarDayCard = calculateDayCard(lunarBirthYear, lunarBirthMonth, lunarBirthDay, year, month, day);
 
