@@ -574,12 +574,17 @@ export function ReadingResult({
                   <CardContent className="space-y-6">
                     {/* 流年運勢 */}
                     {cards.year && (
-                      <TarotCard
-                        card={cards.year}
-                        onClick={() => onCardClick?.(cards.year!)}
-                        className="border-primary/40"
-                        displayMode="annual"
-                      />
+                      <div className="space-y-2">
+                        <p className="text-xs text-muted-foreground bg-muted/50 p-2 rounded-md">
+                          流年計算會根據生日是否已過決定年份：生日還沒到使用去年，生日已過使用今年
+                        </p>
+                        <TarotCard
+                          card={cards.year}
+                          onClick={() => onCardClick?.(cards.year!)}
+                          className="border-primary/40"
+                          displayMode="annual"
+                        />
+                      </div>
                     )}
                     
                     {/* 流月運勢 */}
@@ -632,12 +637,17 @@ export function ReadingResult({
                   <CardContent className="space-y-6">
                     {/* 流年心境 */}
                     {cards.lunarYear && (
-                      <TarotCard
-                        card={cards.lunarYear}
-                        onClick={() => onCardClick?.(cards.lunarYear!)}
-                        className="border-accent/40"
-                        displayMode="annual"
-                      />
+                      <div className="space-y-2">
+                        <p className="text-xs text-muted-foreground bg-muted/50 p-2 rounded-md">
+                          流年計算會根據生日是否已過決定年份：生日還沒到使用去年，生日已過使用今年
+                        </p>
+                        <TarotCard
+                          card={cards.lunarYear}
+                          onClick={() => onCardClick?.(cards.lunarYear!)}
+                          className="border-accent/40"
+                          displayMode="annual"
+                        />
+                      </div>
                     )}
                     
                     {/* 流月心境 */}
