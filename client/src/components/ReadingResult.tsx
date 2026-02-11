@@ -569,7 +569,7 @@ export function ReadingResult({
                       <Sun className="w-5 h-5 text-primary" />
                       <CardTitle className="font-serif">運勢</CardTitle>
                     </div>
-                    <CardDescription>國曆 · {currentYear}年整年度的運勢主題</CardDescription>
+                    <CardDescription>國曆 · 本年度的運勢主題</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {/* 流年運勢 */}
@@ -627,7 +627,7 @@ export function ReadingResult({
                       <Moon className="w-5 h-5 text-accent" />
                       <CardTitle className="font-serif">心境</CardTitle>
                     </div>
-                    <CardDescription>農曆 · {currentYear}年整年度的心境主題</CardDescription>
+                    <CardDescription>農曆 · 本年度的心境主題</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {/* 流年心境 */}
