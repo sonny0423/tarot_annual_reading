@@ -159,11 +159,8 @@ export function calculateMonthCard(
   // D10 = 將D11各位數字相加
   const digitSum = sumDigits(monthSum);
   
-  // E11 = IF(D10<22,D10,D10-21)
-  if (digitSum < 22) {
-    return digitSum;
-  }
-  return digitSum - 21;
+  // E11 = 化簡到<=21
+  return reduceToTarotNumber(digitSum);
 }
 
 /**
@@ -190,11 +187,8 @@ export function calculateDayCard(
   // D12 = 將D13各位數字相加
   const digitSum = sumDigits(daySum);
   
-  // E13 = IF(D12<22,D12,D12-21)
-  if (digitSum < 22) {
-    return digitSum;
-  }
-  return digitSum - 21;
+  // E13 = 化簡到<=21
+  return reduceToTarotNumber(digitSum);
 }
 
 /**
