@@ -394,4 +394,10 @@
 - [x] 將「心境」標題改為「流年心境」
 - [x] 將說明文字合併到CardDescription中
 - [x] 測試驗證顯示效果
+- [x] 建立checkpoint
+
+## 調整CardDescription文字格式
+- [x] 將CardDescription文字分成兩行顯示（在「主題」後換行）
+- [x] 調整字體大小為13px
+- [x] 測試驗證顯示效果
 - [ ] 建立checkpoint

@@ -569,7 +569,10 @@ export function ReadingResult({
                       <Sun className="w-5 h-5 text-primary" />
                       <CardTitle className="font-serif">流年運勢</CardTitle>
                     </div>
-                    <CardDescription>國曆 · 本年度的運勢主題，流年計算會根據生日是否已過決定年份：生日還沒到使用去年，生日已過使用今年</CardDescription>
+                    <CardDescription className="text-[13px] leading-relaxed">
+                      國曆 · 本年度的運勢主題<br />
+                      流年計算會根據生日是否已過決定年份：生日還沒到使用去年，生日已過使用今年
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {/* 流年運勢 */}
@@ -627,7 +630,10 @@ export function ReadingResult({
                       <Moon className="w-5 h-5 text-accent" />
                       <CardTitle className="font-serif">流年心境</CardTitle>
                     </div>
-                    <CardDescription>農曆 · 本年度的心境主題，流年計算會根據生日是否已過決定年份：生日還沒到使用去年，生日已過使用今年</CardDescription>
+                    <CardDescription className="text-[13px] leading-relaxed">
+                      農曆 · 本年度的心境主題<br />
+                      流年計算會根據生日是否已過決定年份：生日還沒到使用去年，生日已過使用今年
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {/* 流年心境 */}
