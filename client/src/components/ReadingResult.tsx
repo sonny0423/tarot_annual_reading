@@ -567,24 +567,19 @@ export function ReadingResult({
                   <CardHeader>
                     <div className="flex items-center gap-2 mb-2">
                       <Sun className="w-5 h-5 text-primary" />
-                      <CardTitle className="font-serif">運勢</CardTitle>
+                      <CardTitle className="font-serif">流年運勢</CardTitle>
                     </div>
-                    <CardDescription>國曆 · 本年度的運勢主題</CardDescription>
+                    <CardDescription>國曆 · 本年度的運勢主題，流年計算會根據生日是否已過決定年份：生日還沒到使用去年，生日已過使用今年</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {/* 流年運勢 */}
                     {cards.year && (
-                      <div className="space-y-2">
-                        <p className="text-xs text-muted-foreground bg-muted/50 p-2 rounded-md">
-                          流年計算會根據生日是否已過決定年份：生日還沒到使用去年，生日已過使用今年
-                        </p>
-                        <TarotCard
-                          card={cards.year}
-                          onClick={() => onCardClick?.(cards.year!)}
-                          className="border-primary/40"
-                          displayMode="annual"
-                        />
-                      </div>
+                      <TarotCard
+                        card={cards.year}
+                        onClick={() => onCardClick?.(cards.year!)}
+                        className="border-primary/40"
+                        displayMode="annual"
+                      />
                     )}
                     
                     {/* 流月運勢 */}
@@ -630,24 +625,19 @@ export function ReadingResult({
                   <CardHeader>
                     <div className="flex items-center gap-2 mb-2">
                       <Moon className="w-5 h-5 text-accent" />
-                      <CardTitle className="font-serif">心境</CardTitle>
+                      <CardTitle className="font-serif">流年心境</CardTitle>
                     </div>
-                    <CardDescription>農曆 · 本年度的心境主題</CardDescription>
+                    <CardDescription>農曆 · 本年度的心境主題，流年計算會根據生日是否已過決定年份：生日還沒到使用去年，生日已過使用今年</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {/* 流年心境 */}
                     {cards.lunarYear && (
-                      <div className="space-y-2">
-                        <p className="text-xs text-muted-foreground bg-muted/50 p-2 rounded-md">
-                          流年計算會根據生日是否已過決定年份：生日還沒到使用去年，生日已過使用今年
-                        </p>
-                        <TarotCard
-                          card={cards.lunarYear}
-                          onClick={() => onCardClick?.(cards.lunarYear!)}
-                          className="border-accent/40"
-                          displayMode="annual"
-                        />
-                      </div>
+                      <TarotCard
+                        card={cards.lunarYear}
+                        onClick={() => onCardClick?.(cards.lunarYear!)}
+                        className="border-accent/40"
+                        displayMode="annual"
+                      />
                     )}
                     
                     {/* 流月心境 */}
