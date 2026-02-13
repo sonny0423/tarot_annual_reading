@@ -13,19 +13,17 @@ export function FlowYearCycleChart({
 }: FlowYearCycleChartProps) {
   const cycleData = useMemo(() => {
     const currentYear = currentDate.getFullYear();
-    const currentMonth = currentDate.getMonth() + 1;
-    const currentDay = currentDate.getDate();
 
     // 計算今年、去年、明年的生日
     const thisYearBirthday = new Date(currentYear, birthMonth - 1, birthDay);
     const lastYearBirthday = new Date(currentYear - 1, birthMonth - 1, birthDay);
     const nextYearBirthday = new Date(currentYear + 1, birthMonth - 1, birthDay);
 
-    // 計算流年生理期（生日前4個月）
+    // 計算流年生理期（今年生日前4個月）
     const transitionStart = new Date(thisYearBirthday);
     transitionStart.setMonth(transitionStart.getMonth() - 4);
 
-    // 計算流年高峰期（生日後6個月）
+    // 計算流年高峰期（今年生日後6個月）
     const peakDate = new Date(thisYearBirthday);
     peakDate.setMonth(peakDate.getMonth() + 6);
 
@@ -35,7 +33,7 @@ export function FlowYearCycleChart({
     const stormEnd = new Date(peakDate);
     stormEnd.setMonth(stormEnd.getMonth() + 2);
 
-    // 計算當前日期在週期中的位置（0-1之間）
+    // 計算當前日期在整個週期中的位置（0-1之間）
     const totalDays = (nextYearBirthday.getTime() - lastYearBirthday.getTime()) / (1000 * 60 * 60 * 24);
     const daysSinceLastBirthday = (currentDate.getTime() - lastYearBirthday.getTime()) / (1000 * 60 * 60 * 24);
     const currentPosition = daysSinceLastBirthday / totalDays;
@@ -75,24 +73,45 @@ export function FlowYearCycleChart({
   }, [birthMonth, birthDay, currentDate]);
 
   // SVG 尺寸
-  const width = 800;
-  const height = 200;
-  const padding = 40;
+  const width = 1000;
+  const height = 300;
+  const padding = 50;
 
-  // 弧線參數
-  const arcWidth = width - padding * 2;
-  const arcHeight = 120;
-  const centerY = height - 40;
+  // 兩個弧線的參數
+  const arcWidth = (width - padding * 2) / 2; // 每個弧線佔一半寬度
+  const arcHeight = 150;
+  const baseY = height - 60;
 
-  // 將位置（0-1）轉換為 SVG X 座標
-  const positionToX = (position: number) => padding + position * arcWidth;
+  // 第一個弧線：去年生日到今年生日（0-0.5）
+  const arc1StartX = padding;
+  const arc1EndX = padding + arcWidth;
+  const arc1ControlX = arc1StartX + arcWidth / 2;
+  const arc1ControlY = baseY - arcHeight;
 
-  // 計算弧線上的 Y 座標（使用拋物線）
-  const positionToY = (position: number) => {
-    // 使用二次函數創建弧線：y = -4h(x-0.5)^2 + centerY - h
-    const normalizedX = position; // 0 到 1
-    const h = arcHeight;
-    return centerY - h * (1 - 4 * Math.pow(normalizedX - 0.5, 2));
+  // 第二個弧線：今年生日到明年生日（0.5-1）
+  const arc2StartX = arc1EndX;
+  const arc2EndX = width - padding;
+  const arc2ControlX = arc2StartX + arcWidth / 2;
+  const arc2ControlY = baseY - arcHeight;
+
+  // 計算貝塞爾曲線上的點
+  const getBezierPoint = (t: number, p0: [number, number], p1: [number, number], p2: [number, number]): [number, number] => {
+    const x = Math.pow(1 - t, 2) * p0[0] + 2 * (1 - t) * t * p1[0] + Math.pow(t, 2) * p2[0];
+    const y = Math.pow(1 - t, 2) * p0[1] + 2 * (1 - t) * t * p1[1] + Math.pow(t, 2) * p2[1];
+    return [x, y];
+  };
+
+  // 將整體位置（0-1）轉換為具體座標
+  const getPositionCoordinates = (position: number): [number, number] => {
+    if (position <= 0.5) {
+      // 在第一個弧線上
+      const t = position * 2; // 將 0-0.5 映射到 0-1
+      return getBezierPoint(t, [arc1StartX, baseY], [arc1ControlX, arc1ControlY], [arc1EndX, baseY]);
+    } else {
+      // 在第二個弧線上
+      const t = (position - 0.5) * 2; // 將 0.5-1 映射到 0-1
+      return getBezierPoint(t, [arc2StartX, baseY], [arc2ControlX, arc2ControlY], [arc2EndX, baseY]);
+    }
   };
 
   // 生成弧線路徑
@@ -101,35 +120,36 @@ export function FlowYearCycleChart({
     const steps = 50;
     for (let i = 0; i <= steps; i++) {
       const pos = startPos + (endPos - startPos) * (i / steps);
-      const x = positionToX(pos);
-      const y = positionToY(pos);
+      const [x, y] = getPositionCoordinates(pos);
       points.push(i === 0 ? `M ${x} ${y}` : `L ${x} ${y}`);
     }
     return points.join(" ");
   };
 
-  // 主弧線路徑
-  const mainArcPath = generateArcPath(0, 1);
+  // 第一個弧線路徑（去年生日到今年生日）
+  const arc1Path = generateArcPath(0, 0.5);
 
-  // 流年生理期區域路徑（生日前4個月到生日）
+  // 第二個弧線路徑（今年生日到明年生日）
+  const arc2Path = generateArcPath(0.5, 1);
+
+  // 流年生理期區域路徑（今年生日前4個月到今年生日，在第一個弧線上）
   const transitionAreaPath = `
     ${generateArcPath(cycleData.transitionPosition, 0.5)}
-    L ${positionToX(0.5)} ${centerY}
-    L ${positionToX(cycleData.transitionPosition)} ${centerY}
+    L ${arc1EndX} ${baseY}
+    L ${getPositionCoordinates(cycleData.transitionPosition)[0]} ${baseY}
     Z
   `;
 
-  // 流年高峰期區域路徑（生日後6個月±2個月）
+  // 流年高峰期區域路徑（今年生日後6個月±2個月，在第二個弧線上）
   const peakAreaPath = `
     ${generateArcPath(cycleData.stormStartPosition, cycleData.stormEndPosition)}
-    L ${positionToX(cycleData.stormEndPosition)} ${centerY}
-    L ${positionToX(cycleData.stormStartPosition)} ${centerY}
+    L ${getPositionCoordinates(cycleData.stormEndPosition)[0]} ${baseY}
+    L ${getPositionCoordinates(cycleData.stormStartPosition)[0]} ${baseY}
     Z
   `;
 
   // 當前位置的座標
-  const currentX = positionToX(cycleData.currentPosition);
-  const currentY = positionToY(cycleData.currentPosition);
+  const [currentX, currentY] = getPositionCoordinates(cycleData.currentPosition);
 
   // 階段說明文字
   const phaseText = {
@@ -143,6 +163,19 @@ export function FlowYearCycleChart({
     peak: "#eab308",
     normal: "#8b5cf6",
   }[cycleData.currentPhase];
+
+  // 定義斜線填充圖案
+  const redStripesPattern = (
+    <pattern id="redStripes" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="8" stroke="#ef4444" strokeWidth="3" />
+    </pattern>
+  );
+
+  const yellowStripesPattern = (
+    <pattern id="yellowStripes" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="8" stroke="#eab308" strokeWidth="3" />
+    </pattern>
+  );
 
   return (
     <div className="w-full bg-white/50 rounded-lg p-6 mb-6">
@@ -167,25 +200,39 @@ export function FlowYearCycleChart({
         viewBox={`0 0 ${width} ${height}`}
         className="overflow-visible"
       >
-        {/* 流年生理期區域（紅色） */}
+        <defs>
+          {redStripesPattern}
+          {yellowStripesPattern}
+        </defs>
+
+        {/* 流年生理期區域（紅色，在第一個弧線上） */}
         <path
           d={transitionAreaPath}
-          fill="#fecaca"
-          fillOpacity="0.6"
+          fill="url(#redStripes)"
+          fillOpacity="0.3"
           stroke="none"
         />
 
-        {/* 流年高峰期區域（黃色） */}
+        {/* 流年高峰期區域（黃色，在第二個弧線上） */}
         <path
           d={peakAreaPath}
-          fill="#fef08a"
-          fillOpacity="0.6"
+          fill="url(#yellowStripes)"
+          fillOpacity="0.3"
           stroke="none"
         />
 
-        {/* 主弧線 */}
+        {/* 第一個弧線（去年生日到今年生日） */}
         <path
-          d={mainArcPath}
+          d={arc1Path}
+          fill="none"
+          stroke="#9333ea"
+          strokeWidth="3"
+          strokeLinecap="round"
+        />
+
+        {/* 第二個弧線（今年生日到明年生日） */}
+        <path
+          d={arc2Path}
           fill="none"
           stroke="#9333ea"
           strokeWidth="3"
@@ -195,16 +242,16 @@ export function FlowYearCycleChart({
         {/* 去年生日標記 */}
         <g>
           <line
-            x1={positionToX(0)}
-            y1={centerY}
-            x2={positionToX(0)}
-            y2={centerY + 20}
+            x1={arc1StartX}
+            y1={baseY}
+            x2={arc1StartX}
+            y2={baseY + 25}
             stroke="#6b7280"
             strokeWidth="2"
           />
           <text
-            x={positionToX(0)}
-            y={centerY + 35}
+            x={arc1StartX}
+            y={baseY + 40}
             textAnchor="middle"
             className="text-xs fill-gray-600"
           >
@@ -212,19 +259,27 @@ export function FlowYearCycleChart({
           </text>
         </g>
 
-        {/* 今年生日標記 */}
+        {/* 今年生日標記（兩個弧線的連接點） */}
         <g>
+          <circle
+            cx={arc1EndX}
+            cy={baseY}
+            r="6"
+            fill="#9333ea"
+            stroke="white"
+            strokeWidth="2"
+          />
           <line
-            x1={positionToX(0.5)}
-            y1={positionToY(0.5)}
-            x2={positionToX(0.5)}
-            y2={centerY + 20}
+            x1={arc1EndX}
+            y1={baseY}
+            x2={arc1EndX}
+            y2={baseY + 25}
             stroke="#9333ea"
             strokeWidth="3"
           />
           <text
-            x={positionToX(0.5)}
-            y={centerY + 35}
+            x={arc1EndX}
+            y={baseY + 40}
             textAnchor="middle"
             className="text-sm font-semibold fill-purple-900"
           >
@@ -235,16 +290,16 @@ export function FlowYearCycleChart({
         {/* 明年生日標記 */}
         <g>
           <line
-            x1={positionToX(1)}
-            y1={centerY}
-            x2={positionToX(1)}
-            y2={centerY + 20}
+            x1={arc2EndX}
+            y1={baseY}
+            x2={arc2EndX}
+            y2={baseY + 25}
             stroke="#6b7280"
             strokeWidth="2"
           />
           <text
-            x={positionToX(1)}
-            y={centerY + 35}
+            x={arc2EndX}
+            y={baseY + 40}
             textAnchor="middle"
             className="text-xs fill-gray-600"
           >
