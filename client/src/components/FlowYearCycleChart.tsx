@@ -151,6 +151,13 @@ export function FlowYearCycleChart({
   // 當前位置的座標
   const [currentX, currentY] = getPositionCoordinates(cycleData.currentPosition);
 
+  // 格式化日期為 MM/DD
+  const formatDate = (date: Date) => {
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    return `${month}/${day}`;
+  };
+
   // 階段說明文字
   const phaseText = {
     transition: "流年生理期（醞釀期）",
@@ -253,9 +260,17 @@ export function FlowYearCycleChart({
             x={arc1StartX}
             y={baseY + 40}
             textAnchor="middle"
-            className="text-xs fill-gray-600"
+            className="text-xs fill-gray-600 font-medium"
           >
             去年生日
+          </text>
+          <text
+            x={arc1StartX}
+            y={baseY + 52}
+            textAnchor="middle"
+            className="text-xs fill-gray-500"
+          >
+            {formatDate(cycleData.lastYearBirthday)}
           </text>
         </g>
 
@@ -285,6 +300,14 @@ export function FlowYearCycleChart({
           >
             今年生日
           </text>
+          <text
+            x={arc1EndX}
+            y={baseY + 54}
+            textAnchor="middle"
+            className="text-xs fill-purple-700 font-medium"
+          >
+            {formatDate(cycleData.thisYearBirthday)}
+          </text>
         </g>
 
         {/* 明年生日標記 */}
@@ -301,10 +324,161 @@ export function FlowYearCycleChart({
             x={arc2EndX}
             y={baseY + 40}
             textAnchor="middle"
-            className="text-xs fill-gray-600"
+            className="text-xs fill-gray-600 font-medium"
           >
             明年生日
           </text>
+          <text
+            x={arc2EndX}
+            y={baseY + 52}
+            textAnchor="middle"
+            className="text-xs fill-gray-500"
+          >
+            {formatDate(cycleData.nextYearBirthday)}
+          </text>
+        </g>
+
+        {/* 流年生理期起始標記 */}
+        <g>
+          {(() => {
+            const [transX, transY] = getPositionCoordinates(cycleData.transitionPosition);
+            return (
+              <>
+                <circle
+                  cx={transX}
+                  cy={transY}
+                  r="4"
+                  fill="#ef4444"
+                  stroke="white"
+                  strokeWidth="1.5"
+                />
+                <line
+                  x1={transX}
+                  y1={transY}
+                  x2={transX}
+                  y2={transY - 20}
+                  stroke="#ef4444"
+                  strokeWidth="1.5"
+                  strokeDasharray="3 2"
+                />
+                <text
+                  x={transX}
+                  y={transY - 25}
+                  textAnchor="middle"
+                  className="text-xs fill-red-600 font-medium"
+                >
+                  生理期起始
+                </text>
+                <text
+                  x={transX}
+                  y={transY - 13}
+                  textAnchor="middle"
+                  className="text-xs fill-red-500"
+                >
+                  {formatDate(cycleData.transitionStart)}
+                </text>
+              </>
+            );
+          })()}
+        </g>
+
+        {/* 流年高峰期標記（前2個月） */}
+        <g>
+          {(() => {
+            const [stormStartX, stormStartY] = getPositionCoordinates(cycleData.stormStartPosition);
+            return (
+              <>
+                <circle
+                  cx={stormStartX}
+                  cy={stormStartY}
+                  r="3"
+                  fill="#eab308"
+                  stroke="white"
+                  strokeWidth="1.5"
+                />
+                <text
+                  x={stormStartX}
+                  y={stormStartY + 18}
+                  textAnchor="middle"
+                  className="text-xs fill-yellow-600"
+                >
+                  {formatDate(cycleData.stormStart)}
+                </text>
+              </>
+            );
+          })()}
+        </g>
+
+        {/* 流年高峰期最高峰標記（生日後6個月） */}
+        <g>
+          {(() => {
+            const peakPosition = 0.5 + (6 / 12) * 0.5; // 今年生日後6個月
+            const [peakX, peakY] = getPositionCoordinates(peakPosition);
+            return (
+              <>
+                <circle
+                  cx={peakX}
+                  cy={peakY}
+                  r="5"
+                  fill="#eab308"
+                  stroke="white"
+                  strokeWidth="2"
+                />
+                <line
+                  x1={peakX}
+                  y1={peakY}
+                  x2={peakX}
+                  y2={peakY - 25}
+                  stroke="#eab308"
+                  strokeWidth="2"
+                  strokeDasharray="3 2"
+                />
+                <text
+                  x={peakX}
+                  y={peakY - 30}
+                  textAnchor="middle"
+                  className="text-xs fill-yellow-700 font-semibold"
+                >
+                  高峰期最高峰
+                </text>
+                <text
+                  x={peakX}
+                  y={peakY - 18}
+                  textAnchor="middle"
+                  className="text-xs fill-yellow-600"
+                >
+                  {formatDate(cycleData.peakDate)}
+                </text>
+              </>
+            );
+          })()}
+        </g>
+
+        {/* 流年高峰期標記（後2個月） */}
+        <g>
+          {(() => {
+            const [stormEndX, stormEndY] = getPositionCoordinates(cycleData.stormEndPosition);
+            return (
+              <>
+                <circle
+                  cx={stormEndX}
+                  cy={stormEndY}
+                  r="3"
+                  fill="#eab308"
+                  stroke="white"
+                  strokeWidth="1.5"
+                />
+                <text
+                  x={stormEndX}
+                  y={stormEndY + 18}
+                  textAnchor="middle"
+                  className="text-xs fill-yellow-600"
+                >
+                  {formatDate(cycleData.stormEnd)}
+                </text>
+              </>
+            );
+          })()}
         </g>
 
         {/* 當前日期標記 */}
@@ -321,19 +495,28 @@ export function FlowYearCycleChart({
             x1={currentX}
             y1={currentY}
             x2={currentX}
-            y2={currentY - 30}
+            y2={currentY - 35}
             stroke={phaseColor}
             strokeWidth="2"
             strokeDasharray="4 2"
           />
           <text
             x={currentX}
-            y={currentY - 35}
+            y={currentY - 40}
             textAnchor="middle"
             className="text-xs font-semibold"
             fill={phaseColor}
           >
             今日
+          </text>
+          <text
+            x={currentX}
+            y={currentY - 28}
+            textAnchor="middle"
+            className="text-xs"
+            fill={phaseColor}
+          >
+            {formatDate(currentDate)}
           </text>
         </g>
       </svg>
