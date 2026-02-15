@@ -28,7 +28,7 @@ export function FlowYearCycleChart({
   }, []);
 
   // 根據容器寬度決定顯示模式
-  const displayMode = useMemo(() => {
+  const responsiveMode = useMemo(() => {
     if (containerWidth >= 768) return "desktop";
     if (containerWidth >= 640) return "tablet";
     if (containerWidth >= 400) return "mobile";
@@ -37,57 +37,111 @@ export function FlowYearCycleChart({
 
   const cycleData = useMemo(() => {
     const currentYear = currentDate.getFullYear();
-
-    // 計算今年、去年、明年的生日
+    
+    // 找到最近的生日（可能是去年或今年）
     const thisYearBirthday = new Date(currentYear, birthMonth - 1, birthDay);
     const lastYearBirthday = new Date(currentYear - 1, birthMonth - 1, birthDay);
-    const nextYearBirthday = new Date(currentYear + 1, birthMonth - 1, birthDay);
+    
+    // 決定以哪個生日為基準點
+    const referenceBirthday = currentDate >= thisYearBirthday ? thisYearBirthday : lastYearBirthday;
 
-    // 計算流年生理期（今年生日前4個月）
-    const transitionStart = new Date(thisYearBirthday);
+    // 計算流年生理期起始（基準生日前4個月）
+    const transitionStart = new Date(referenceBirthday);
     transitionStart.setMonth(transitionStart.getMonth() - 4);
 
-    // 計算流年高峰期（今年生日後6個月）
-    const peakDate = new Date(thisYearBirthday);
-    peakDate.setMonth(peakDate.getMonth() + 6);
+    // 計算流年高峰期結束（基準生日後8個月）
+    const peakEnd = new Date(referenceBirthday);
+    peakEnd.setMonth(peakEnd.getMonth() + 8);
 
-    // 暴風圈範圍（高峰期前後各2個月）
-    const stormStart = new Date(peakDate);
-    stormStart.setMonth(stormStart.getMonth() - 2);
-    const stormEnd = new Date(peakDate);
-    stormEnd.setMonth(stormEnd.getMonth() + 2);
+    // 判斷顯示模式：決定顯示哪三個生日年份
+    let displayMode: 'current' | 'previous' | 'next';
+    let leftBirthday: Date;
+    let centerBirthday: Date;
+    let rightBirthday: Date;
+    let leftLabel: string;
+    let centerLabel: string;
+    let rightLabel: string;
+
+    if (currentDate < transitionStart) {
+      // 規則2：今日在流年生理期之前 → 顯示前年/去年/今年
+      displayMode = 'previous';
+      const refYear = referenceBirthday.getFullYear();
+      leftBirthday = new Date(refYear - 1, birthMonth - 1, birthDay);
+      centerBirthday = new Date(refYear, birthMonth - 1, birthDay);
+      rightBirthday = new Date(refYear + 1, birthMonth - 1, birthDay);
+      leftLabel = "前年生日";
+      centerLabel = "去年生日";
+      rightLabel = "今年生日";
+    } else if (currentDate > peakEnd) {
+      // 規則3：今日在流年高峰期之後 → 顯示今年/明年/後年
+      displayMode = 'next';
+      const refYear = referenceBirthday.getFullYear();
+      leftBirthday = new Date(refYear, birthMonth - 1, birthDay);
+      centerBirthday = new Date(refYear + 1, birthMonth - 1, birthDay);
+      rightBirthday = new Date(refYear + 2, birthMonth - 1, birthDay);
+      leftLabel = "今年生日";
+      centerLabel = "明年生日";
+      rightLabel = "後年生日";
+    } else {
+      // 規則1：今日在流年生理期至高峰期之間 → 顯示去年/今年/明年
+      displayMode = 'current';
+      const refYear = referenceBirthday.getFullYear();
+      leftBirthday = new Date(refYear - 1, birthMonth - 1, birthDay);
+      centerBirthday = new Date(refYear, birthMonth - 1, birthDay);
+      rightBirthday = new Date(refYear + 1, birthMonth - 1, birthDay);
+      leftLabel = "去年生日";
+      centerLabel = "今年生日";
+      rightLabel = "明年生日";
+    }
+
+    // 基於中間生日（centerBirthday）計算流年關鍵期
+    const centerTransitionStart = new Date(centerBirthday);
+    centerTransitionStart.setMonth(centerTransitionStart.getMonth() - 4);
+
+    const centerPeakDate = new Date(centerBirthday);
+    centerPeakDate.setMonth(centerPeakDate.getMonth() + 6);
+
+    const centerStormStart = new Date(centerPeakDate);
+    centerStormStart.setMonth(centerStormStart.getMonth() - 2);
+    
+    const centerStormEnd = new Date(centerPeakDate);
+    centerStormEnd.setMonth(centerStormEnd.getMonth() + 2);
 
     // 計算當前日期在整個週期中的位置（0-1之間）
-    const totalDays = (nextYearBirthday.getTime() - lastYearBirthday.getTime()) / (1000 * 60 * 60 * 24);
-    const daysSinceLastBirthday = (currentDate.getTime() - lastYearBirthday.getTime()) / (1000 * 60 * 60 * 24);
-    const currentPosition = daysSinceLastBirthday / totalDays;
+    const totalDays = (rightBirthday.getTime() - leftBirthday.getTime()) / (1000 * 60 * 60 * 24);
+    const daysSinceLeftBirthday = (currentDate.getTime() - leftBirthday.getTime()) / (1000 * 60 * 60 * 24);
+    const currentPosition = daysSinceLeftBirthday / totalDays;
 
     // 計算流年生理期在週期中的位置
-    const transitionDays = (transitionStart.getTime() - lastYearBirthday.getTime()) / (1000 * 60 * 60 * 24);
+    const transitionDays = (centerTransitionStart.getTime() - leftBirthday.getTime()) / (1000 * 60 * 60 * 24);
     const transitionPosition = transitionDays / totalDays;
 
     // 計算流年高峰期在週期中的位置
-    const stormStartDays = (stormStart.getTime() - lastYearBirthday.getTime()) / (1000 * 60 * 60 * 24);
-    const stormEndDays = (stormEnd.getTime() - lastYearBirthday.getTime()) / (1000 * 60 * 60 * 24);
+    const stormStartDays = (centerStormStart.getTime() - leftBirthday.getTime()) / (1000 * 60 * 60 * 24);
+    const stormEndDays = (centerStormEnd.getTime() - leftBirthday.getTime()) / (1000 * 60 * 60 * 24);
     const stormStartPosition = stormStartDays / totalDays;
     const stormEndPosition = stormEndDays / totalDays;
 
     // 判斷當前處於哪個階段
     let currentPhase = "normal";
-    if (currentDate >= transitionStart && currentDate < thisYearBirthday) {
+    if (currentDate >= centerTransitionStart && currentDate < centerBirthday) {
       currentPhase = "transition";
-    } else if (currentDate >= stormStart && currentDate <= stormEnd) {
+    } else if (currentDate >= centerStormStart && currentDate <= centerStormEnd) {
       currentPhase = "peak";
     }
 
     return {
-      lastYearBirthday,
-      thisYearBirthday,
-      nextYearBirthday,
-      transitionStart,
-      peakDate,
-      stormStart,
-      stormEnd,
+      displayMode,
+      leftBirthday,
+      centerBirthday,
+      rightBirthday,
+      leftLabel,
+      centerLabel,
+      rightLabel,
+      transitionStart: centerTransitionStart,
+      peakDate: centerPeakDate,
+      stormStart: centerStormStart,
+      stormEnd: centerStormEnd,
       currentPosition,
       transitionPosition,
       stormStartPosition,
@@ -98,7 +152,7 @@ export function FlowYearCycleChart({
 
   // 響應式SVG尺寸參數
   const svgParams = useMemo(() => {
-    switch (displayMode) {
+    switch (responsiveMode) {
       case "desktop":
         return {
           width: 1000,
@@ -124,7 +178,7 @@ export function FlowYearCycleChart({
           padding: 30,
           arcHeight: 130,
           fontSize: { xs: 10, sm: 12, md: 14 },
-          showAllLabels: false, // 隱藏次要標註
+          showAllLabels: false,
         };
       case "compact":
         return {
@@ -136,7 +190,7 @@ export function FlowYearCycleChart({
           showAllLabels: false,
         };
     }
-  }, [displayMode]);
+  }, [responsiveMode]);
 
   const { width, height, padding, arcHeight, fontSize, showAllLabels } = svgParams;
 
@@ -144,13 +198,13 @@ export function FlowYearCycleChart({
   const arcWidth = (width - padding * 2) / 2;
   const baseY = height - 80;
 
-  // 第一個弧線：去年生日到今年生日（0-0.5）
+  // 第一個弧線：左生日到中間生日（0-0.5）
   const arc1StartX = padding;
   const arc1EndX = padding + arcWidth;
   const arc1ControlX = arc1StartX + arcWidth / 2;
   const arc1ControlY = baseY - arcHeight;
 
-  // 第二個弧線：今年生日到明年生日（0.5-1）
+  // 第二個弧線：中間生日到右生日（0.5-1）
   const arc2StartX = arc1EndX;
   const arc2EndX = width - padding;
   const arc2ControlX = arc2StartX + arcWidth / 2;
@@ -209,11 +263,12 @@ export function FlowYearCycleChart({
   // 當前位置的座標
   const [currentX, currentY] = getPositionCoordinates(cycleData.currentPosition);
 
-  // 格式化日期
-  const formatDate = (date: Date) => {
+  // 格式化日期（加上年份）
+  const formatDateWithYear = (date: Date) => {
+    const year = date.getFullYear();
     const month = date.getMonth() + 1;
     const day = date.getDate();
-    return `${month}/${day}`;
+    return `${year}/${month}/${day}`;
   };
 
   // 階段說明
@@ -261,7 +316,7 @@ export function FlowYearCycleChart({
         height={height}
         viewBox={`0 0 ${width} ${height}`}
         className="overflow-visible"
-        style={{ maxHeight: displayMode === "compact" ? "450px" : displayMode === "mobile" ? "420px" : "auto" }}
+        style={{ maxHeight: responsiveMode === "compact" ? "450px" : responsiveMode === "mobile" ? "420px" : "auto" }}
       >
         <defs>
           {redStripesPattern}
@@ -280,37 +335,37 @@ export function FlowYearCycleChart({
         {/* 第二個弧線 */}
         <path d={arc2Path} fill="none" stroke="#9333ea" strokeWidth="3" strokeLinecap="round" />
 
-        {/* 去年生日標記 */}
+        {/* 左生日標記 */}
         <g>
           <line x1={arc1StartX} y1={baseY} x2={arc1StartX} y2={baseY + 20} stroke="#6b7280" strokeWidth="2" />
           <text x={arc1StartX} y={baseY + 32} textAnchor="middle" fontSize={fontSize.xs} fill="#6b7280" fontWeight="500">
-            去年生日
+            {cycleData.leftLabel}
           </text>
           <text x={arc1StartX} y={baseY + 44} textAnchor="middle" fontSize={fontSize.xs} fill="#9ca3af">
-            {formatDate(cycleData.lastYearBirthday)}
+            {formatDateWithYear(cycleData.leftBirthday)}
           </text>
         </g>
 
-        {/* 今年生日標記 */}
+        {/* 中間生日標記 */}
         <g>
           <circle cx={arc1EndX} cy={baseY} r="6" fill="#9333ea" stroke="white" strokeWidth="2" />
           <line x1={arc1EndX} y1={baseY} x2={arc1EndX} y2={baseY + 20} stroke="#9333ea" strokeWidth="3" />
           <text x={arc1EndX} y={baseY + 32} textAnchor="middle" fontSize={fontSize.sm} fill="#7c3aed" fontWeight="600">
-            今年生日
+            {cycleData.centerLabel}
           </text>
           <text x={arc1EndX} y={baseY + 46} textAnchor="middle" fontSize={fontSize.xs} fill="#9333ea" fontWeight="500">
-            {formatDate(cycleData.thisYearBirthday)}
+            {formatDateWithYear(cycleData.centerBirthday)}
           </text>
         </g>
 
-        {/* 明年生日標記 */}
+        {/* 右生日標記 */}
         <g>
           <line x1={arc2EndX} y1={baseY} x2={arc2EndX} y2={baseY + 20} stroke="#6b7280" strokeWidth="2" />
           <text x={arc2EndX} y={baseY + 32} textAnchor="middle" fontSize={fontSize.xs} fill="#6b7280" fontWeight="500">
-            明年生日
+            {cycleData.rightLabel}
           </text>
           <text x={arc2EndX} y={baseY + 44} textAnchor="middle" fontSize={fontSize.xs} fill="#9ca3af">
-            {formatDate(cycleData.nextYearBirthday)}
+            {formatDateWithYear(cycleData.rightBirthday)}
           </text>
         </g>
 
@@ -327,7 +382,7 @@ export function FlowYearCycleChart({
                     生理期起始
                   </text>
                   <text x={transX} y={transY - 8} textAnchor="middle" fontSize={fontSize.xs} fill="#ef4444">
-                    {formatDate(cycleData.transitionStart)}
+                    {formatDateWithYear(cycleData.transitionStart)}
                   </text>
                 </>
               );
@@ -344,7 +399,7 @@ export function FlowYearCycleChart({
                 <>
                   <circle cx={stormStartX} cy={stormStartY} r="3" fill="#eab308" stroke="white" strokeWidth="1.5" />
                   <text x={stormStartX} y={stormStartY + 15} textAnchor="middle" fontSize={fontSize.xs} fill="#ca8a04">
-                    {formatDate(cycleData.stormStart)}
+                    {formatDateWithYear(cycleData.stormStart)}
                   </text>
                 </>
               );
@@ -362,10 +417,10 @@ export function FlowYearCycleChart({
                 <circle cx={peakX} cy={peakY} r="5" fill="#eab308" stroke="white" strokeWidth="2" />
                 <line x1={peakX} y1={peakY} x2={peakX} y2={peakY - 20} stroke="#eab308" strokeWidth="2" strokeDasharray="3 2" />
                 <text x={peakX} y={peakY - 25} textAnchor="middle" fontSize={fontSize.xs} fill="#a16207" fontWeight="600">
-                  {displayMode === "compact" ? "高峰" : "高峰期最高峰"}
+                  {responsiveMode === "compact" ? "高峰" : "高峰期最高峰"}
                 </text>
                 <text x={peakX} y={peakY - 13} textAnchor="middle" fontSize={fontSize.xs} fill="#ca8a04">
-                  {formatDate(cycleData.peakDate)}
+                  {formatDateWithYear(cycleData.peakDate)}
                 </text>
               </>
             );
@@ -381,7 +436,7 @@ export function FlowYearCycleChart({
                 <>
                   <circle cx={stormEndX} cy={stormEndY} r="3" fill="#eab308" stroke="white" strokeWidth="1.5" />
                   <text x={stormEndX} y={stormEndY + 15} textAnchor="middle" fontSize={fontSize.xs} fill="#ca8a04">
-                    {formatDate(cycleData.stormEnd)}
+                    {formatDateWithYear(cycleData.stormEnd)}
                   </text>
                 </>
               );
@@ -397,7 +452,7 @@ export function FlowYearCycleChart({
             今日
           </text>
           <text x={currentX} y={currentY - 23} textAnchor="middle" fontSize={fontSize.xs} fill={phaseColor}>
-            {formatDate(currentDate)}
+            {formatDateWithYear(currentDate)}
           </text>
         </g>
       </svg>
