@@ -145,36 +145,36 @@ export function FlowYearCycleChart({
       case "desktop":
         return {
           width: 1000,
-          height: 400,
+          height: 500,
           padding: 50,
-          arcHeight: 120,
+          arcHeight: 200,
           fontSize: { xs: 11, sm: 13, md: 15 },
           showAllLabels: true,
         };
       case "tablet":
         return {
           width: 900,
-          height: 420,
+          height: 480,
           padding: 40,
-          arcHeight: 110,
+          arcHeight: 180,
           fontSize: { xs: 10, sm: 12, md: 14 },
           showAllLabels: true,
         };
       case "mobile":
         return {
           width: 800,
-          height: 450,
+          height: 500,
           padding: 30,
-          arcHeight: 100,
+          arcHeight: 160,
           fontSize: { xs: 9, sm: 11, md: 13 },
           showAllLabels: false,
         };
       case "compact":
         return {
           width: 700,
-          height: 480,
+          height: 520,
           padding: 20,
-          arcHeight: 90,
+          arcHeight: 140,
           fontSize: { xs: 8, sm: 10, md: 12 },
           showAllLabels: false,
         };
@@ -319,7 +319,7 @@ export function FlowYearCycleChart({
         height={height}
         viewBox={`0 0 ${width} ${height}`}
         className="overflow-visible"
-        style={{ maxHeight: responsiveMode === "compact" ? "480px" : responsiveMode === "mobile" ? "450px" : "auto" }}
+        style={{ maxHeight: responsiveMode === "compact" ? "520px" : responsiveMode === "mobile" ? "500px" : "auto" }}
       >
         <defs>
           {redStripesPattern}
