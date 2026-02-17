@@ -57,7 +57,7 @@ export function ReadingResult({
   // 判斷今年生日是否已過（國曆）
   const thisYearBirthday = new Date(todayYear, birthMonth - 1, birthDay);
   const isBirthdayPassed = today >= thisYearBirthday;
-  const birthdayStatusText = isBirthdayPassed ? "生日已過" : "生日未過";
+  const birthdayStatusText = isBirthdayPassed ? "今年生日已過" : "今年生日未過";
   
   // 判斷今年農曆生日是否已過
   const todaySolarForLunar = Solar.fromYmd(todayYear, todayMonth, todayDay);
@@ -67,7 +67,7 @@ export function ReadingResult({
   // 比較當前農曆月日與出生農曆月日
   const isLunarBirthdayPassed = currentLunarMonth > lunarMonth || 
     (currentLunarMonth === lunarMonth && currentLunarDay >= lunarDay);
-  const lunarBirthdayStatusText = isLunarBirthdayPassed ? "生日已過" : "生日未過";
+  const lunarBirthdayStatusText = isLunarBirthdayPassed ? "今年生日已過" : "今年生日未過";
   
   // 轉換當前日期為農曆
   const todaySolar = Solar.fromYmd(todayYear, todayMonth, todayDay);
@@ -593,7 +593,7 @@ export function ReadingResult({
                       <CardTitle className="font-serif">流年運勢(國曆)</CardTitle>
                     </div>
                     <CardDescription className="text-[13px] leading-relaxed">
-                      ({birthdayStatusText}) · 目前的運勢主題為:<br />
+                      <span className="text-red-600 font-medium">({birthdayStatusText})</span> · 目前的運勢主題為:<br />
                       流年計算會根據生日是否已過決定年份：生日還沒到使用去年，生日已過使用今年
                     </CardDescription>
                   </CardHeader>
@@ -654,7 +654,7 @@ export function ReadingResult({
                       <CardTitle className="font-serif">流年心境(農曆)</CardTitle>
                     </div>
                     <CardDescription className="text-[13px] leading-relaxed">
-                      ({lunarBirthdayStatusText}) · 目前的心境主題為:<br />
+                      <span className="text-red-600 font-medium">({lunarBirthdayStatusText})</span> · 目前的心境主題為:<br />
                       流年計算會根據生日是否已過決定年份：生日還沒到使用去年，生日已過使用今年
                     </CardDescription>
                   </CardHeader>
