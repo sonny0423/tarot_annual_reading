@@ -575,7 +575,7 @@ export function ReadingResult({
                   <CardHeader>
                     <div className="flex items-center gap-2 mb-2">
                       <Sun className="w-5 h-5 text-primary" />
-                      <CardTitle className="font-serif">流年運勢</CardTitle>
+                      <CardTitle className="font-serif">流年運勢(國曆)</CardTitle>
                     </div>
                     <CardDescription className="text-[13px] leading-relaxed">
                       國曆 · 本年度的運勢主題<br />
@@ -636,7 +636,7 @@ export function ReadingResult({
                   <CardHeader>
                     <div className="flex items-center gap-2 mb-2">
                       <Moon className="w-5 h-5 text-accent" />
-                      <CardTitle className="font-serif">流年心境</CardTitle>
+                      <CardTitle className="font-serif">流年心境(農曆)</CardTitle>
                     </div>
                     <CardDescription className="text-[13px] leading-relaxed">
                       農曆 · 本年度的心境主題<br />
