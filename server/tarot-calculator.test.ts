@@ -96,6 +96,30 @@ describe("Tarot Calculator", () => {
       const result = calculateYearCard(4, 23, 2025);
       expect(result).toBe(9);
     });
+
+    it("should calculate year card for 1990/6/15 in 2026", () => {
+      // 測試案例：生日 1990/6/15，計算 2026 年的流年運勢
+      // 計算：2026 + 6 + 15 = 2047
+      // 數根化簡：2+0+4+7 = 13
+      const result = calculateYearCard(6, 15, 2026);
+      expect(result).toBe(13); // 死神
+    });
+
+    it("should calculate year card for 1990/6/15 in 2025", () => {
+      // 測試案例：生日 1990/6/15，計算 2025 年的流年運勢
+      // 計算：2025 + 6 + 15 = 2046
+      // 數根化簡：2+0+4+6 = 12
+      const result = calculateYearCard(6, 15, 2025);
+      expect(result).toBe(12); // 吊人
+    });
+
+    it("should calculate year card for 1990/6/15 in 2024", () => {
+      // 測試案例：生日 1990/6/15，計算 2024 年的流年運勢
+      // 計算：2024 + 6 + 15 = 2045
+      // 數根化簡：2+0+4+5 = 11
+      const result = calculateYearCard(6, 15, 2024);
+      expect(result).toBe(11); // 正義
+    });
   });
 
   describe("calculateMonthCard", () => {
@@ -118,7 +142,7 @@ describe("Tarot Calculator", () => {
 
   describe("calculateFullReading", () => {
     it("should return complete reading with all cards", () => {
-      const reading = calculateFullReading(1981, 4, 23);
+      const reading = calculateFullReading(1981, 4, 23, 1981, 3, 2);
       
       expect(reading.coreCard).toBe(9);
       expect(reading.outerCard).toBe(10);
@@ -132,12 +156,48 @@ describe("Tarot Calculator", () => {
     });
 
     it("should handle custom target year/month/day", () => {
-      const reading = calculateFullReading(1995, 6, 15, 2026, 3, 20);
+      const reading = calculateFullReading(1995, 6, 15, 1995, 5, 23, 2026, 3, 20);
       
       expect(typeof reading.coreCard).toBe("number");
       expect(typeof reading.yearCard).toBe("number");
       expect(typeof reading.monthCard).toBe("number");
       expect(typeof reading.dayCard).toBe("number");
+    });
+
+    it("should use current year for year card calculation regardless of birthday", () => {
+      // 模擬當前日期：2026/2/19（生日 6/15 未過）
+      const originalDate = Date;
+      global.Date = class extends Date {
+        constructor(...args: any[]) {
+          if (args.length === 0) {
+            super(2026, 1, 19); // 2026/2/19
+          } else {
+            super(...args);
+          }
+        }
+      } as any;
+
+      const reading = calculateFullReading(
+        1990, 6, 15,  // 國曆生日
+        1990, 5, 23   // 農曆生日
+      );
+
+      // 流年運勢應該使用 2026 年計算，結果應該是 13（死神）
+      expect(reading.yearCard).toBe(13);
+
+      // 恢復原始 Date
+      global.Date = originalDate;
+    });
+
+    it("should use specified target year when provided", () => {
+      const reading = calculateFullReading(
+        1990, 6, 15,  // 國曆生日
+        1990, 5, 23,  // 農曆生日
+        2025          // 指定年份
+      );
+
+      // 流年運勢應該使用 2025 年計算，結果應該是 12（吊人）
+      expect(reading.yearCard).toBe(12);
     });
   });
 });

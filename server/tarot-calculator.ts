@@ -188,7 +188,15 @@ export function calculateDayCard(
   const digitSum = sumDigits(daySum);
   
   // E13 = 化簡到<=21
-  return reduceToTarotNumber(digitSum);
+  const result = reduceToTarotNumber(digitSum);
+  
+  // 調試輸出
+  console.log(`[calculateDayCard] birthYear=${birthYear}, birthMonth=${birthMonth}, birthDay=${birthDay}`);
+  console.log(`[calculateDayCard] targetYear=${targetYear}, targetMonth=${targetMonth}, targetDay=${targetDay}`);
+  console.log(`[calculateDayCard] birthSum=${birthSum}, monthSum=${monthSum}, daySum=${daySum}`);
+  console.log(`[calculateDayCard] digitSum=${digitSum}, result=${result}`);
+  
+  return result;
 }
 
 /**
@@ -229,19 +237,9 @@ export function calculateFullReading(
   const currentMonth = now.getMonth() + 1;
   const currentDay = now.getDate();
   
-  // 決定流年計算的年份：生日還沒到用去年，生日已過用今年
-  let yearForCalculation = currentYear;
-  if (!targetYear) {
-    // 判斷國曆生日是否已過
-    const birthdayThisYear = new Date(currentYear, birthMonth - 1, birthDay);
-    const today = new Date(currentYear, currentMonth - 1, currentDay);
-    if (today < birthdayThisYear) {
-      // 生日還沒到，使用去年
-      yearForCalculation = currentYear - 1;
-    }
-  } else {
-    yearForCalculation = targetYear;
-  }
+  // 流年計算直接使用當前年份或指定年份
+  // 不需要判斷生日是否已過，因為流年運勢是以整年為單位
+  const yearForCalculation = targetYear ?? currentYear;
   
   const year = yearForCalculation;
   const month = targetMonth ?? currentMonth;
@@ -262,17 +260,8 @@ export function calculateFullReading(
   const monthCard = calculateMonthCard(birthYear, birthMonth, birthDay, currentYear, currentMonth);
   const dayCard = calculateDayCard(birthYear, birthMonth, birthDay, currentYear, currentMonth, currentDay);
 
-  // 農曆流年心境（也需要判斷農曆生日是否已過）
-  let lunarYearForCalculation = currentYear;
-  if (!targetYear) {
-    // 簡化處理：農曆流年使用與國曆相同的年份
-    // 因為農曆生日判斷較複雜（需考慮閉月、轉換等）
-    // 且兩者差異通常在一個月內，對流年計算影響不大
-    lunarYearForCalculation = yearForCalculation;
-  } else {
-    lunarYearForCalculation = targetYear;
-  }
-  const lunarYearCard = calculateYearCard(lunarBirthMonth, lunarBirthDay, lunarYearForCalculation);
+  // 農曆流年心境也直接使用當前年份或指定年份
+  const lunarYearCard = calculateYearCard(lunarBirthMonth, lunarBirthDay, yearForCalculation);
   
   // 農曆流月和流日也使用當前的年月日
   const lunarMonthCard = calculateMonthCard(lunarBirthYear, lunarBirthMonth, lunarBirthDay, currentYear, currentMonth);
