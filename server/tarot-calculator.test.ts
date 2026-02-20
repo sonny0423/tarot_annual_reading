@@ -140,7 +140,7 @@ describe("Tarot Calculator", () => {
     });
   });
 
-  describe("calculateFullReading", () => {
+  describe("calculateFullReading - 流年需要生日判斷，流日不需要", () => {
     it("should return complete reading with all cards", () => {
       const reading = calculateFullReading(1981, 4, 23, 1981, 3, 2);
       
@@ -164,7 +164,7 @@ describe("Tarot Calculator", () => {
       expect(typeof reading.dayCard).toBe("number");
     });
 
-    it("should use current year for year card calculation regardless of birthday", () => {
+    it("should use last year for year card when birthday has not passed", () => {
       // 模擬當前日期：2026/2/19（生日 6/15 未過）
       const originalDate = Date;
       global.Date = class extends Date {
@@ -182,7 +182,32 @@ describe("Tarot Calculator", () => {
         1990, 5, 23   // 農曆生日
       );
 
-      // 流年運勢應該使用 2026 年計算，結果應該是 13（死神）
+      // 流年運勢應該使用 2025 年計算（生日未過），結果應該是 12（吊人）
+      expect(reading.yearCard).toBe(12);
+
+      // 恢復原始 Date
+      global.Date = originalDate;
+    });
+
+    it("should use current year for year card when birthday has passed", () => {
+      // 模擬當前日期：2026/7/1（生日 6/15 已過）
+      const originalDate = Date;
+      global.Date = class extends Date {
+        constructor(...args: any[]) {
+          if (args.length === 0) {
+            super(2026, 6, 1); // 2026/7/1
+          } else {
+            super(...args);
+          }
+        }
+      } as any;
+
+      const reading = calculateFullReading(
+        1990, 6, 15,  // 國曆生日
+        1990, 5, 23   // 農曆生日
+      );
+
+      // 流年運勢應該使用 2026 年計算（生日已過），結果應該是 13（死神）
       expect(reading.yearCard).toBe(13);
 
       // 恢復原始 Date
@@ -198,6 +223,33 @@ describe("Tarot Calculator", () => {
 
       // 流年運勢應該使用 2025 年計算，結果應該是 12（吊人）
       expect(reading.yearCard).toBe(12);
+    });
+
+    it("should calculate day card using current date regardless of birthday", () => {
+      // 模擬當前日期：2026/2/19（生日 6/15 未過）
+      const originalDate = Date;
+      global.Date = class extends Date {
+        constructor(...args: any[]) {
+          if (args.length === 0) {
+            super(2026, 1, 19); // 2026/2/19
+          } else {
+            super(...args);
+          }
+        }
+      } as any;
+
+      const reading = calculateFullReading(
+        1990, 6, 15,  // 國曆生日
+        1990, 5, 23   // 農曆生日
+      );
+
+      // 流日運勢應該使用當前日期 2026/2/19 計算，不受生日判斷影響
+      // 計算：(1990+6+15) + 2026 + 2 = 4039 -> 4+0+3+9 = 16
+      // 4039 + 19 = 4058 -> 4+0+5+8 = 17 -> 17 <= 21
+      expect(reading.dayCard).toBe(17);
+
+      // 恢復原始 Date
+      global.Date = originalDate;
     });
   });
 });

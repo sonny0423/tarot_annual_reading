@@ -237,9 +237,13 @@ export function calculateFullReading(
   const currentMonth = now.getMonth() + 1;
   const currentDay = now.getDate();
   
-  // 流年計算直接使用當前年份或指定年份
-  // 不需要判斷生日是否已過，因為流年運勢是以整年為單位
-  const yearForCalculation = targetYear ?? currentYear;
+  // 判斷生日是否已過（用於流年計算）
+  const birthdayThisYear = new Date(currentYear, birthMonth - 1, birthDay);
+  const hasBirthdayPassed = now >= birthdayThisYear;
+  
+  // 流年計算：生日未過用去年，生日已過用今年
+  // 如果有指定targetYear，則使用指定的年份
+  const yearForCalculation = targetYear ?? (hasBirthdayPassed ? currentYear : currentYear - 1);
   
   const year = yearForCalculation;
   const month = targetMonth ?? currentMonth;
@@ -256,8 +260,10 @@ export function calculateFullReading(
   // 國曆流年運勢（使用判斷後的年份）
   const yearCard = calculateYearCard(birthMonth, birthDay, year);
   
-  // 流月和流日使用當前的年月日，不受生日判斷影響
+  // 流月使用當前的年月，不受生日判斷影響
   const monthCard = calculateMonthCard(birthYear, birthMonth, birthDay, currentYear, currentMonth);
+  
+  // 流日直接使用當前日期計算，不需要判斷生日是否已過
   const dayCard = calculateDayCard(birthYear, birthMonth, birthDay, currentYear, currentMonth, currentDay);
 
   // 農曆流年心境也直接使用當前年份或指定年份
