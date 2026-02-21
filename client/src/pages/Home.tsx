@@ -29,6 +29,12 @@ export default function Home() {
 
   useEffect(() => {
     if (birthData) {
+      // 使用瀏覽器的當前日期，而非伺服器時間
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth() + 1;
+      const currentDay = now.getDate();
+      
       calculateMutation.mutate({
         birthYear: birthData.solarYear,
         birthMonth: birthData.solarMonth,
@@ -36,6 +42,9 @@ export default function Home() {
         lunarBirthYear: birthData.lunarYear,
         lunarBirthMonth: birthData.lunarMonth,
         lunarBirthDay: birthData.lunarDay,
+        targetYear: currentYear,
+        targetMonth: currentMonth,
+        targetDay: currentDay,
       });
     }
   }, [birthData]);

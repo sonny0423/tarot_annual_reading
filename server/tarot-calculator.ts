@@ -232,22 +232,27 @@ export function calculateFullReading(
   targetMonth?: number,
   targetDay?: number
 ): TarotReading {
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth() + 1;
-  const currentDay = now.getDate();
+  // 如果沒有傳入targetYear/targetMonth/targetDay，表示前端沒有提供當前日期
+  // 這種情況下應該要求前端必須傳入完整的日期資訊
+  if (targetYear === undefined || targetMonth === undefined || targetDay === undefined) {
+    throw new Error('targetYear, targetMonth, and targetDay are required');
+  }
+  
+  const currentYear = targetYear;
+  const currentMonth = targetMonth;
+  const currentDay = targetDay;
   
   // 判斷生日是否已過（用於流年計算）
   const birthdayThisYear = new Date(currentYear, birthMonth - 1, birthDay);
+  const now = new Date(currentYear, currentMonth - 1, currentDay);
   const hasBirthdayPassed = now >= birthdayThisYear;
   
   // 流年計算：生日未過用去年，生日已過用今年
-  // 如果有指定targetYear，則使用指定的年份
-  const yearForCalculation = targetYear ?? (hasBirthdayPassed ? currentYear : currentYear - 1);
+  const yearForCalculation = hasBirthdayPassed ? currentYear : currentYear - 1;
   
   const year = yearForCalculation;
-  const month = targetMonth ?? currentMonth;
-  const day = targetDay ?? currentDay;
+  const month = currentMonth;
+  const day = currentDay;
 
   const coreCard = calculateCoreCard(birthYear, birthMonth, birthDay);
   const outerCard = calculateOuterCard(birthYear, birthMonth, birthDay);

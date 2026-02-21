@@ -114,6 +114,12 @@ export function ReadingResult({
   });
 
   useEffect(() => {
+    // 使用瀏覽器的當前日期，而非伺服器時間
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1;
+    const currentDay = now.getDate();
+    
     lunarCalculateMutation.mutate({
       birthYear: lunarYear,
       birthMonth: lunarMonth,
@@ -121,6 +127,9 @@ export function ReadingResult({
       lunarBirthYear: lunarYear,
       lunarBirthMonth: lunarMonth,
       lunarBirthDay: lunarDay,
+      targetYear: currentYear,
+      targetMonth: currentMonth,
+      targetDay: currentDay,
     });
   }, [lunarYear, lunarMonth, lunarDay]);
 
