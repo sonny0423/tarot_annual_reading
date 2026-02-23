@@ -602,7 +602,7 @@ export function ReadingResult({
                       <CardTitle className="font-serif">流年運勢(國曆)</CardTitle>
                     </div>
                     <CardDescription className="text-[13px] leading-relaxed">
-                      <span className={`font-medium ${isBirthdayPassed ? 'text-orange-600' : 'text-red-600'}`}>({birthdayStatusText})</span> · 目前的運勢主題為:<br />
+                      目前的運勢主題為:<br />
                       流年計算會根據生日是否已過決定年份：生日還沒到使用去年，生日已過使用今年
                     </CardDescription>
                   </CardHeader>
@@ -663,7 +663,7 @@ export function ReadingResult({
                       <CardTitle className="font-serif">流年心境(農曆)</CardTitle>
                     </div>
                     <CardDescription className="text-[13px] leading-relaxed">
-                      <span className={`font-medium ${isLunarBirthdayPassed ? 'text-orange-600' : 'text-red-600'}`}>({lunarBirthdayStatusText})</span> · 目前的心境主題為:<br />
+                      目前的心境主題為:<br />
                       流年計算會根據生日是否已過決定年份：生日還沒到使用去年，生日已過使用今年
                     </CardDescription>
                   </CardHeader>
