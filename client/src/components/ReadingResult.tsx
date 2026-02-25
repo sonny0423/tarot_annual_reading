@@ -1,5 +1,6 @@
 import { TarotCard } from "./TarotCard";
 import { FlowYearCycleChart } from "./FlowYearCycleChart";
+import { FlowingYearTimeline } from "./FlowingYearTimeline";
 import React, { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -583,6 +584,12 @@ export function ReadingResult({
             <p className="text-muted-foreground text-center">
               流年、流月、流日牌卡顯示您在不同時間週期的運勢走向與建議
             </p>
+            
+            {/* 流年能量週期時間軸 */}
+            <FlowingYearTimeline
+              birthDate={new Date(birthYear, birthMonth - 1, birthDay)}
+              currentDate={new Date()}
+            />
             
             {/* 流年能量週期圖 */}
             <FlowYearCycleChart
