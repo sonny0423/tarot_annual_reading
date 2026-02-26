@@ -145,36 +145,36 @@ export function FlowYearCycleChart({
       case "desktop":
         return {
           width: 1000,
-          height: 500,
+          height: 350,
           padding: 50,
-          arcHeight: 200,
+          arcHeight: 180,
           fontSize: { xs: 11, sm: 13, md: 15 },
           showAllLabels: true,
         };
       case "tablet":
         return {
           width: 900,
-          height: 480,
+          height: 330,
           padding: 40,
-          arcHeight: 180,
+          arcHeight: 160,
           fontSize: { xs: 10, sm: 12, md: 14 },
           showAllLabels: true,
         };
       case "mobile":
         return {
           width: 800,
-          height: 500,
+          height: 350,
           padding: 30,
-          arcHeight: 160,
+          arcHeight: 140,
           fontSize: { xs: 9, sm: 11, md: 13 },
           showAllLabels: false,
         };
       case "compact":
         return {
           width: 700,
-          height: 520,
+          height: 370,
           padding: 20,
-          arcHeight: 140,
+          arcHeight: 120,
           fontSize: { xs: 8, sm: 10, md: 12 },
           showAllLabels: false,
         };
