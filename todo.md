@@ -598,3 +598,11 @@
 - [x] 測試桌面版顯示效果
 - [x] 測試手機版顯示效果
 - [x] 建立 checkpoint
+## 優化FlowYearCycleChart手機版的字體和圖形大小
+- [x] 分析手機版的fontSize參數（目前xs:9, sm:11, md:13）
+- [x] 放大手機版的fontSize參數，提升可讀性
+- [x] 增加手機版的SVG高度（目前mobile:280px, compact:300px）
+- [x] 增加手機版的弧線高度arcHeight（目前mobile:140, compact:120）
+- [x] 調整baseY位置，充分利用垂直空間
+- [x] 測試手機版顯示效果
+- [x] 建立 checkpoint
