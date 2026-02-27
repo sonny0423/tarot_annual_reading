@@ -301,9 +301,9 @@ export function FlowYearCycleChart({
   const [stormEndX] = getPositionCoordinates(cycleData.stormEndPosition);
 
   return (
-    <div ref={containerRef} className="w-full bg-white/50 rounded-lg p-3 sm:p-6 mb-6">
-      <div className="text-center mb-3 sm:mb-4">
-        <h3 className="text-base sm:text-lg font-semibold text-purple-900 mb-1 sm:mb-2">
+    <div ref={containerRef} className="w-full bg-white/50 rounded-lg p-2 sm:p-4 mb-4">
+      <div className="text-center mb-2 sm:mb-3">
+        <h3 className="text-base sm:text-lg font-semibold text-purple-900 mb-1">
           流年能量週期圖
         </h3>
         <p className="text-xs sm:text-sm text-gray-600">
@@ -450,7 +450,7 @@ export function FlowYearCycleChart({
       </svg>
 
       {/* 圖例說明 */}
-      <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-6 mt-3 sm:mt-4 text-xs text-gray-600">
+      <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4 mt-2 sm:mt-3 text-xs text-gray-600">
         <div className="flex items-center justify-center gap-2">
           <div className="w-4 h-4 bg-red-200 rounded flex-shrink-0"></div>
           <span className="text-center sm:text-left">流年生理期（生日前4個月）</span>

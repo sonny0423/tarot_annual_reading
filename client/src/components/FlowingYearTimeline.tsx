@@ -136,16 +136,16 @@ export function FlowingYearTimeline({ birthDate, currentDate }: FlowingYearTimel
   
   return (
     <>
-      <Card className="p-6 mb-6 bg-gradient-to-br from-purple-50 to-pink-50">
-        <div className="mb-4">
-          <h3 className="text-lg font-serif font-semibold text-purple-900 mb-2">流年能量週期</h3>
+      <Card className="p-4 mb-4 bg-gradient-to-br from-purple-50 to-pink-50">
+        <div className="mb-3">
+          <h3 className="text-lg font-serif font-semibold text-purple-900 mb-1">流年能量週期</h3>
           <p className="text-sm text-gray-600">
             流年能量並非在生日當天突然切換，而是有一個漸進的週期。點擊下方標記查看各階段說明。
           </p>
         </div>
         
         {/* 時間軸容器 */}
-        <div className="relative w-full h-32 mb-8">
+        <div className="relative w-full h-24 mb-4">
           {/* 主時間軸線 */}
           <div className="absolute top-1/2 left-0 right-0 h-2 bg-gray-200 rounded-full transform -translate-y-1/2" />
           

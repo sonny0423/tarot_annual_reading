@@ -589,3 +589,12 @@
 - [ ] 調整雙弧線圖的垂直位置，減少上方留白
 - [ ] 測試手機版顯示效果
 - [ ] 建立checkpoint
+## 優化流年能量週期組件的留白問題（FlowingYearTimeline和FlowYearCycleChart）
+- [x] 分析FlowingYearTimeline組件的留白問題（紅框區域）
+- [x] 分析FlowYearCycleChart組件的留白問題（紅框區域）
+- [x] 優化FlowingYearTimeline的padding和margin設定
+- [x] 優化FlowYearCycleChart的padding和margin設定
+- [x] 調整容器高度和內部元素間距
+- [x] 測試桌面版顯示效果
+- [x] 測試手機版顯示效果
+- [x] 建立 checkpoint
