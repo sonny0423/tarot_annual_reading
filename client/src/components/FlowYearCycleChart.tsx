@@ -163,19 +163,19 @@ export function FlowYearCycleChart({
       case "mobile":
         return {
           width: 800,
-          height: 380,
+          height: 650,
           padding: 30,
-          arcHeight: 180,
-          fontSize: { xs: 11, sm: 13, md: 15 },
+          arcHeight: 360,
+          fontSize: { xs: 16, sm: 18, md: 20 },
           showAllLabels: false,
         };
       case "compact":
         return {
           width: 700,
-          height: 360,
+          height: 600,
           padding: 20,
-          arcHeight: 160,
-          fontSize: { xs: 10, sm: 12, md: 14 },
+          arcHeight: 320,
+          fontSize: { xs: 14, sm: 16, md: 18 },
           showAllLabels: false,
         };
     }
@@ -185,7 +185,7 @@ export function FlowYearCycleChart({
 
   // 兩個弧線的參數
   const arcWidth = (width - padding * 2) / 2;
-  const baseY = responsiveMode === "mobile" || responsiveMode === "compact" ? height - 100 : height - 120; // 增加底部空間以容納日期標註
+  const baseY = responsiveMode === "mobile" || responsiveMode === "compact" ? height - 150 : height - 120; // 增加底部空間以容納日期標註
 
   // 第一個弧線：左生日到中間生日（0-0.5）
   const arc1StartX = padding;

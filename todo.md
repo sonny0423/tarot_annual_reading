@@ -606,3 +606,14 @@
 - [x] 調整baseY位置，充分利用垂直空間
 - [x] 測試手機版顯示效果
 - [x] 建立 checkpoint
+
+## 大幅優化FlowYearCycleChart手機版的弧線高度和字體大小
+- [x] 分析當前手機版的弧線高度（mobile:180, compact:160）和字體大小（mobile xs:11, compact xs:10）
+- [x] 將mobile模式的arcHeight從180增加到360（加倍）
+- [x] 將compact模式的arcHeight從160增加到320（加倍）
+- [x] 調整mobile模式的SVG高度從380px增加到650px
+- [x] 調整compact模式的SVG高度從360px增加到600px
+- [x] 大幅放大fontSize參數（mobile xs:11→16, sm:13→18, md:15→20；compact xs:10→14, sm:12→16, md:14→18）
+- [x] 重新計算baseY位置，確保弧線在容器中上下均衡
+- [x] 測試手機版顯示效果，確保所有文字清晰可讀
+- [x] 建立 checkpoint
