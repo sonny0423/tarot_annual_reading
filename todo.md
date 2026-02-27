@@ -574,3 +574,18 @@
 - [x] 確認桌面模式下運勢和心境左右並排顯示
 - [x] 瀏覽器測試驗證所有修改（FlowYearCycleChart留白✓、標籤切換✓、區塊重排✓）
 - [x] 建立checkpoint
+
+## 優化手機版流年能量週期圖的留白問題
+- [x] 分析FlowYearCycleChart組件的SVG viewBox和容器高度設定
+- [x] 調整手機版的SVG高度（mobile: 350→280, compact: 370→300）
+- [x] 調整baseY位置（mobile: height-120→height-80, compact: height-120→height-90）
+- [x] 調整maxHeight限制（mobile: 500px→400px, compact: 520px→420px）
+- [x] 測試手機版顯示效果（留白明顯減少✓）
+- [x] 建立 checkpoint
+
+##
+- [ ] 分析FlowYearCycleChart組件的SVG viewBox和容器高度設定
+- [ ] 調整手機版的SVG高度，減少「當前階段」文字下方的留白
+- [ ] 調整雙弧線圖的垂直位置，減少上方留白
+- [ ] 測試手機版顯示效果
+- [ ] 建立checkpoint

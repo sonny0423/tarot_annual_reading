@@ -163,7 +163,7 @@ export function FlowYearCycleChart({
       case "mobile":
         return {
           width: 800,
-          height: 350,
+          height: 280,
           padding: 30,
           arcHeight: 140,
           fontSize: { xs: 9, sm: 11, md: 13 },
@@ -172,7 +172,7 @@ export function FlowYearCycleChart({
       case "compact":
         return {
           width: 700,
-          height: 370,
+          height: 300,
           padding: 20,
           arcHeight: 120,
           fontSize: { xs: 8, sm: 10, md: 12 },
@@ -185,7 +185,7 @@ export function FlowYearCycleChart({
 
   // 兩個弧線的參數
   const arcWidth = (width - padding * 2) / 2;
-  const baseY = height - 120; // 增加底部空間以容納日期標註
+  const baseY = responsiveMode === "mobile" || responsiveMode === "compact" ? height - 90 : height - 120; // 增加底部空間以容納日期標註
 
   // 第一個弧線：左生日到中間生日（0-0.5）
   const arc1StartX = padding;
@@ -319,7 +319,7 @@ export function FlowYearCycleChart({
         height={height}
         viewBox={`0 0 ${width} ${height}`}
         className="overflow-visible"
-        style={{ maxHeight: responsiveMode === "compact" ? "520px" : responsiveMode === "mobile" ? "500px" : "auto" }}
+        style={{ maxHeight: responsiveMode === "compact" ? "350px" : responsiveMode === "mobile" ? "320px" : "auto" }}
       >
         <defs>
           {redStripesPattern}
