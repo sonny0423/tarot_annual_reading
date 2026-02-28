@@ -617,3 +617,13 @@
 - [x] 重新計算baseY位置，確保弧線在容器中上下均衡
 - [x] 測試手機版顯示效果，確保所有文字清晰可讀
 - [x] 建立 checkpoint
+
+## 為 FlowYearCycleChart 添加橫向滾動功能
+- [x] 分析FlowYearCycleChart組件，分析當前SVG渲染方式
+- [x] 設定SVG最小寬度（minWidth），避免在小螢幕上壓縮變形
+- [x] 實作橫向滾動容器（overflow-x: auto）
+- [x] 添加滾動指示器（左右漸層提示）
+- [x] 優化觸控滑動體驗（WebkitOverflowScrolling: touch）
+- [x] 修正responsiveMode判斷，同時參考window.innerWidth和容器寬度
+- [x] 測試小螢幕顯示效果
+- [x] 建立 checkpoint

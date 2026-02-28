@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 
 interface FlowYearCycleChartProps {
   birthMonth: number;
@@ -12,13 +12,18 @@ export function FlowYearCycleChart({
   currentDate,
 }: FlowYearCycleChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(1000);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
 
   // 監聽容器寬度變化
   useEffect(() => {
     const updateWidth = () => {
       if (containerRef.current) {
-        setContainerWidth(containerRef.current.offsetWidth);
+        // 同時參考 window.innerWidth 和容器寬度，取較小值確保手機正確觸發
+        const effectiveWidth = Math.min(containerRef.current.offsetWidth, window.innerWidth);
+        setContainerWidth(effectiveWidth);
       }
     };
 
@@ -26,6 +31,32 @@ export function FlowYearCycleChart({
     window.addEventListener("resize", updateWidth);
     return () => window.removeEventListener("resize", updateWidth);
   }, []);
+
+  // 監聽滾動狀態，更新左右箭頭的顯示
+  const updateScrollIndicators = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 4);
+    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 4);
+  }, []);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    // 初始化時檢查是否需要滾動
+    setTimeout(updateScrollIndicators, 100);
+    el.addEventListener("scroll", updateScrollIndicators);
+    window.addEventListener("resize", updateScrollIndicators);
+    return () => {
+      el.removeEventListener("scroll", updateScrollIndicators);
+      window.removeEventListener("resize", updateScrollIndicators);
+    };
+  }, [updateScrollIndicators]);
+
+  // 當 svgParams 改變時重新計算滾動指示器
+  useEffect(() => {
+    setTimeout(updateScrollIndicators, 150);
+  }, [containerWidth, updateScrollIndicators]);
 
   // 根據容器寬度決定顯示模式
   const responsiveMode = useMemo(() => {
@@ -140,6 +171,7 @@ export function FlowYearCycleChart({
   }, [birthMonth, birthDay, currentDate]);
 
   // 響應式SVG尺寸參數
+  // 手機版使用固定寬度（不隨容器縮小），配合橫向滾動容器
   const svgParams = useMemo(() => {
     switch (responsiveMode) {
       case "desktop":
@@ -150,6 +182,7 @@ export function FlowYearCycleChart({
           arcHeight: 180,
           fontSize: { xs: 11, sm: 13, md: 15 },
           showAllLabels: true,
+          fixedWidth: false, // 桌面版自適應寬度
         };
       case "tablet":
         return {
@@ -159,29 +192,32 @@ export function FlowYearCycleChart({
           arcHeight: 160,
           fontSize: { xs: 10, sm: 12, md: 14 },
           showAllLabels: true,
+          fixedWidth: false,
         };
       case "mobile":
         return {
-          width: 800,
-          height: 650,
+          width: 700,
+          height: 520,
           padding: 30,
-          arcHeight: 360,
-          fontSize: { xs: 16, sm: 18, md: 20 },
-          showAllLabels: false,
+          arcHeight: 280,
+          fontSize: { xs: 14, sm: 16, md: 18 },
+          showAllLabels: true, // 橫向滾動後可顯示所有標籤
+          fixedWidth: true, // 手機版固定寬度，啟用橫向滾動
         };
       case "compact":
         return {
           width: 700,
-          height: 600,
-          padding: 20,
-          arcHeight: 320,
-          fontSize: { xs: 14, sm: 16, md: 18 },
-          showAllLabels: false,
+          height: 520,
+          padding: 25,
+          arcHeight: 260,
+          fontSize: { xs: 13, sm: 15, md: 17 },
+          showAllLabels: true,
+          fixedWidth: true,
         };
     }
   }, [responsiveMode]);
 
-  const { width, height, padding, arcHeight, fontSize, showAllLabels } = svgParams;
+  const { width, height, padding, arcHeight, fontSize, showAllLabels, fixedWidth } = svgParams;
 
   // 兩個弧線的參數
   const arcWidth = (width - padding * 2) / 2;
@@ -300,6 +336,8 @@ export function FlowYearCycleChart({
   const [stormStartX] = getPositionCoordinates(cycleData.stormStartPosition);
   const [stormEndX] = getPositionCoordinates(cycleData.stormEndPosition);
 
+  const isMobileMode = fixedWidth;
+
   return (
     <div ref={containerRef} className="w-full bg-white/50 rounded-lg p-2 sm:p-4 mb-4">
       <div className="text-center mb-2 sm:mb-3">
@@ -314,12 +352,38 @@ export function FlowYearCycleChart({
         </p>
       </div>
 
+      {/* 橫向滾動容器（手機版） */}
+      <div className="relative">
+        {/* 左側漸層指示器 */}
+        {isMobileMode && canScrollLeft && (
+          <div
+            className="absolute left-0 top-0 bottom-0 w-8 z-10 pointer-events-none"
+            style={{
+              background: "linear-gradient(to right, rgba(255,255,255,0.9), transparent)",
+            }}
+          />
+        )}
+        {/* 右側漸層指示器 */}
+        {isMobileMode && canScrollRight && (
+          <div
+            className="absolute right-0 top-0 bottom-0 w-8 z-10 pointer-events-none"
+            style={{
+              background: "linear-gradient(to left, rgba(255,255,255,0.9), transparent)",
+            }}
+          />
+        )}
+
+        <div
+          ref={scrollRef}
+          className={isMobileMode ? "overflow-x-auto" : ""}
+          style={isMobileMode ? { WebkitOverflowScrolling: "touch", scrollbarWidth: "none" } : {}}
+        >
       <svg
-        width="100%"
+        width={fixedWidth ? width : "100%"}
         height={height}
         viewBox={`0 0 ${width} ${height}`}
         className="overflow-visible"
-        style={{ maxHeight: responsiveMode === "compact" ? "350px" : responsiveMode === "mobile" ? "320px" : "auto" }}
+        style={{ display: "block", minWidth: fixedWidth ? `${width}px` : undefined }}
       >
         <defs>
           {redStripesPattern}
@@ -448,6 +512,15 @@ export function FlowYearCycleChart({
           </text>
         </g>
       </svg>
+        </div>
+      </div>
+
+      {/* 手機版滾動提示 */}
+      {isMobileMode && (
+        <p className="text-center text-xs text-gray-400 mt-1 mb-1">
+          ← 左右滑動查看完整圖表 →
+        </p>
+      )}
 
       {/* 圖例說明 */}
       <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4 mt-2 sm:mt-3 text-xs text-gray-600">
