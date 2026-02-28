@@ -627,3 +627,9 @@
 - [x] 修正responsiveMode判斷，同時參考window.innerWidth和容器寬度
 - [x] 測試小螢幕顯示效果
 - [x] 建立 checkpoint
+## 手機版流年能量週期圖初始自動滾動到「今日」
+- [x] 讀取FlowYearCycleChart組件，分析今日標記的X座標計算邏輯
+- [x] 實作useEffect：在SVG渲染後計算今日X座標，設定scrollLeft讓今日置中
+- [x] 確保只在手機版（fixedWidth=true）時觸發自動滾動
+- [x] 測試手機版初始滾動效果
+- [x] 建立 checkpoint

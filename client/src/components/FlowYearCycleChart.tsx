@@ -288,6 +288,27 @@ export function FlowYearCycleChart({
   // 當前位置的座標
   const [currentX, currentY] = getPositionCoordinates(cycleData.currentPosition);
 
+  // 手機版初始自動滾動，將「今日」標記置中
+  useEffect(() => {
+    if (!fixedWidth) return; // 只在手機版（fixedWidth=true）時觸發
+    const el = scrollRef.current;
+    if (!el) return;
+
+    // 等待 SVG 渲染完成再計算
+    const timer = setTimeout(() => {
+      const svgWidth = width;                        // SVG 寬度（700px）
+      const containerVisibleWidth = el.clientWidth; // 可見區域寬度
+
+      // 計算讓今日置中的 scrollLeft
+      const targetScrollLeft = currentX - containerVisibleWidth / 2;
+      const clampedScrollLeft = Math.max(0, Math.min(targetScrollLeft, svgWidth - containerVisibleWidth));
+
+      el.scrollTo({ left: clampedScrollLeft, behavior: 'smooth' });
+    }, 200);
+
+    return () => clearTimeout(timer);
+  }, [fixedWidth, currentX, width]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // 格式化日期（加上年份）
   const formatDateWithYear = (date: Date) => {
     const year = date.getFullYear();
