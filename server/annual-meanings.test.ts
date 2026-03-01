@@ -36,13 +36,13 @@ describe('Annual Meanings', () => {
     await connection.end();
   });
 
-  it('should have correct annual meaning for card 10 (幸運)', async () => {
+  it('should have correct annual meaning for card 10 (命運之輪)', async () => {
     const connection = await mysql.createConnection(process.env.DATABASE_URL!);
     const db = drizzle(connection);
 
     const card = await db.select().from(tarotCards).where(eq(tarotCards.id, 10));
     
-    expect(card[0].name).toBe('幸運');
+    expect(card[0].name).toBe('命運之輪');
     expect(card[0].annualUpright).toContain('運氣好轉');
     expect(card[0].annualReversed).toContain('不公平');
 

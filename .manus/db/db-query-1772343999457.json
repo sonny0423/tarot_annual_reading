@@ -1,0 +1,14 @@
+{
+  "query": "SELECT id, name FROM tarot_cards WHERE id = 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4GFzRbhPiYVZCss.3deedf4049ff --database j4VLg7dBq8DZmAm9gmNKgS --execute SELECT id, name FROM tarot_cards WHERE id = 10;",
+  "rows": [
+    {
+      "id": "10",
+      "name": "命運之輪"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\n10\t命運之輪\n",
+  "stderr": "",
+  "execution_time_ms": 1492
+}

@@ -1,0 +1,8 @@
+{
+  "query": "UPDATE tarot_cards SET name = '命運之輪' WHERE number = 10 AND name = '幸運';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4GFzRbhPiYVZCss.3deedf4049ff --database j4VLg7dBq8DZmAm9gmNKgS --execute UPDATE tarot_cards SET name = '命運之輪' WHERE number = 10 AND name = '幸運';",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'number' in 'where clause'"
+  ]
+}

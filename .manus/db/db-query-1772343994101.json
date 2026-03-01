@@ -1,0 +1,9 @@
+{
+  "query": "UPDATE tarot_cards SET name = '命運之輪' WHERE id = 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4GFzRbhPiYVZCss.3deedf4049ff --database j4VLg7dBq8DZmAm9gmNKgS --execute UPDATE tarot_cards SET name = '命運之輪' WHERE id = 10;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1537
+}
