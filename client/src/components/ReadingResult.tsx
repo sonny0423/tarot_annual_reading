@@ -744,7 +744,7 @@ export function ReadingResult({
             <div className="text-center space-y-2">
               <h4 className="text-lg font-semibold">流年總表</h4>
               <p className="text-sm text-muted-foreground">
-                查看0-100歲完整生命週期的運勢與心境變化，左右滾動瀏覽
+                查看0-100歲完整生命週期的運勢與心境變化，左右滾動瀏覽<br />點擊年份，可觀看當年度每月運勢
               </p>
             </div>
 
@@ -828,6 +828,7 @@ export function ReadingResult({
                   <div className="w-full">
                         <div className="text-center mb-3">
                           <h4 className="text-sm font-semibold">{item.year}年 流月運勢表</h4>
+                          <p className="text-xs text-muted-foreground mt-1">點擊月份，可觀看當月每日運勢</p>
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full border-collapse">
