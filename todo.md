@@ -639,3 +639,9 @@
 - [x] 確認前端程式碼中是否有硬編碼的「幸運」名稱需要更新（沒有，名稱全部來自資料庫）
 - [x] 更新測試檔案中的牌卡名稱期望値
 - [x] 建立 checkpoint
+
+## 移除牌卡資料庫詳情彈窗中的「牌意」區塊
+- [x] 找到CardDetailDialog.tsx中「牌意」區塊的位置
+- [x] 移除「牌意」section及其後的Separator分隔線
+- [x] 移除不再使用的BookOpen import
+- [x] 建立 checkpoint
