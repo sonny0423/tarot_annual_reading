@@ -166,10 +166,11 @@ export function FlowingYearTimeline({ birthDate, currentDate }: FlowingYearTimel
           {stormStart >= 0 && stormEnd <= 100 && (
             <button
               onClick={() => setSelectedStage('storm')}
-              className="absolute top-1/2 h-4 bg-red-300 hover:bg-red-400 rounded-full transform -translate-y-1/2 transition-colors cursor-pointer"
+              className="absolute top-1/2 h-4 rounded-full transform -translate-y-1/2 transition-colors cursor-pointer"
               style={{
                 left: `${Math.max(0, stormStart)}%`,
                 width: `${Math.min(100, stormEnd) - Math.max(0, stormStart)}%`,
+                backgroundColor: '#eee191',
               }}
               aria-label="暴風圈"
             />
