@@ -645,3 +645,13 @@
 - [x] 移除「牌意」section及其後的Separator分隔線
 - [x] 移除不再使用的BookOpen import
 - [x] 建立 checkpoint
+
+## 修改簡易時間軸生理期和高峰期顏色
+- [x] 生理期區塊顏色從紫色改為紅色（bg-red-300/bg-red-400）
+- [x] 高峰期標記顏色從紫色改為黃色（bg-yellow-400/bg-yellow-500）
+- [x] 生理期狀態提示標籤改為紅色
+- [x] 高峰期狀態提示標籤改為黃色
+- [x] 生理期說明對話框改為紅色系
+- [x] 高峰期說明對話框改為黃色系
+- [x] stageInfo中生理期和高峰期的color屬性同步更新
+- [x] 建立 checkpoint

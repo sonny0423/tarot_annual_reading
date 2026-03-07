@@ -109,12 +109,12 @@ export function FlowingYearTimeline({ birthDate, currentDate }: FlowingYearTimel
     physiological: {
       title: '流年生理期',
       description: '從生日前4個月開始，下一個流年能量開始醞釀。這是一個過渡期，適合提前準備和規劃，為即將到來的新流年週期做好心理和實際的準備。',
-      color: 'bg-purple-100 border-purple-300',
+      color: 'bg-red-100 border-red-300',
     },
     peak: {
       title: '流年高峰期',
       description: '生日後6個月，流年能量達到最高峰。這是流年影響力最強的時期，適合做出關鍵決策和採取重要行動。您的流年牌義在此時期表現最為明顯。',
-      color: 'bg-purple-200 border-purple-400',
+      color: 'bg-yellow-100 border-yellow-300',
     },
     storm: {
       title: '暴風圈',
@@ -153,7 +153,7 @@ export function FlowingYearTimeline({ birthDate, currentDate }: FlowingYearTimel
           {physioStart >= 0 && physioEnd <= 100 && (
             <button
               onClick={() => setSelectedStage('physiological')}
-              className="absolute top-1/2 h-3 bg-purple-300 hover:bg-purple-400 rounded-full transform -translate-y-1/2 transition-colors cursor-pointer"
+              className="absolute top-1/2 h-3 bg-red-300 hover:bg-red-400 rounded-full transform -translate-y-1/2 transition-colors cursor-pointer"
               style={{
                 left: `${Math.max(0, physioStart)}%`,
                 width: `${Math.min(100, physioEnd) - Math.max(0, physioStart)}%`,
@@ -179,7 +179,7 @@ export function FlowingYearTimeline({ birthDate, currentDate }: FlowingYearTimel
           {peakPos >= 0 && peakPos <= 100 && (
             <button
               onClick={() => setSelectedStage('peak')}
-              className="absolute top-1/2 w-6 h-6 bg-purple-500 hover:bg-purple-600 rounded-full transform -translate-x-1/2 -translate-y-1/2 transition-colors cursor-pointer flex items-center justify-center text-white text-xs font-bold"
+              className="absolute top-1/2 w-6 h-6 bg-yellow-400 hover:bg-yellow-500 rounded-full transform -translate-x-1/2 -translate-y-1/2 transition-colors cursor-pointer flex items-center justify-center text-white text-xs font-bold"
               style={{ left: `${peakPos}%` }}
               aria-label="流年高峰期"
             >
@@ -225,7 +225,7 @@ export function FlowingYearTimeline({ birthDate, currentDate }: FlowingYearTimel
         {/* 當前狀態提示 */}
         <div className="flex flex-wrap gap-2 text-sm">
           {timelineData.isInPhysiologicalPeriod && (
-            <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full font-medium">
+            <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full font-medium">
               🌱 目前處於生理期
             </span>
           )}
@@ -235,7 +235,7 @@ export function FlowingYearTimeline({ birthDate, currentDate }: FlowingYearTimel
             </span>
           )}
           {timelineData.isInPeakPeriod && (
-            <span className="px-3 py-1 bg-purple-200 text-purple-900 rounded-full font-medium">
+            <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full font-medium">
               ⭐ 接近高峰期
             </span>
           )}
@@ -260,16 +260,16 @@ export function FlowingYearTimeline({ birthDate, currentDate }: FlowingYearTimel
               {selectedStage && stageInfo[selectedStage]?.description}
             </p>
             {selectedStage === 'physiological' && (
-              <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
-                <p className="text-sm text-purple-900">
+              <div className="p-4 bg-red-50 rounded-lg border border-red-200">
+                <p className="text-sm text-red-900">
                   <strong>起始日期：</strong>{formatDate(timelineData.physiologicalPeriodStart)}<br />
                   <strong>結束日期：</strong>{formatDate(timelineData.thisYearBirthday)}
                 </p>
               </div>
             )}
             {selectedStage === 'peak' && (
-              <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
-                <p className="text-sm text-purple-900">
+              <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                <p className="text-sm text-yellow-900">
                   <strong>高峰日期：</strong>{formatDate(timelineData.peakPeriod)}
                 </p>
               </div>

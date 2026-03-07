@@ -328,7 +328,7 @@ export function ReadingResult({
       {/* Header */}
       <div className="text-center space-y-4">
         <h2 className="text-4xl md:text-5xl font-serif bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent">
-          您的塔羅靈數運勢
+          這是您的塔羅靈數
         </h2>
         <div className="space-y-2">
           <p className="text-muted-foreground">
@@ -355,7 +355,7 @@ export function ReadingResult({
           <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
             <TabsTrigger value="personality" className="gap-2">
               <User className="w-4 h-4" />
-              內、外在性格
+              性格DNA
             </TabsTrigger>
             <TabsTrigger value="benefactor" className="gap-2">
               <Star className="w-4 h-4" />
@@ -365,7 +365,7 @@ export function ReadingResult({
 
           <TabsContent value="personality" className="space-y-6 mt-6">
             <p className="text-muted-foreground text-center max-w-3xl mx-auto">
-              國曆生日代表您「給人的感覺」，是外在展現的人格特質；農曆生日代表您的「另一面特性」，是內在隱藏的性格面向
+              透過國曆、農曆生日，計算出6個屬於你的性格DNA
             </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -376,7 +376,7 @@ export function ReadingResult({
                 <Sun className="w-5 h-5 text-primary" />
                 <CardTitle className="text-xl font-serif text-primary">國曆性格</CardTitle>
               </div>
-              <CardDescription>給人的感覺 · 外在人格</CardDescription>
+              <CardDescription>給人的感覺</CardDescription>
               <p className="text-sm font-medium pt-2">
                 {birthYear}年{birthMonth}月{birthDay}日
               </p>
@@ -422,7 +422,7 @@ export function ReadingResult({
                 <Moon className="w-5 h-5 text-secondary" />
                 <CardTitle className="text-xl font-serif text-secondary">農曆性格</CardTitle>
               </div>
-              <CardDescription>另一面特性 · 內在人格</CardDescription>
+              <CardDescription>另一面特性</CardDescription>
               <p className="text-sm font-medium pt-2">
                 {lunarYear}年{lunarMonth}月{lunarDay}日
               </p>
