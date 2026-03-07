@@ -655,3 +655,10 @@
 - [x] 高峰期說明對話框改為黃色系
 - [x] stageInfo中生理期和高峰期的color屬性同步更新
 - [x] 建立 checkpoint
+
+## 修正FlowingYearTimeline「今日」標記位置計算邏輯
+- [x] 讀取FlowingYearTimeline中今日位置的計算邏輯（固定用currentYear±1，有誤）
+- [x] 讀取FlowYearCycleChart中今日位置的計算邏輯（動態年份判斷，正確）
+- [x] 找出兩者差異並修正FlowingYearTimeline（改為動態年份判斷邏輯）
+- [x] 驗證1983/9/19的今日位置：currentPosition=73.1%，isInStormCircle=true ✓
+- [x] 建立 checkpoint

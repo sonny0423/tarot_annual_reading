@@ -26,57 +26,69 @@ function calculateTimelineData(birthDate: Date, currentDate: Date): TimelineData
   const birthMonth = birthDate.getMonth() + 1; // 1-12
   const birthDay = birthDate.getDate();
   const currentYear = currentDate.getFullYear();
-  
-  // 計算去年、今年、明年生日
-  const lastYearBirthday = new Date(currentYear - 1, birthMonth - 1, birthDay);
-  const thisYearBirthday = new Date(currentYear, birthMonth - 1, birthDay);
-  const nextYearBirthday = new Date(currentYear + 1, birthMonth - 1, birthDay);
-  
-  // 計算生理期起始（生日前4個月）
-  let physioMonth = birthMonth - 4;
-  let physioYear = currentYear;
-  if (physioMonth <= 0) {
-    physioMonth += 12;
-    physioYear -= 1;
+
+  // === 與 FlowYearCycleChart 相同的動態年份判斷邏輯 ===
+  // 找到最近的生日（可能是去年或今年）
+  const thisYearBirthday_ref = new Date(currentYear, birthMonth - 1, birthDay);
+  const lastYearBirthday_ref = new Date(currentYear - 1, birthMonth - 1, birthDay);
+  const referenceBirthday = currentDate >= thisYearBirthday_ref ? thisYearBirthday_ref : lastYearBirthday_ref;
+
+  // 計算流年生理期起始（基準生日前4個月）
+  const transitionStart = new Date(referenceBirthday);
+  transitionStart.setMonth(transitionStart.getMonth() - 4);
+
+  // 計算流年高峰期結束（基準生日後8個月）
+  const peakEnd = new Date(referenceBirthday);
+  peakEnd.setMonth(peakEnd.getMonth() + 8);
+
+  // 決定顯示哪三個生日年份
+  let lastYearBirthday: Date;
+  let thisYearBirthday: Date;
+  let nextYearBirthday: Date;
+
+  if (currentDate < transitionStart) {
+    // 今日在流年生理期之前 → 顯示前年/去年/今年
+    const refYear = referenceBirthday.getFullYear();
+    lastYearBirthday = new Date(refYear - 1, birthMonth - 1, birthDay);
+    thisYearBirthday = new Date(refYear, birthMonth - 1, birthDay);
+    nextYearBirthday = new Date(refYear + 1, birthMonth - 1, birthDay);
+  } else if (currentDate > peakEnd) {
+    // 今日在流年高峰期之後 → 顯示今年/明年/後年
+    const refYear = referenceBirthday.getFullYear();
+    lastYearBirthday = new Date(refYear, birthMonth - 1, birthDay);
+    thisYearBirthday = new Date(refYear + 1, birthMonth - 1, birthDay);
+    nextYearBirthday = new Date(refYear + 2, birthMonth - 1, birthDay);
+  } else {
+    // 今日在流年生理期至高峰期之間 → 顯示去年/今年/明年（以 referenceBirthday 為中心）
+    const refYear = referenceBirthday.getFullYear();
+    lastYearBirthday = new Date(refYear - 1, birthMonth - 1, birthDay);
+    thisYearBirthday = new Date(refYear, birthMonth - 1, birthDay);
+    nextYearBirthday = new Date(refYear + 1, birthMonth - 1, birthDay);
   }
-  const physiologicalPeriodStart = new Date(physioYear, physioMonth - 1, birthDay);
-  
-  // 計算高峰期（生日後6個月）
-  let peakMonth = birthMonth + 6;
-  let peakYear = currentYear;
-  if (peakMonth > 12) {
-    peakMonth -= 12;
-    peakYear += 1;
-  }
-  const peakPeriod = new Date(peakYear, peakMonth - 1, birthDay);
-  
-  // 計算暴風圈範圍（高峰期前後2個月）
-  let stormStartMonth = peakMonth - 2;
-  let stormStartYear = peakYear;
-  if (stormStartMonth <= 0) {
-    stormStartMonth += 12;
-    stormStartYear -= 1;
-  }
-  const stormCircleStart = new Date(stormStartYear, stormStartMonth - 1, birthDay);
-  
-  let stormEndMonth = peakMonth + 2;
-  let stormEndYear = peakYear;
-  if (stormEndMonth > 12) {
-    stormEndMonth -= 12;
-    stormEndYear += 1;
-  }
-  const stormCircleEnd = new Date(stormEndYear, stormEndMonth - 1, birthDay);
-  
-  // 計算當前位置（從去年生日到明年生日的百分比）
+
+  // 以 thisYearBirthday（中心生日）計算流年關鍵期
+  const physiologicalPeriodStart = new Date(thisYearBirthday);
+  physiologicalPeriodStart.setMonth(physiologicalPeriodStart.getMonth() - 4);
+
+  const peakPeriod = new Date(thisYearBirthday);
+  peakPeriod.setMonth(peakPeriod.getMonth() + 6);
+
+  const stormCircleStart = new Date(peakPeriod);
+  stormCircleStart.setMonth(stormCircleStart.getMonth() - 2);
+
+  const stormCircleEnd = new Date(peakPeriod);
+  stormCircleEnd.setMonth(stormCircleEnd.getMonth() + 2);
+
+  // 計算當前位置（從 lastYearBirthday 到 nextYearBirthday 的百分比）
   const totalDuration = nextYearBirthday.getTime() - lastYearBirthday.getTime();
   const currentDuration = currentDate.getTime() - lastYearBirthday.getTime();
   const currentPosition = (currentDuration / totalDuration) * 100;
-  
+
   // 判斷當前是否在各個階段
   const isInPhysiologicalPeriod = currentDate >= physiologicalPeriodStart && currentDate < thisYearBirthday;
   const isInPeakPeriod = Math.abs(currentDate.getTime() - peakPeriod.getTime()) <= 30 * 24 * 60 * 60 * 1000; // ±1個月
   const isInStormCircle = currentDate >= stormCircleStart && currentDate <= stormCircleEnd;
-  
+
   return {
     lastYearBirthday,
     thisYearBirthday,
