@@ -93,7 +93,7 @@ export default function Home() {
               探索您的塔羅靈數
             </h2>
             <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
-              透過生日計算專屬的塔羅牌組，深入了解您的本性、外顯與內心特質，
+              透過生日計算專屬的靈數DNA，深入了解您的本性、外顯與內心特質<br />
               以及流年、流月、流日的運勢走向
             </p>
           </div>

@@ -662,3 +662,8 @@
 - [x] 找出兩者差異並修正FlowingYearTimeline（改為動態年份判斷邏輯）
 - [x] 驗證1983/9/19的今日位置：currentPosition=73.1%，isInStormCircle=true ✓
 - [x] 建立 checkpoint
+
+## 修改Home.tsx首頁說明文字
+- [x] 將「透過生日計算專屬的塔羅牌組」改為「透過生日計算專屬的靈數DNA」
+- [x] 調整換行位置，讓兩行文字更清晰
+- [x] 建立 checkpoint
