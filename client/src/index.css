@@ -207,3 +207,16 @@
 .today-dot-breathe {
   animation: breathe-pulse 2.5s ease-in-out infinite;
 }
+
+@keyframes breathe-text {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.today-text-breathe {
+  animation: breathe-text 2.5s ease-in-out infinite;
+}

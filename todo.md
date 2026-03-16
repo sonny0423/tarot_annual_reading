@@ -673,3 +673,8 @@
 - [x] 為FlowingYearTimeline的今日紅點套用呼吸燈動畫（移除animate-pulse，改用today-dot-breathe）
 - [x] 為FlowYearCycleChart的今日紅點套用SVG animate元素（外圈光暈渴出＋主圓點呼吸）
 - [x] 建立 checkpoint
+
+## 讓「今日」文字和日期也同步呼吸閃爍
+- [x] FlowingYearTimeline：讓「今日」文字div和日期div也加入today-text-breathe動畫（純opacity呼吸）
+- [x] FlowYearCycleChart：讓SVG中的「今日」text和日期text也加入animate元素（opacity 1→0.45→1）
+- [x] 建立 checkpoint

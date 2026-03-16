@@ -226,7 +226,7 @@ export function FlowingYearTimeline({ birthDate, currentDate }: FlowingYearTimel
                 style={{ left: `${timelineData.currentPosition}%` }}
               />
               <div
-                className="absolute bottom-full transform -translate-x-1/2 mb-2 text-xs font-semibold text-red-600 whitespace-nowrap"
+                className="absolute bottom-full transform -translate-x-1/2 mb-2 text-xs font-semibold text-red-600 whitespace-nowrap today-text-breathe"
                 style={{ left: `${timelineData.currentPosition}%` }}
               >
                 今日<br />{formatShortDate(timelineData.currentDate)}
