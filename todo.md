@@ -683,3 +683,8 @@
 - [x] 修改 breathe-text keyframes：opacity 1→0.1，加入 scale(0.9) 縮放、顏色變化、text-shadow，速度加快為 1.5s
 - [x] FlowYearCycleChart SVG animate：opacity 1→0.08，加入 fontSize 縮放，速度加快為 1.5s
 - [x] 建立 checkpoint
+
+## 放大「今日」和日期文字尺寸 1.5 倍
+- [x] FlowingYearTimeline：將今日文字 div 的 text-xs 改為 text-sm font-bold，放大約 1.5 倍
+- [x] FlowYearCycleChart：將今日 text 的 fontSize.md 和 fontSize.sm 各乘以 1.5，並調整連接線和Y座標
+- [x] 建立 checkpoint
