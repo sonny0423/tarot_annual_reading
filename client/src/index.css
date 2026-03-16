@@ -211,12 +211,19 @@
 @keyframes breathe-text {
   0%, 100% {
     opacity: 1;
+    transform: scale(1);
+    color: #dc2626;
+    text-shadow: 0 0 0px rgba(220, 38, 38, 0);
   }
   50% {
-    opacity: 0.45;
+    opacity: 0.1;
+    transform: scale(0.9);
+    color: #f87171;
+    text-shadow: 0 0 8px rgba(220, 38, 38, 0.6);
   }
 }
 
 .today-text-breathe {
-  animation: breathe-text 2.5s ease-in-out infinite;
+  animation: breathe-text 1.5s ease-in-out infinite;
+  display: inline-block;
 }

@@ -678,3 +678,8 @@
 - [x] FlowingYearTimeline：讓「今日」文字div和日期div也加入today-text-breathe動畫（純opacity呼吸）
 - [x] FlowYearCycleChart：讓SVG中的「今日」text和日期text也加入animate元素（opacity 1→0.45→1）
 - [x] 建立 checkpoint
+
+## 加強「今日」文字和日期的閃爍效果
+- [x] 修改 breathe-text keyframes：opacity 1→0.1，加入 scale(0.9) 縮放、顏色變化、text-shadow，速度加快為 1.5s
+- [x] FlowYearCycleChart SVG animate：opacity 1→0.08，加入 fontSize 縮放，速度加快為 1.5s
+- [x] 建立 checkpoint

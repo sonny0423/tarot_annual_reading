@@ -536,11 +536,13 @@ export function FlowYearCycleChart({
           <line x1={currentX} y1={currentY} x2={currentX} y2={currentY - 30} stroke={phaseColor} strokeWidth="2" strokeDasharray="4 2" />
           <text x={currentX} y={currentY - 35} textAnchor="middle" fontSize={fontSize.md} fill={phaseColor} fontWeight="700">
             今日
-            <animate attributeName="opacity" values="1;0.45;1" dur="2.5s" repeatCount="indefinite" />
+            <animate attributeName="opacity" values="1;0.08;1" dur="1.5s" repeatCount="indefinite" />
+            <animate attributeName="fontSize" values={`${fontSize.md};${fontSize.md * 0.85};${fontSize.md}`} dur="1.5s" repeatCount="indefinite" />
           </text>
           <text x={currentX} y={currentY - 22} textAnchor="middle" fontSize={fontSize.sm} fill={phaseColor} fontWeight="500">
             {formatDateWithYear(currentDate)}
-            <animate attributeName="opacity" values="1;0.45;1" dur="2.5s" repeatCount="indefinite" />
+            <animate attributeName="opacity" values="1;0.08;1" dur="1.5s" repeatCount="indefinite" />
+            <animate attributeName="fontSize" values={`${fontSize.sm};${fontSize.sm * 0.85};${fontSize.sm}`} dur="1.5s" repeatCount="indefinite" />
           </text>
         </g>
       </svg>
