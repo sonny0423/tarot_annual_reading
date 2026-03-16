@@ -523,7 +523,16 @@ export function FlowYearCycleChart({
 
         {/* 當前日期標記（唯一顯示在弧線上） */}
         <g>
-          <circle cx={currentX} cy={currentY} r="8" fill={phaseColor} stroke="white" strokeWidth="2" />
+          {/* 外圈光暈呼吸燈效果 */}
+          <circle cx={currentX} cy={currentY} r="8" fill={phaseColor} fillOpacity="0.3" stroke="none">
+            <animate attributeName="r" values="8;16;8" dur="2.5s" repeatCount="indefinite" />
+            <animate attributeName="fill-opacity" values="0.3;0;0.3" dur="2.5s" repeatCount="indefinite" />
+          </circle>
+          {/* 主圓點 */}
+          <circle cx={currentX} cy={currentY} r="8" fill={phaseColor} stroke="white" strokeWidth="2">
+            <animate attributeName="r" values="8;9.5;8" dur="2.5s" repeatCount="indefinite" />
+            <animate attributeName="opacity" values="1;0.75;1" dur="2.5s" repeatCount="indefinite" />
+          </circle>
           <line x1={currentX} y1={currentY} x2={currentX} y2={currentY - 30} stroke={phaseColor} strokeWidth="2" strokeDasharray="4 2" />
           <text x={currentX} y={currentY - 35} textAnchor="middle" fontSize={fontSize.md} fill={phaseColor} fontWeight="700">
             今日

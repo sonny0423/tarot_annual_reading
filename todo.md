@@ -667,3 +667,9 @@
 - [x] 將「透過生日計算專屬的塔羅牌組」改為「透過生日計算專屬的靈數DNA」
 - [x] 調整換行位置，讓兩行文字更清晰
 - [x] 建立 checkpoint
+
+## 為「今日」紅點加入呼吸燈閃爍動畫
+- [x] 在全域CSS中新增呼吸燈動畫keyframes（breathe-pulse）和.today-dot-breathe工具類
+- [x] 為FlowingYearTimeline的今日紅點套用呼吸燈動畫（移除animate-pulse，改用today-dot-breathe）
+- [x] 為FlowYearCycleChart的今日紅點套用SVG animate元素（外圈光暈渴出＋主圓點呼吸）
+- [x] 建立 checkpoint

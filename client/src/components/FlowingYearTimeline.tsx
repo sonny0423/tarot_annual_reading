@@ -222,7 +222,7 @@ export function FlowingYearTimeline({ birthDate, currentDate }: FlowingYearTimel
           {timelineData.currentPosition >= 0 && timelineData.currentPosition <= 100 && (
             <>
               <div
-                className="absolute top-1/2 w-4 h-4 bg-red-500 rounded-full transform -translate-x-1/2 -translate-y-1/2 animate-pulse"
+                className="absolute top-1/2 w-4 h-4 bg-red-500 rounded-full transform -translate-x-1/2 -translate-y-1/2 today-dot-breathe"
                 style={{ left: `${timelineData.currentPosition}%` }}
               />
               <div
