@@ -18,7 +18,16 @@ interface BirthdayFormProps {
   }) => void;
 }
 
-// 驗證規則
+// 取得某年某月的天數（考慮閏年）
+function getDaysInMonth(year: number, month: number): number {
+  if (month < 1 || month > 12) return 31;
+  return new Date(year, month, 0).getDate();
+}
+
+// 農曆每月最多天數（農曆月最多 30 天）
+const LUNAR_MAX_DAYS = 30;
+
+// 驗證年份
 function validateYear(val: string): string {
   if (!val) return "";
   const n = parseInt(val);
@@ -27,6 +36,7 @@ function validateYear(val: string): string {
   return "";
 }
 
+// 驗證月份
 function validateMonth(val: string): string {
   if (!val) return "";
   const n = parseInt(val);
@@ -35,11 +45,38 @@ function validateMonth(val: string): string {
   return "";
 }
 
+// 驗證日期（基本範圍）
 function validateDay(val: string): string {
   if (!val) return "";
   const n = parseInt(val);
   if (isNaN(n)) return "請輸入有效數字";
   if (n < 1 || n > 31) return "日期須介於 1 – 31";
+  return "";
+}
+
+// 驗證日期合法性（跨欄位：需要年份+月份）
+function validateDayInMonth(
+  dayVal: string,
+  monthVal: string,
+  yearVal: string,
+  isLunar = false
+): string {
+  const basicErr = validateDay(dayVal);
+  if (basicErr) return basicErr;
+  if (!dayVal || !monthVal) return "";
+
+  const day = parseInt(dayVal);
+  const month = parseInt(monthVal);
+  if (isNaN(day) || isNaN(month) || month < 1 || month > 12) return "";
+
+  if (isLunar) {
+    if (day > LUNAR_MAX_DAYS) return "農曆每月最多 30 天";
+    return "";
+  }
+
+  const year = parseInt(yearVal) || 2000; // 年份未填時用 2000 估算
+  const maxDays = getDaysInMonth(year, month);
+  if (day > maxDays) return "該月沒有這一天";
   return "";
 }
 
@@ -120,14 +157,23 @@ export function BirthdayForm({ onSubmit }: BirthdayFormProps) {
     return !!(lunarYearErr || lunarMonthErr || lunarDayErr);
   };
 
+  // 國曆：當年份或月份改變時，重新驗證日期
+  const revalidateSolarDay = (year: string, month: string, day: string) => {
+    if (day) setSolarDayErr(validateDayInMonth(day, month, year, false));
+  };
+
+  // 農曆：當月份改變時，重新驗證日期
+  const revalidateLunarDay = (month: string, day: string) => {
+    if (day) setLunarDayErr(validateDayInMonth(day, month, "2000", true));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (calendarType === "solar") {
-      // 觸發所有欄位驗證
       const yErr = validateYear(solarYear) || (!solarYear ? "請輸入年份" : "");
       const mErr = validateMonth(solarMonth) || (!solarMonth ? "請輸入月份" : "");
-      const dErr = validateDay(solarDay) || (!solarDay ? "請輸入日期" : "");
+      const dErr = validateDayInMonth(solarDay, solarMonth, solarYear, false) || (!solarDay ? "請輸入日期" : "");
       setSolarYearErr(yErr);
       setSolarMonthErr(mErr);
       setSolarDayErr(dErr);
@@ -158,7 +204,7 @@ export function BirthdayForm({ onSubmit }: BirthdayFormProps) {
     } else {
       const yErr = validateYear(lunarYear) || (!lunarYear ? "請輸入年份" : "");
       const mErr = validateMonth(lunarMonth) || (!lunarMonth ? "請輸入月份" : "");
-      const dErr = validateDay(lunarDay) || (!lunarDay ? "請輸入日期" : "");
+      const dErr = validateDayInMonth(lunarDay, lunarMonth, "2000", true) || (!lunarDay ? "請輸入日期" : "");
       setLunarYearErr(yErr);
       setLunarMonthErr(mErr);
       setLunarDayErr(dErr);
@@ -242,8 +288,10 @@ export function BirthdayForm({ onSubmit }: BirthdayFormProps) {
                     placeholder="1990"
                     value={solarYear}
                     onChange={(e) => {
-                      setSolarYear(e.target.value);
-                      setSolarYearErr(validateYear(e.target.value));
+                      const val = e.target.value;
+                      setSolarYear(val);
+                      setSolarYearErr(validateYear(val));
+                      revalidateSolarDay(val, solarMonth, solarDay);
                     }}
                     onBlur={handleSolarToLunar}
                     min="1900"
@@ -261,8 +309,10 @@ export function BirthdayForm({ onSubmit }: BirthdayFormProps) {
                     placeholder="1"
                     value={solarMonth}
                     onChange={(e) => {
-                      setSolarMonth(e.target.value);
-                      setSolarMonthErr(validateMonth(e.target.value));
+                      const val = e.target.value;
+                      setSolarMonth(val);
+                      setSolarMonthErr(validateMonth(val));
+                      revalidateSolarDay(solarYear, val, solarDay);
                     }}
                     onBlur={handleSolarToLunar}
                     min="1"
@@ -280,8 +330,9 @@ export function BirthdayForm({ onSubmit }: BirthdayFormProps) {
                     placeholder="1"
                     value={solarDay}
                     onChange={(e) => {
-                      setSolarDay(e.target.value);
-                      setSolarDayErr(validateDay(e.target.value));
+                      const val = e.target.value;
+                      setSolarDay(val);
+                      setSolarDayErr(validateDayInMonth(val, solarMonth, solarYear, false));
                     }}
                     onBlur={handleSolarToLunar}
                     min="1"
@@ -309,8 +360,9 @@ export function BirthdayForm({ onSubmit }: BirthdayFormProps) {
                     placeholder="1990"
                     value={lunarYear}
                     onChange={(e) => {
-                      setLunarYear(e.target.value);
-                      setLunarYearErr(validateYear(e.target.value));
+                      const val = e.target.value;
+                      setLunarYear(val);
+                      setLunarYearErr(validateYear(val));
                     }}
                     onBlur={handleLunarToSolar}
                     min="1900"
@@ -328,8 +380,10 @@ export function BirthdayForm({ onSubmit }: BirthdayFormProps) {
                     placeholder="3"
                     value={lunarMonth}
                     onChange={(e) => {
-                      setLunarMonth(e.target.value);
-                      setLunarMonthErr(validateMonth(e.target.value));
+                      const val = e.target.value;
+                      setLunarMonth(val);
+                      setLunarMonthErr(validateMonth(val));
+                      revalidateLunarDay(val, lunarDay);
                     }}
                     onBlur={handleLunarToSolar}
                     min="1"
@@ -347,12 +401,13 @@ export function BirthdayForm({ onSubmit }: BirthdayFormProps) {
                     placeholder="20"
                     value={lunarDay}
                     onChange={(e) => {
-                      setLunarDay(e.target.value);
-                      setLunarDayErr(validateDay(e.target.value));
+                      const val = e.target.value;
+                      setLunarDay(val);
+                      setLunarDayErr(validateDayInMonth(val, lunarMonth, "2000", true));
                     }}
                     onBlur={handleLunarToSolar}
                     min="1"
-                    max="31"
+                    max="30"
                     className={lunarDayErr ? "border-red-500 focus-visible:ring-red-400" : ""}
                   />
                   {lunarDayErr && <p className="text-xs text-red-500 mt-1">{lunarDayErr}</p>}
