@@ -688,3 +688,7 @@
 - [x] FlowingYearTimeline：將今日文字 div 的 text-xs 改為 text-sm font-bold，放大約 1.5 倍
 - [x] FlowYearCycleChart：將今日 text 的 fontSize.md 和 fontSize.sm 各乘以 1.5，並調整連接線和Y座標
 - [x] 建立 checkpoint
+
+## 文字修正：西曆改為西元
+- [x] BirthdayForm.tsx：「國曆 (西曆)」改為「國曆 (西元)」
+- [x] 建立 checkpoint

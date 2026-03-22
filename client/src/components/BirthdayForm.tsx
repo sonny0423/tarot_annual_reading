@@ -200,7 +200,7 @@ export function BirthdayForm({ onSubmit }: BirthdayFormProps) {
               setConvertedDate("");
             }}
           >
-            國曆 (西曆)
+            國曆 (西元)
           </Button>
           <Button
             type="button"
