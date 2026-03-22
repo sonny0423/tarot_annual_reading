@@ -692,3 +692,7 @@
 ## 文字修正：西曆改為西元
 - [x] BirthdayForm.tsx：「國曆 (西曆)」改為「國曆 (西元)」
 - [x] 建立 checkpoint
+
+## 調整輸入框 placeholder 文字顏色
+- [x] 在 index.css 加入全域 placeholder 顏色覆寫，改為 #c8c8d8（淡紫灰色）
+- [x] 建立 checkpoint

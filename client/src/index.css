@@ -227,3 +227,9 @@
   animation: breathe-text 1.5s ease-in-out infinite;
   display: inline-block;
 }
+
+/* 輸入框 placeholder 使用更淺的灰色 */
+input::placeholder {
+  color: #c8c8d8 !important;
+  opacity: 1;
+}
