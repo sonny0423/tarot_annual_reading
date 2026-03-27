@@ -710,3 +710,7 @@
 - [x] 顯示「該月沒有這一天」錯誤提示於日期欄位下方
 - [x] 農曆模式使用固定每月最多 30 天的驗證
 - [x] 建立 checkpoint
+
+## 移除簡易時間軸
+- [x] 在 FlowYearCycleTabs.tsx 移除 Tab 結構和 FlowingYearTimeline，直接渲染 FlowYearCycleChart
+- [x] 建立 checkpoint
