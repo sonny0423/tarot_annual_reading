@@ -714,3 +714,8 @@
 ## 移除簡易時間軸
 - [x] 在 FlowYearCycleTabs.tsx 移除 Tab 結構和 FlowingYearTimeline，直接渲染 FlowYearCycleChart
 - [x] 建立 checkpoint
+
+## 隱藏牌卡資料庫入口
+- [x] App.tsx 中路由保留（/cards 仍可直接訪問）
+- [x] 在 Home.tsx 導覽列中將「牌卡資料庫」按鈕以 {/* */} 注解隱藏，保留程式碼
+- [x] 建立 checkpoint

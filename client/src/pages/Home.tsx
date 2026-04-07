@@ -76,12 +76,14 @@ export default function Home() {
               塔羅流年運勢
             </h1>
           </div>
+          {/* 牌卡資料庫入口（暫時隱藏，需要時取消注解即可開啟）
           <Link href="/cards">
             <Button variant="outline" className="gap-2">
               <Library className="w-4 h-4" />
               牌卡資料庫
             </Button>
           </Link>
+          */}
         </div>
       </header>
 
