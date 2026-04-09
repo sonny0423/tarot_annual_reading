@@ -365,76 +365,41 @@ export function ReadingResult({
 
           <TabsContent value="personality" className="space-y-6 mt-6">
             <p className="text-muted-foreground text-center max-w-3xl mx-auto">
-              透過國曆、農曆生日，計算出6個屬於你的性格DNA
+              透過國曆、農曆生日，計算出屬於你的性格DNA（重複牌卡已自動合併）
             </p>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* 國曆性格 - 給人的感覺 */}
-          <Card className="border-2 border-primary/30 bg-gradient-to-br from-card to-primary/5">
-            <CardContent className="space-y-6">
-              {cards.core && (
-                <div className="space-y-2">
+        {(() => {
+          // 合併國曆和農曆的6張牌，以牌卡id去重，只保留第一次出現的
+          const allDnaCards: TarotCardType[] = [];
+          const seenIds = new Set<number>();
+          const candidates = [
+            cards.core,
+            cards.outer,
+            cards.inner,
+            lunarReadingData?.cards.core,
+            lunarReadingData?.cards.outer,
+            lunarReadingData?.cards.inner,
+          ];
+          for (const card of candidates) {
+            if (card && !seenIds.has(card.id)) {
+              seenIds.add(card.id);
+              allDnaCards.push(card);
+            }
+          }
+          return (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {allDnaCards.map((card) => (
+                <div key={card.id} className="space-y-2">
                   <TarotCard
-                    card={cards.core}
-                    onClick={() => onCardClick?.(cards.core!)}
+                    card={card}
+                    onClick={() => onCardClick?.(card)}
                     displayMode="traits"
                   />
                 </div>
-              )}
-              {cards.outer && (
-                <div className="space-y-2">
-                  <TarotCard
-                    card={cards.outer}
-                    onClick={() => onCardClick?.(cards.outer!)}
-                    displayMode="traits"
-                  />
-                </div>
-              )}
-              {cards.inner && (
-                <div className="space-y-2">
-                  <TarotCard
-                    card={cards.inner}
-                    onClick={() => onCardClick?.(cards.inner!)}
-                    displayMode="traits"
-                  />
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* 農曆性格 - 另一面特性 */}
-          <Card className="border-2 border-secondary/30 bg-gradient-to-br from-card to-secondary/5">
-            <CardContent className="space-y-6">
-              {lunarReadingData?.cards.core && (
-                <div className="space-y-2">
-                  <TarotCard
-                    card={lunarReadingData.cards.core}
-                    onClick={() => onCardClick?.(lunarReadingData.cards.core!)}
-                    displayMode="traits"
-                  />
-                </div>
-              )}
-              {lunarReadingData?.cards.outer && (
-                <div className="space-y-2">
-                  <TarotCard
-                    card={lunarReadingData.cards.outer}
-                    onClick={() => onCardClick?.(lunarReadingData.cards.outer!)}
-                    displayMode="traits"
-                  />
-                </div>
-              )}
-              {lunarReadingData?.cards.inner && (
-                <div className="space-y-2">
-                  <TarotCard
-                    card={lunarReadingData.cards.inner}
-                    onClick={() => onCardClick?.(lunarReadingData.cards.inner!)}
-                    displayMode="traits"
-                  />
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+              ))}
+            </div>
+          );
+        })()}
           </TabsContent>
 
           <TabsContent value="benefactor" className="space-y-6 mt-6">
