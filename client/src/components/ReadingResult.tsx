@@ -371,22 +371,11 @@ export function ReadingResult({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* 國曆性格 - 給人的感覺 */}
           <Card className="border-2 border-primary/30 bg-gradient-to-br from-card to-primary/5">
-            <CardHeader className="text-center">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <Sun className="w-5 h-5 text-primary" />
-                <CardTitle className="text-xl font-serif text-primary">國曆性格</CardTitle>
-              </div>
-              <CardDescription>給人的感覺</CardDescription>
-              <p className="text-sm font-medium pt-2">
-                {birthYear}年{birthMonth}月{birthDay}日
-              </p>
-            </CardHeader>
             <CardContent className="space-y-6">
               {cards.core && (
                 <div className="space-y-2">
                   <TarotCard
                     card={cards.core}
-                    label="本性"
                     onClick={() => onCardClick?.(cards.core!)}
                     displayMode="traits"
                   />
@@ -396,7 +385,6 @@ export function ReadingResult({
                 <div className="space-y-2">
                   <TarotCard
                     card={cards.outer}
-                    label="外顯"
                     onClick={() => onCardClick?.(cards.outer!)}
                     displayMode="traits"
                   />
@@ -406,7 +394,6 @@ export function ReadingResult({
                 <div className="space-y-2">
                   <TarotCard
                     card={cards.inner}
-                    label="內心"
                     onClick={() => onCardClick?.(cards.inner!)}
                     displayMode="traits"
                   />
@@ -417,22 +404,11 @@ export function ReadingResult({
 
           {/* 農曆性格 - 另一面特性 */}
           <Card className="border-2 border-secondary/30 bg-gradient-to-br from-card to-secondary/5">
-            <CardHeader className="text-center">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <Moon className="w-5 h-5 text-secondary" />
-                <CardTitle className="text-xl font-serif text-secondary">農曆性格</CardTitle>
-              </div>
-              <CardDescription>另一面特性</CardDescription>
-              <p className="text-sm font-medium pt-2">
-                {lunarYear}年{lunarMonth}月{lunarDay}日
-              </p>
-            </CardHeader>
             <CardContent className="space-y-6">
               {lunarReadingData?.cards.core && (
                 <div className="space-y-2">
                   <TarotCard
                     card={lunarReadingData.cards.core}
-                    label="本性"
                     onClick={() => onCardClick?.(lunarReadingData.cards.core!)}
                     displayMode="traits"
                   />
@@ -442,7 +418,6 @@ export function ReadingResult({
                 <div className="space-y-2">
                   <TarotCard
                     card={lunarReadingData.cards.outer}
-                    label="外顯"
                     onClick={() => onCardClick?.(lunarReadingData.cards.outer!)}
                     displayMode="traits"
                   />
@@ -452,7 +427,6 @@ export function ReadingResult({
                 <div className="space-y-2">
                   <TarotCard
                     card={lunarReadingData.cards.inner}
-                    label="內心"
                     onClick={() => onCardClick?.(lunarReadingData.cards.inner!)}
                     displayMode="traits"
                   />
