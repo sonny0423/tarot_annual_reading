@@ -526,7 +526,7 @@ export function ReadingResult({
                         <TarotCard
                           card={cards.core}
                           onClick={() => onCardClick?.(cards.core!)}
-                          displayMode="traits"
+                          compact
                         />
                         <p className="text-xs text-center text-muted-foreground">本性</p>
                       </div>
@@ -536,7 +536,7 @@ export function ReadingResult({
                         <TarotCard
                           card={cards.outer}
                           onClick={() => onCardClick?.(cards.outer!)}
-                          displayMode="traits"
+                          compact
                         />
                         <p className="text-xs text-center text-muted-foreground">外顯</p>
                       </div>
@@ -546,7 +546,7 @@ export function ReadingResult({
                         <TarotCard
                           card={cards.inner}
                           onClick={() => onCardClick?.(cards.inner!)}
-                          displayMode="traits"
+                          compact
                         />
                         <p className="text-xs text-center text-muted-foreground">內心</p>
                       </div>
@@ -574,7 +574,7 @@ export function ReadingResult({
                           <TarotCard
                             card={lunarReadingData.cards.core}
                             onClick={() => onCardClick?.(lunarReadingData.cards.core!)}
-                            displayMode="traits"
+                            compact
                           />
                           <p className="text-xs text-center text-muted-foreground">本性</p>
                         </div>
@@ -584,7 +584,7 @@ export function ReadingResult({
                           <TarotCard
                             card={lunarReadingData.cards.outer}
                             onClick={() => onCardClick?.(lunarReadingData.cards.outer!)}
-                            displayMode="traits"
+                            compact
                           />
                           <p className="text-xs text-center text-muted-foreground">外顯</p>
                         </div>
@@ -594,7 +594,7 @@ export function ReadingResult({
                           <TarotCard
                             card={lunarReadingData.cards.inner}
                             onClick={() => onCardClick?.(lunarReadingData.cards.inner!)}
-                            displayMode="traits"
+                            compact
                           />
                           <p className="text-xs text-center text-muted-foreground">內心</p>
                         </div>
