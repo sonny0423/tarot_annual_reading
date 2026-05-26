@@ -352,7 +352,7 @@ export function ReadingResult({
         </div>
         
         <Tabs defaultValue="personality" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
+          <TabsList className="grid w-full grid-cols-3 max-w-2xl mx-auto">
             <TabsTrigger value="personality" className="gap-2">
               <User className="w-4 h-4" />
               你的性格DNA
@@ -360,6 +360,10 @@ export function ReadingResult({
             <TabsTrigger value="benefactor" className="gap-2">
               <Star className="w-4 h-4" />
               生命中的貴人
+            </TabsTrigger>
+            <TabsTrigger value="raw-cards" className="gap-2">
+              <Eye className="w-4 h-4" />
+              原始靈數牌卡
             </TabsTrigger>
           </TabsList>
 
@@ -498,6 +502,108 @@ export function ReadingResult({
             </CardContent>
           </Card>
         </div>
+          </TabsContent>
+
+          <TabsContent value="raw-cards" className="space-y-6 mt-6">
+            <p className="text-muted-foreground text-center max-w-3xl mx-auto">
+              以下顯示由國曆與農曆生日各別計算出的原始 6 張靈數牌卡（不合併重複）
+            </p>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* 國曆性格 3 張 */}
+              <Card className="border-2 border-secondary/30 bg-gradient-to-br from-card to-secondary/5">
+                <CardHeader className="text-center">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <Sun className="w-5 h-5 text-secondary" />
+                    <CardTitle className="text-xl font-serif text-secondary">國曆性格</CardTitle>
+                  </div>
+                  <CardDescription>由國曆生日計算的 3 張靈數牌卡</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-col gap-4">
+                    {cards.core && (
+                      <div className="space-y-2">
+                        <TarotCard
+                          card={cards.core}
+                          onClick={() => onCardClick?.(cards.core!)}
+                          displayMode="traits"
+                        />
+                        <p className="text-xs text-center text-muted-foreground">本性</p>
+                      </div>
+                    )}
+                    {cards.outer && (
+                      <div className="space-y-2">
+                        <TarotCard
+                          card={cards.outer}
+                          onClick={() => onCardClick?.(cards.outer!)}
+                          displayMode="traits"
+                        />
+                        <p className="text-xs text-center text-muted-foreground">外顯</p>
+                      </div>
+                    )}
+                    {cards.inner && (
+                      <div className="space-y-2">
+                        <TarotCard
+                          card={cards.inner}
+                          onClick={() => onCardClick?.(cards.inner!)}
+                          displayMode="traits"
+                        />
+                        <p className="text-xs text-center text-muted-foreground">內心</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* 農曆性格 3 張 */}
+              <Card className="border-2 border-accent/30 bg-gradient-to-br from-card to-accent/10">
+                <CardHeader className="text-center">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <Moon className="w-5 h-5 text-accent" />
+                    <CardTitle className="text-xl font-serif text-accent">農曆性格</CardTitle>
+                  </div>
+                  <CardDescription>由農曆生日計算的 3 張靈數牌卡</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {lunarCalculateMutation.isPending ? (
+                    <div className="text-center text-muted-foreground py-8">計算中...</div>
+                  ) : (
+                    <div className="flex flex-col gap-4">
+                      {lunarReadingData?.cards.core && (
+                        <div className="space-y-2">
+                          <TarotCard
+                            card={lunarReadingData.cards.core}
+                            onClick={() => onCardClick?.(lunarReadingData.cards.core!)}
+                            displayMode="traits"
+                          />
+                          <p className="text-xs text-center text-muted-foreground">本性</p>
+                        </div>
+                      )}
+                      {lunarReadingData?.cards.outer && (
+                        <div className="space-y-2">
+                          <TarotCard
+                            card={lunarReadingData.cards.outer}
+                            onClick={() => onCardClick?.(lunarReadingData.cards.outer!)}
+                            displayMode="traits"
+                          />
+                          <p className="text-xs text-center text-muted-foreground">外顯</p>
+                        </div>
+                      )}
+                      {lunarReadingData?.cards.inner && (
+                        <div className="space-y-2">
+                          <TarotCard
+                            card={lunarReadingData.cards.inner}
+                            onClick={() => onCardClick?.(lunarReadingData.cards.inner!)}
+                            displayMode="traits"
+                          />
+                          <p className="text-xs text-center text-muted-foreground">內心</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </section>

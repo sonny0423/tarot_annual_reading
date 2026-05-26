@@ -729,3 +729,8 @@
 - [x] 合併國曆和農曆的6張牌，以 card.id 去重，只保留第一次出現的
 - [x] 去重後以 grid-cols-1/2/3 自適應方式顯示，副標提示「重複牌卡已自動合併」
 - [x] 建立 checkpoint
+## 新增第三個標籤：原始6張性格DNA牌卡
+- [x] 讀取 ReadingResult.tsx 中性格DNA標籤的完整結構
+- [x] 在「生命中的貴人」TabsContent 後新增第三個 TabsTrigger 和 TabsContent
+- [x] 第三個標籤顯示兩欄：左欄「國曆性格」3張牌，右欄「農曆性格」3張牌（不去重）
+- [x] 建立 checkpoint
