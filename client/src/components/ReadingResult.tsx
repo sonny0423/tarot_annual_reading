@@ -340,7 +340,7 @@ export function ReadingResult({
         </div>
         <Button variant="outline" onClick={onReset} className="gap-2">
           <RefreshCw className="w-4 h-4" />
-          重新占卜
+          重新計算
         </Button>
       </div>
 
