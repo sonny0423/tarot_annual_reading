@@ -126,6 +126,16 @@ export function FlowYearCycleChart({
     const centerStormEnd = new Date(centerPeakDate);
     centerStormEnd.setMonth(centerStormEnd.getMonth() + 2);
 
+    // 基於左生日（leftBirthday）計算上一個流年的高峰期
+    const leftPeakDate = new Date(leftBirthday);
+    leftPeakDate.setMonth(leftPeakDate.getMonth() + 6);
+
+    const leftStormStart = new Date(leftPeakDate);
+    leftStormStart.setMonth(leftStormStart.getMonth() - 2);
+
+    const leftStormEnd = new Date(leftPeakDate);
+    leftStormEnd.setMonth(leftStormEnd.getMonth() + 2);
+
     // 基於右生日計算下一個流年的關鍵期
     const rightTransitionStart = new Date(rightBirthday);
     rightTransitionStart.setMonth(rightTransitionStart.getMonth() - 4);
@@ -169,6 +179,15 @@ export function FlowYearCycleChart({
     const rightStormStartPosition = rightStormStartDays / totalDays;
     const rightStormEndPosition = rightStormEndDays / totalDays;
 
+    // 計算左生日高峰期在週期中的位置
+    const leftPeakDays = (leftPeakDate.getTime() - leftBirthday.getTime()) / (1000 * 60 * 60 * 24);
+    const leftPeakPosition = leftPeakDays / totalDays;
+
+    const leftStormStartDays = (leftStormStart.getTime() - leftBirthday.getTime()) / (1000 * 60 * 60 * 24);
+    const leftStormEndDays = (leftStormEnd.getTime() - leftBirthday.getTime()) / (1000 * 60 * 60 * 24);
+    const leftStormStartPosition = leftStormStartDays / totalDays;
+    const leftStormEndPosition = leftStormEndDays / totalDays;
+
     // 判斷當前處於哪個階段
     let currentPhase = "normal";
     if (currentDate >= centerTransitionStart && currentDate < centerBirthday) {
@@ -201,6 +220,13 @@ export function FlowYearCycleChart({
       rightPeakPosition,
       rightStormStartPosition,
       rightStormEndPosition,
+      // 左生日的高峰期
+      leftPeakDate,
+      leftStormStart,
+      leftStormEnd,
+      leftPeakPosition,
+      leftStormStartPosition,
+      leftStormEndPosition,
     };
   }, [birthMonth, birthDay, currentDate]);
 
@@ -335,6 +361,14 @@ export function FlowYearCycleChart({
     Z
   `;
 
+  // 左生日的高峰期區域路徑（第一個弧線上，若在範圍內）
+  const leftPeakAreaPath = `
+    ${generateArcPath(cycleData.leftStormStartPosition, cycleData.leftStormEndPosition)}
+    L ${getPositionCoordinates(cycleData.leftStormEndPosition)[0]} ${baseY}
+    L ${getPositionCoordinates(cycleData.leftStormStartPosition)[0]} ${baseY}
+    Z
+  `;
+
   // 當前位置的座標
   const [currentX, currentY] = getPositionCoordinates(cycleData.currentPosition);
 
@@ -410,6 +444,9 @@ export function FlowYearCycleChart({
   const [rightPeakX] = getPositionCoordinates(cycleData.rightPeakPosition);
   const [rightStormStartX] = getPositionCoordinates(cycleData.rightStormStartPosition);
   const [rightStormEndX] = getPositionCoordinates(cycleData.rightStormEndPosition);
+  const [leftPeakX] = getPositionCoordinates(cycleData.leftPeakPosition);
+  const [leftStormStartX] = getPositionCoordinates(cycleData.leftStormStartPosition);
+  const [leftStormEndX] = getPositionCoordinates(cycleData.leftStormEndPosition);
 
   const isMobileMode = fixedWidth;
 
@@ -477,6 +514,11 @@ export function FlowYearCycleChart({
         {/* 右生日的高峰期區域（第二個弧線，若在可見範圍內） */}
         {cycleData.rightStormStartPosition <= 1 && (
           <path d={rightPeakAreaPath} fill="url(#yellowStripes)" fillOpacity="0.3" stroke="none" />
+        )}
+
+        {/* 左生日的高峰期區域（第一個弧線，若在可見範圍內） */}
+        {cycleData.leftStormStartPosition >= 0 && cycleData.leftStormStartPosition <= 0.5 && (
+          <path d={leftPeakAreaPath} fill="url(#yellowStripes)" fillOpacity="0.3" stroke="none" />
         )}
 
         {/* 第一個弧線 */}
@@ -604,6 +646,35 @@ export function FlowYearCycleChart({
                 <circle cx={rightStormEndX} cy={timelineY} r="2.5" fill="#eab308" stroke="white" strokeWidth="1" />
                 <text x={rightStormEndX} y={timelineY + 15} textAnchor="middle" fontSize={fontSize.xs} fill="#ca8a04">
                   {formatDateShort(cycleData.rightStormEnd)}
+                </text>
+              </g>
+            )}
+
+            {/* 左生日高峰期標記（若在可見範圍內） */}
+            {cycleData.leftStormStartPosition >= 0 && cycleData.leftStormStartPosition <= 0.5 && (
+              <g>
+                <circle cx={leftStormStartX} cy={timelineY} r="2.5" fill="#eab308" stroke="white" strokeWidth="1" />
+                <text x={leftStormStartX} y={timelineY + 15} textAnchor="middle" fontSize={fontSize.xs} fill="#ca8a04">
+                  {formatDateShort(cycleData.leftStormStart)}
+                </text>
+              </g>
+            )}
+            {cycleData.leftPeakPosition >= 0 && cycleData.leftPeakPosition <= 0.5 && (
+              <g>
+                <circle cx={leftPeakX} cy={timelineY} r="4" fill="#eab308" stroke="white" strokeWidth="1.5" />
+                <text x={leftPeakX} y={timelineY - 8} textAnchor="middle" fontSize={fontSize.xs} fill="#a16207" fontWeight="600">
+                  高峰期最高峰
+                </text>
+                <text x={leftPeakX} y={timelineY + 15} textAnchor="middle" fontSize={fontSize.xs} fill="#ca8a04" fontWeight="500">
+                  {formatDateShort(cycleData.leftPeakDate)}
+                </text>
+              </g>
+            )}
+            {cycleData.leftStormEndPosition >= 0 && cycleData.leftStormEndPosition <= 0.5 && (
+              <g>
+                <circle cx={leftStormEndX} cy={timelineY} r="2.5" fill="#eab308" stroke="white" strokeWidth="1" />
+                <text x={leftStormEndX} y={timelineY + 15} textAnchor="middle" fontSize={fontSize.xs} fill="#ca8a04">
+                  {formatDateShort(cycleData.leftStormEnd)}
                 </text>
               </g>
             )}
