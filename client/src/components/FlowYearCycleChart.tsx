@@ -68,49 +68,37 @@ export function FlowYearCycleChart({
 
   const cycleData = useMemo(() => {
     const currentYear = currentDate.getFullYear();
-    
-    // 找到最近的生日（可能是去年或今年）
+
+    // 找到「最近的下一個生日」（今天或之後最近的生日）
     const thisYearBirthday = new Date(currentYear, birthMonth - 1, birthDay);
-    const lastYearBirthday = new Date(currentYear - 1, birthMonth - 1, birthDay);
-    
-    // 決定以哪個生日為基準點
-    const referenceBirthday = currentDate >= thisYearBirthday ? thisYearBirthday : lastYearBirthday;
+    const nextBirthday = currentDate <= thisYearBirthday
+      ? thisYearBirthday
+      : new Date(currentYear + 1, birthMonth - 1, birthDay);
+    const prevBirthday = new Date(nextBirthday.getFullYear() - 1, birthMonth - 1, birthDay);
 
-    // 計算流年生理期起始（基準生日前4個月）
-    const transitionStart = new Date(referenceBirthday);
-    transitionStart.setMonth(transitionStart.getMonth() - 4);
+    // 計算今日距離「最近下一個生日」的相對位置 d（0~1）
+    // d=0 表示今天就是生日，d 越大表示距下個生日越近
+    const msPerYear = nextBirthday.getTime() - prevBirthday.getTime();
+    const msToNext = nextBirthday.getTime() - currentDate.getTime();
+    const d = msToNext / msPerYear; // 0~1，0=今天是生日，1=距下個生日還有一整年
 
-    // 計算流年高峰期結束（基準生日後8個月）
-    const peakEnd = new Date(referenceBirthday);
-    peakEnd.setMonth(peakEnd.getMonth() + 8);
-
-    // 判斷顯示模式：決定顯示哪三個生日年份
-    let displayMode: 'current' | 'previous' | 'next';
+    // 依據 d 決定中間生日：
+    // d < 0.5 → 今日距下個生日較近（< 半年），以「下一個生日」為中間，今日在左弧
+    // d >= 0.5 → 今日距上個生日較近（> 半年），以「上一個生日」為中間，今日在右弧
     let leftBirthday: Date;
     let centerBirthday: Date;
     let rightBirthday: Date;
 
-    if (currentDate < transitionStart) {
-      // 規則2：今日在流年生理期之前 → 顯示前年/去年/今年
-      displayMode = 'previous';
-      const refYear = referenceBirthday.getFullYear();
-      leftBirthday = new Date(refYear - 1, birthMonth - 1, birthDay);
-      centerBirthday = new Date(refYear, birthMonth - 1, birthDay);
-      rightBirthday = new Date(refYear + 1, birthMonth - 1, birthDay);
-    } else if (currentDate > peakEnd) {
-      // 規則3：今日在流年高峰期之後 → 顯示今年/明年/後年
-      displayMode = 'next';
-      const refYear = referenceBirthday.getFullYear();
-      leftBirthday = new Date(refYear, birthMonth - 1, birthDay);
-      centerBirthday = new Date(refYear + 1, birthMonth - 1, birthDay);
-      rightBirthday = new Date(refYear + 2, birthMonth - 1, birthDay);
+    if (d < 0.5) {
+      // 以「下一個生日」為中間，今日在左弧右半部
+      centerBirthday = nextBirthday;
+      leftBirthday = prevBirthday;
+      rightBirthday = new Date(nextBirthday.getFullYear() + 1, birthMonth - 1, birthDay);
     } else {
-      // 規則1：今日在流年生理期至高峰期之間 → 顯示去年/今年/明年
-      displayMode = 'current';
-      const refYear = referenceBirthday.getFullYear();
-      leftBirthday = new Date(refYear - 1, birthMonth - 1, birthDay);
-      centerBirthday = new Date(refYear, birthMonth - 1, birthDay);
-      rightBirthday = new Date(refYear + 1, birthMonth - 1, birthDay);
+      // 以「上一個生日」為中間，今日在右弧左半部
+      centerBirthday = prevBirthday;
+      leftBirthday = new Date(prevBirthday.getFullYear() - 1, birthMonth - 1, birthDay);
+      rightBirthday = nextBirthday;
     }
 
     // 基於中間生日（centerBirthday）計算流年關鍵期
@@ -197,7 +185,6 @@ export function FlowYearCycleChart({
     }
 
     return {
-      displayMode,
       leftBirthday,
       centerBirthday,
       rightBirthday,
