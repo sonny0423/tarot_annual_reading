@@ -255,9 +255,9 @@ export function FlowYearCycleChart({
       case "mobile":
         return {
           width: 700,
-          height: 520,
+          height: 560,
           padding: 30,
-          arcHeight: 280,
+          arcHeight: 260,
           fontSize: { xs: 14, sm: 16, md: 18 },
           showAllLabels: true, // 橫向滾動後可顯示所有標籤
           fixedWidth: true, // 手機版固定寬度，啟用橫向滾動
@@ -265,9 +265,9 @@ export function FlowYearCycleChart({
       case "compact":
         return {
           width: 700,
-          height: 520,
+          height: 560,
           padding: 25,
-          arcHeight: 260,
+          arcHeight: 250,
           fontSize: { xs: 13, sm: 15, md: 17 },
           showAllLabels: true,
           fixedWidth: true,
@@ -567,24 +567,24 @@ export function FlowYearCycleChart({
           </text>
         </g>
 
-        {/* 流年生理期起始標記（在水平軸上） */}
+        {/* 流年生理期起始標記（在水平軸上）- 標籤顯示在軸線下方，避免與高峰期標籤重疊 */}
         <g>
           <circle cx={transX} cy={timelineY} r="3" fill="#ef4444" stroke="white" strokeWidth="1.5" />
-          <text x={transX} y={timelineY - 8} textAnchor="middle" fontSize={fontSize.xs} fill="#dc2626" fontWeight="500">
+          <text x={transX} y={timelineY + 16} textAnchor="middle" fontSize={fontSize.xs} fill="#dc2626" fontWeight="500">
             生理期起始
           </text>
-          <text x={transX} y={timelineY + 15} textAnchor="middle" fontSize={fontSize.xs} fill="#ef4444">
+          <text x={transX} y={timelineY + 28} textAnchor="middle" fontSize={fontSize.xs} fill="#ef4444">
             {formatDateShort(cycleData.transitionStart)}
           </text>
         </g>
 
-        {/* 右生日的生理期起始標記 */}
+        {/* 右生日的生理期起始標記 - 標籤顯示在軸線下方 */}
         <g>
           <circle cx={rightTransX} cy={timelineY} r="3" fill="#ef4444" stroke="white" strokeWidth="1.5" />
-          <text x={rightTransX} y={timelineY - 8} textAnchor="middle" fontSize={fontSize.xs} fill="#dc2626" fontWeight="500">
+          <text x={rightTransX} y={timelineY + 16} textAnchor="middle" fontSize={fontSize.xs} fill="#dc2626" fontWeight="500">
             生理期起始
           </text>
-          <text x={rightTransX} y={timelineY + 15} textAnchor="middle" fontSize={fontSize.xs} fill="#ef4444">
+          <text x={rightTransX} y={timelineY + 28} textAnchor="middle" fontSize={fontSize.xs} fill="#ef4444">
             {formatDateShort(cycleData.rightTransitionStart)}
           </text>
         </g>
