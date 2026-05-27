@@ -177,11 +177,22 @@ export function FlowYearCycleChart({
     const leftStormEndPosition = leftStormEndDays / totalDays;
 
     // 判斷當前處於哪個階段
+    // 需要同時考慮：左弧的高峰期、中間生日的生理期、中間生日的高峰期、右弧的生理期
     let currentPhase = "normal";
-    if (currentDate >= centerTransitionStart && currentDate < centerBirthday) {
-      currentPhase = "transition";
-    } else if (currentDate >= centerStormStart && currentDate <= centerStormEnd) {
+    if (
+      // 左弧的高峰期（左生日後6個月±2個月）
+      (currentDate >= leftStormStart && currentDate <= leftStormEnd) ||
+      // 中間生日的高峰期（中間生日後6個月±2個月）
+      (currentDate >= centerStormStart && currentDate <= centerStormEnd)
+    ) {
       currentPhase = "peak";
+    } else if (
+      // 中間生日的生理期（中間生日前4個月）
+      (currentDate >= centerTransitionStart && currentDate < centerBirthday) ||
+      // 右生日的生理期（右生日前4個月）
+      (currentDate >= rightTransitionStart && currentDate < rightBirthday)
+    ) {
+      currentPhase = "transition";
     }
 
     return {
