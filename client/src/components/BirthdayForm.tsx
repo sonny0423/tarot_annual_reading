@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Sparkles } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import { solarToLunar, lunarToSolar } from "@/lib/lunarConverter";
 
 interface BirthdayFormProps {
   onSubmit: (data: {
@@ -107,45 +108,33 @@ export function BirthdayForm({ onSubmit }: BirthdayFormProps) {
   // 轉換後的顯示
   const [convertedDate, setConvertedDate] = useState<string>("");
 
-  // 國曆轉農曆
-  const solarToLunarMutation = trpc.tarot.solarToLunar.useMutation({
-    onSuccess: (data) => {
-      if (data) {
-        const month = Math.abs(data.month);
-        setConvertedDate(`農曆：${data.year}年${data.isLeapMonth ? '閏' : ''}${month}月${data.day}日`);
-      }
-    },
-  });
-
-  // 農曆轉國曆
-  const lunarToSolarMutation = trpc.tarot.lunarToSolar.useMutation({
-    onSuccess: (data) => {
-      if (data) {
-        setConvertedDate(`國曆：${data.year}年${data.month}月${data.day}日`);
-      }
-    },
-  });
-
-  // 手動觸發國曆轉農曆（onBlur）
+  // 手動觸發國曆轉農曆（onBlur）- 本地計算，無需網路請求
   const handleSolarToLunar = () => {
     if (calendarType === "solar" && solarYear && solarMonth && solarDay) {
       const year = parseInt(solarYear);
       const month = parseInt(solarMonth);
       const day = parseInt(solarDay);
       if (year >= 1900 && year <= 2100 && month >= 1 && month <= 12 && day >= 1 && day <= 31) {
-        solarToLunarMutation.mutate({ year, month, day });
+        const data = solarToLunar(year, month, day);
+        if (data) {
+          const m = Math.abs(data.month);
+          setConvertedDate(`農曆：${data.year}年${data.isLeapMonth ? '閏' : ''}${m}月${data.day}日`);
+        }
       }
     }
   };
 
-  // 手動觸發農曆轉國曆（onBlur）
+  // 手動觸發農曆轉國曆（onBlur）- 本地計算，無需網路請求
   const handleLunarToSolar = () => {
     if (calendarType === "lunar" && lunarYear && lunarMonth && lunarDay) {
       const year = parseInt(lunarYear);
       const month = parseInt(lunarMonth);
       const day = parseInt(lunarDay);
       if (year >= 1900 && year <= 2100 && month >= 1 && month <= 12 && day >= 1 && day <= 31) {
-        lunarToSolarMutation.mutate({ year, month, day, isLeapMonth });
+        const data = lunarToSolar(year, month, day, isLeapMonth);
+        if (data) {
+          setConvertedDate(`國曆：${data.year}年${data.month}月${data.day}日`);
+        }
       }
     }
   };
@@ -183,24 +172,19 @@ export function BirthdayForm({ onSubmit }: BirthdayFormProps) {
       const month = parseInt(solarMonth);
       const day = parseInt(solarDay);
 
-      solarToLunarMutation.mutate(
-        { year, month, day },
-        {
-          onSuccess: (lunarData) => {
-            if (lunarData) {
-              onSubmit({
-                solarYear: year,
-                solarMonth: month,
-                solarDay: day,
-                lunarYear: lunarData.year,
-                lunarMonth: Math.abs(lunarData.month),
-                lunarDay: lunarData.day,
-                isLeapMonth: lunarData.isLeapMonth,
-              });
-            }
-          },
-        }
-      );
+      // 本地直接計算農曆，無需等待後端
+      const lunarData = solarToLunar(year, month, day);
+      if (lunarData) {
+        onSubmit({
+          solarYear: year,
+          solarMonth: month,
+          solarDay: day,
+          lunarYear: lunarData.year,
+          lunarMonth: Math.abs(lunarData.month),
+          lunarDay: lunarData.day,
+          isLeapMonth: lunarData.isLeapMonth,
+        });
+      }
     } else {
       const yErr = validateYear(lunarYear) || (!lunarYear ? "請輸入年份" : "");
       const mErr = validateMonth(lunarMonth) || (!lunarMonth ? "請輸入月份" : "");
@@ -214,24 +198,19 @@ export function BirthdayForm({ onSubmit }: BirthdayFormProps) {
       const month = parseInt(lunarMonth);
       const day = parseInt(lunarDay);
 
-      lunarToSolarMutation.mutate(
-        { year, month, day, isLeapMonth },
-        {
-          onSuccess: (solarData) => {
-            if (solarData) {
-              onSubmit({
-                solarYear: solarData.year,
-                solarMonth: solarData.month,
-                solarDay: solarData.day,
-                lunarYear: year,
-                lunarMonth: month,
-                lunarDay: day,
-                isLeapMonth,
-              });
-            }
-          },
-        }
-      );
+      // 本地直接計算國曆，無需等待後端
+      const solarData = lunarToSolar(year, month, day, isLeapMonth);
+      if (solarData) {
+        onSubmit({
+          solarYear: solarData.year,
+          solarMonth: solarData.month,
+          solarDay: solarData.day,
+          lunarYear: year,
+          lunarMonth: month,
+          lunarDay: day,
+          isLeapMonth,
+        });
+      }
     }
   };
 
@@ -436,7 +415,7 @@ export function BirthdayForm({ onSubmit }: BirthdayFormProps) {
           <Button
             type="submit"
             className="w-full gap-2 text-lg py-6"
-            disabled={solarToLunarMutation.isPending || lunarToSolarMutation.isPending || hasErrors()}
+            disabled={hasErrors()}
           >
             <Sparkles className="w-5 h-5" />
             開始計算
