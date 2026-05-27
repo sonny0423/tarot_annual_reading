@@ -356,7 +356,7 @@ export function ReadingResult({
             </TabsTrigger>
             <TabsTrigger value="raw-cards" className="gap-2">
               <Eye className="w-4 h-4" />
-              原始靈數牌卡
+              原始靈數
             </TabsTrigger>
           </TabsList>
 
