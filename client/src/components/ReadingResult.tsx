@@ -348,7 +348,7 @@ export function ReadingResult({
           <TabsList className="grid w-full grid-cols-3 max-w-2xl mx-auto">
             <TabsTrigger value="personality" className="gap-2">
               <User className="w-4 h-4" />
-              你的性格DNA
+              性格DNA
             </TabsTrigger>
             <TabsTrigger value="benefactor" className="gap-2">
               <Star className="w-4 h-4" />
