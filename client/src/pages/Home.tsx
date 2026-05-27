@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Sparkles, Library } from "lucide-react";
 import { Link } from "wouter";
 import type { TarotCard } from "../../../drizzle/schema";
+import { calculateFullReading } from "@/lib/tarotCalculator";
 
 export default function Home() {
   const [selectedCard, setSelectedCard] = useState<TarotCard | null>(null);
@@ -21,33 +22,53 @@ export default function Home() {
   } | null>(null);
 
   const [readingData, setReadingData] = useState<any>(null);
-  const calculateMutation = trpc.tarot.calculateReading.useMutation({
-    onSuccess: (data) => {
-      setReadingData(data);
-    },
-  });
+
+  // 預先載入所有塔羅牌資料（只需一次，之後本地快取）
+  const { data: allCardsData } = trpc.tarot.getAllCards.useQuery();
 
   useEffect(() => {
-    if (birthData) {
-      // 使用瀏覽器的當前日期，而非伺服器時間
+    if (birthData && allCardsData && allCardsData.length > 0) {
+      // 使用瀏覽器的當前日期，完全本地計算
       const now = new Date();
       const currentYear = now.getFullYear();
       const currentMonth = now.getMonth() + 1;
       const currentDay = now.getDate();
-      
-      calculateMutation.mutate({
-        birthYear: birthData.solarYear,
-        birthMonth: birthData.solarMonth,
-        birthDay: birthData.solarDay,
-        lunarBirthYear: birthData.lunarYear,
-        lunarBirthMonth: birthData.lunarMonth,
-        lunarBirthDay: birthData.lunarDay,
-        targetYear: currentYear,
-        targetMonth: currentMonth,
-        targetDay: currentDay,
+
+      const reading = calculateFullReading(
+        birthData.solarYear,
+        birthData.solarMonth,
+        birthData.solarDay,
+        birthData.lunarYear,
+        birthData.lunarMonth,
+        birthData.lunarDay,
+        currentYear,
+        currentMonth,
+        currentDay
+      );
+
+      // 建立牌卡 Map
+      const cardMap = new Map(allCardsData.map((c: TarotCard) => [c.id, c]));
+
+      setReadingData({
+        reading,
+        cards: {
+          core: cardMap.get(reading.coreCard),
+          outer: cardMap.get(reading.outerCard),
+          inner: cardMap.get(reading.innerCard),
+          benefactorCore: cardMap.get(reading.benefactorCore),
+          benefactorOuter: cardMap.get(reading.benefactorOuter),
+          benefactorInner: cardMap.get(reading.benefactorInner),
+          year: cardMap.get(reading.yearCard),
+          month: cardMap.get(reading.monthCard),
+          day: cardMap.get(reading.dayCard),
+          lunarYear: cardMap.get(reading.lunarYearCard),
+          lunarMonth: cardMap.get(reading.lunarMonthCard),
+          lunarDay: cardMap.get(reading.lunarDayCard),
+        },
+        allCards: allCardsData,
       });
     }
-  }, [birthData]);
+  }, [birthData, allCardsData]);
 
   const handleFormSubmit = (data: {
     solarYear: number;
@@ -110,7 +131,7 @@ export default function Home() {
       {/* Results Section */}
       {birthData && (
         <section className="container py-12 md:py-16">
-          {calculateMutation.isPending ? (
+          {!readingData ? (
             <div className="flex flex-col items-center justify-center py-24 space-y-4">
               <Sparkles className="w-16 h-16 text-primary animate-spin" />
               <p className="text-xl text-muted-foreground">正在為您計算塔羅靈數...</p>

@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RefreshCw, User, Heart, Eye, Star, Calendar, Moon, Sun, TrendingUp } from "lucide-react";
 import type { TarotCard as TarotCardType } from "../../../drizzle/schema";
-import { trpc } from "@/lib/trpc";
 import { Solar } from "lunar-javascript";
+import { calculateMonthlyDayFortune, calculateFullReading } from "@/lib/tarotCalculator";
+import { solarToLunar } from "@/lib/lunarConverter";
 
 interface ReadingResultProps {
   birthYear: number;
@@ -105,33 +106,31 @@ export function ReadingResult({
   // 展開的月份狀態（儲存 { year, month }，為 null 表示沒有展開）
   const [expandedMonth, setExpandedMonth] = useState<{ year: number; month: number } | null>(null);
   
-  // 計算農曆本命牌組
-  const [lunarReadingData, setLunarReadingData] = useState<any>(null);
-  const lunarCalculateMutation = trpc.tarot.calculateReading.useMutation({
-    onSuccess: (data) => {
-      setLunarReadingData(data);
-    },
-  });
-
-  useEffect(() => {
-    // 使用瀏覽器的當前日期，而非伺服器時間
+  // 計算農曆本命牌組（前端本地計算）
+  const lunarReadingData = (() => {
+    if (!allCards || allCards.length === 0) return null;
     const now = new Date();
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth() + 1;
     const currentDay = now.getDate();
-    
-    lunarCalculateMutation.mutate({
-      birthYear: lunarYear,
-      birthMonth: lunarMonth,
-      birthDay: lunarDay,
-      lunarBirthYear: lunarYear,
-      lunarBirthMonth: lunarMonth,
-      lunarBirthDay: lunarDay,
-      targetYear: currentYear,
-      targetMonth: currentMonth,
-      targetDay: currentDay,
-    });
-  }, [lunarYear, lunarMonth, lunarDay]);
+    const reading = calculateFullReading(
+      lunarYear, lunarMonth, lunarDay,
+      lunarYear, lunarMonth, lunarDay,
+      currentYear, currentMonth, currentDay
+    );
+    const cardMap = new Map(allCards.map(c => [c.id, c]));
+    return {
+      reading,
+      cards: {
+        core: cardMap.get(reading.coreCard),
+        outer: cardMap.get(reading.outerCard),
+        inner: cardMap.get(reading.innerCard),
+        benefactorCore: cardMap.get(reading.benefactorCore),
+        benefactorOuter: cardMap.get(reading.benefactorOuter),
+        benefactorInner: cardMap.get(reading.benefactorInner),
+      },
+    };
+  })();
 
   // 計算流年總表（0-100歲完整生命週期）
   const calculateMultiYearFortune = () => {
@@ -274,18 +273,12 @@ export function ReadingResult({
   // 使用後端API計算當月每日流日運勢勢
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
-  const { data: monthlyDayFortuneData } = trpc.tarot.calculateMonthlyDayFortune.useQuery({
-    solarBirthYear: birthYear,
-    solarBirthMonth: birthMonth,
-    solarBirthDay: birthDay,
-    lunarBirthYear: lunarYear,
-    lunarBirthMonth: lunarMonth,
-    lunarBirthDay: lunarDay,
-    targetYear: currentYear,
-    targetMonth: currentMonth,
-  });
-  
-  const monthlyDayFortune = monthlyDayFortuneData?.map(item => ({
+  const monthlyDayFortune = calculateMonthlyDayFortune(
+    birthYear, birthMonth, birthDay,
+    lunarYear, lunarMonth, lunarDay,
+    currentYear, currentMonth,
+    solarToLunar
+  ).map(item => ({
     day: item.solarDay,
     lunarYear: item.lunarYear,
     lunarMonth: item.lunarMonth,
@@ -295,7 +288,7 @@ export function ReadingResult({
     solarCard: allCards.find(c => c.id === item.solarCardNumber),
     lunarCardNumber: item.lunarCardNumber,
     lunarCard: allCards.find(c => c.id === item.lunarCardNumber),
-  })) || [];
+  }));
 
    // 當展開月份時，自動滾動到該年份卡片位置（置中）
   useEffect(() => {
@@ -565,10 +558,7 @@ export function ReadingResult({
                   <CardDescription>由農曆生日計算的 3 張靈數牌卡</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {lunarCalculateMutation.isPending ? (
-                    <div className="text-center text-muted-foreground py-8">計算中...</div>
-                  ) : (
-                    <div className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-4">
                       {lunarReadingData?.cards.core && (
                         <div className="space-y-2">
                           <TarotCard
@@ -600,7 +590,6 @@ export function ReadingResult({
                         </div>
                       )}
                     </div>
-                  )}
                 </CardContent>
               </Card>
             </div>
