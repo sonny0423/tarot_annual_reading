@@ -191,9 +191,9 @@ export function calculateMonthlyDayFortune(
     let solarDayCard = sumDigits(solarDaySum);
     while (solarDayCard > 21) solarDayCard = sumDigits(solarDayCard);
 
+    // 農曆流日 = 農曆出生年+月+日 + 國曆目標年+月+日
     const lunarBirthSum = lunarBirthYear + lunarBirthMonth + lunarBirthDay;
-    const lunarMonthSum = lunarBirthSum + lunarDate.year + lunarDate.month;
-    const lunarDaySum = lunarMonthSum + lunarDate.day;
+    const lunarDaySum = lunarBirthSum + targetYear + targetMonth + day;
     let lunarDayCard = sumDigits(lunarDaySum);
     while (lunarDayCard > 21) lunarDayCard = sumDigits(lunarDayCard);
 
