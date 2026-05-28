@@ -1014,7 +1014,7 @@ export function ReadingResult({
               <table className="w-full border-collapse text-sm">
                 <thead>
                   <tr className="bg-primary/10">
-                    <th className="border border-border p-2 text-center font-semibold">國曆日期</th>
+                    <th className="border border-border p-2 text-center font-semibold">日期</th>
                     <th className="border border-border p-2 text-center font-semibold">流日牌（運勢）</th>
                     <th className="border border-border p-2 text-center font-semibold">牌卡名稱</th>
                     <th className="border border-border p-2 text-center font-semibold bg-accent/10">流日牌（心境）</th>
