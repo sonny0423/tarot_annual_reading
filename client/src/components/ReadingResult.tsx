@@ -80,15 +80,15 @@ export function ReadingResult({
   // 計算當前日期的流月牌和流日牌
   const lunarBirthSum = lunarYear + lunarMonth + lunarDay;
   
-  // 當前月份的流月牌（農曆）
-  const currentMonthSum = lunarBirthSum + todayLunarYear + todayLunarMonth;
+  // 當前月份的流月牌（農曆心境）= 農曆出生年+月+日 + 國曆目標年+月
+  const currentMonthSum = lunarBirthSum + todayYear + todayMonth;
   let currentMonthDigitSum = currentMonthSum.toString().split('').map(Number).reduce((sum: number, digit: number) => sum + digit, 0);
   while (currentMonthDigitSum > 21) {
     currentMonthDigitSum = currentMonthDigitSum.toString().split('').map(Number).reduce((sum: number, digit: number) => sum + digit, 0);
   }
   
-  // 今天的流日牌（農曆）
-  const currentDaySum = lunarBirthSum + todayLunarYear + todayLunarMonth + todayLunarDay;
+  // 今天的流日牌（農曆心境）= 農曆出生年+月+日 + 國曆目標年+月+日
+  const currentDaySum = lunarBirthSum + todayYear + todayMonth + todayDay;
   let currentDayDigitSum = currentDaySum.toString().split('').map(Number).reduce((sum: number, digit: number) => sum + digit, 0);
   while (currentDayDigitSum > 21) {
     currentDayDigitSum = currentDayDigitSum.toString().split('').map(Number).reduce((sum: number, digit: number) => sum + digit, 0);
