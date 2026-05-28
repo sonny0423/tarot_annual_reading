@@ -711,7 +711,7 @@ export function ReadingResult({
                         <Moon className="w-4 h-4 text-accent" />
                         <h4 className="text-sm font-medium">流月心境</h4>
                       </div>
-                      <p className="text-xs text-muted-foreground">{todayLunarYear}年{todayLunarMonth}月份的心境重點</p>
+                       <p className="text-xs text-muted-foreground">{currentYear}年{currentMonth}月份的心境重點</p>
                       {currentMonthCard && (
                         <TarotCard
                           card={currentMonthCard}
@@ -758,7 +758,7 @@ export function ReadingResult({
                         <Eye className="w-4 h-4 text-accent" />
                         <h4 className="text-sm font-medium">流日心境</h4>
                       </div>
-                      <p className="text-xs text-muted-foreground">農曆今日({todayLunarYear}年{todayLunarMonth}/{todayLunarDay})的心境提示</p>
+                       <p className="text-xs text-muted-foreground">今日({currentMonth}/{currentDay})的心境提示</p>
                       {currentDayCard && (
                         <TarotCard
                           card={currentDayCard}
