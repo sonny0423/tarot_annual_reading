@@ -1017,7 +1017,6 @@ export function ReadingResult({
                     <th className="border border-border p-2 text-center font-semibold">國曆日期</th>
                     <th className="border border-border p-2 text-center font-semibold">流日牌（運勢）</th>
                     <th className="border border-border p-2 text-center font-semibold">牌卡名稱</th>
-                    <th className="border border-border p-2 text-center font-semibold bg-accent/10">農曆日期</th>
                     <th className="border border-border p-2 text-center font-semibold bg-accent/10">流日牌（心境）</th>
                     <th className="border border-border p-2 text-center font-semibold bg-accent/10">牌卡名稱</th>
                   </tr>
@@ -1040,9 +1039,6 @@ export function ReadingResult({
                         </td>
                         <td className="border border-border p-2 text-center cursor-pointer hover:bg-primary/5" onClick={() => item.solarCard && onCardClick?.(item.solarCard)}>
                           {item.solarCard?.name || ""}
-                        </td>
-                        <td className="border border-border p-2 text-center font-medium bg-accent/5">
-                          {item.lunarMonth}月{item.lunarDay}日 {item.isLeapMonth && <span className="text-xs text-accent ml-1">(閏)</span>}
                         </td>
                         <td className="border border-border p-2 text-center cursor-pointer hover:bg-accent/10" onClick={() => item.lunarCard && onCardClick?.(item.lunarCard)}>
                           <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-orange-50 font-bold text-orange-500">
