@@ -609,7 +609,7 @@ export function ReadingResult({
 
           <TabsContent value="current" className="space-y-6 mt-6">
             <p className="text-muted-foreground text-center">
-              流年、流月、流日牌卡顯示您在不同時間週期的運勢走向與建議
+              流年、流月、流日 顯示您在不同時間週期的運勢走向與建議
             </p>
             
             {/* 流年能量週期（標籤切換） */}
