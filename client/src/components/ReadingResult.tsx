@@ -863,10 +863,9 @@ export function ReadingResult({
                             <table className="w-full border-collapse">
                               <thead>
                                 <tr className="bg-muted/50">
-                                  <th className="border p-2 text-xs font-semibold">國曆月</th>
-                                  <th className="border p-2 text-xs font-semibold">流月牌</th>
-                                  <th className="border p-2 text-xs font-semibold">心境月</th>
-                                  <th className="border p-2 text-xs font-semibold">心境牌</th>
+                                  <th className="border p-2 text-xs font-semibold">月份</th>
+                                  <th className="border p-2 text-xs font-semibold">運勢</th>
+                                  <th className="border p-2 text-xs font-semibold">心境</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -900,9 +899,6 @@ export function ReadingResult({
                                             </div>
                                             <div className="text-xs">{monthItem.solarCard?.name || ""}</div>
                                           </div>
-                                        </td>
-                                        <td className="border p-2 text-center">
-                                          <div className="text-sm">{monthItem.lunarYear}年{monthItem.lunarMonth}月</div>
                                         </td>
                                         <td 
                                           className="border p-2 text-center cursor-pointer hover:bg-accent/10"
