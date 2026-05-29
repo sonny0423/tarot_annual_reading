@@ -645,7 +645,7 @@ export function ReadingResult({
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <Sun className="w-4 h-4 text-primary" />
-                        <h4 className="text-sm font-medium">流年運勢(國曆)</h4>
+                        <h4 className="text-sm font-medium">流年運勢</h4>
                       </div>
                       <p className="text-xs text-muted-foreground">目前的運勢主題為</p>
                       {cards.year && (
@@ -662,7 +662,7 @@ export function ReadingResult({
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <Moon className="w-4 h-4 text-accent" />
-                        <h4 className="text-sm font-medium">流年心境(農曆)</h4>
+                        <h4 className="text-sm font-medium">流年心境</h4>
                       </div>
                       <p className="text-xs text-muted-foreground">目前的心境主題為</p>
                       {cards.lunarYear && (
