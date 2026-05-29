@@ -611,14 +611,6 @@ export function FlowYearCycleChart({
               </text>
             </g>
 
-            {/* 高峰期後2個月 */}
-            <g>
-              <circle cx={stormEndX} cy={timelineY} r="2.5" fill="#eab308" stroke="white" strokeWidth="1" />
-              <text x={stormEndX} y={timelineY + 15} textAnchor="middle" fontSize={fontSize.xs} fill="#ca8a04">
-                {formatDateShort(cycleData.stormEnd)}
-              </text>
-            </g>
-
             {/* 右生日高峰期標記（若在可見範圍內） */}
             {cycleData.rightStormStartPosition <= 1 && (
               <g>
@@ -639,14 +631,7 @@ export function FlowYearCycleChart({
                 </text>
               </g>
             )}
-            {cycleData.rightStormEndPosition <= 1 && (
-              <g>
-                <circle cx={rightStormEndX} cy={timelineY} r="2.5" fill="#eab308" stroke="white" strokeWidth="1" />
-                <text x={rightStormEndX} y={timelineY + 15} textAnchor="middle" fontSize={fontSize.xs} fill="#ca8a04">
-                  {formatDateShort(cycleData.rightStormEnd)}
-                </text>
-              </g>
-            )}
+
 
             {/* 左生日高峰期標記（若在可見範圍內） */}
             {cycleData.leftStormStartPosition >= 0 && cycleData.leftStormStartPosition <= 0.5 && (
@@ -668,14 +653,7 @@ export function FlowYearCycleChart({
                 </text>
               </g>
             )}
-            {cycleData.leftStormEndPosition >= 0 && cycleData.leftStormEndPosition <= 0.5 && (
-              <g>
-                <circle cx={leftStormEndX} cy={timelineY} r="2.5" fill="#eab308" stroke="white" strokeWidth="1" />
-                <text x={leftStormEndX} y={timelineY + 15} textAnchor="middle" fontSize={fontSize.xs} fill="#ca8a04">
-                  {formatDateShort(cycleData.leftStormEnd)}
-                </text>
-              </g>
-            )}
+
           </>
         )}
 
