@@ -870,12 +870,15 @@ export function ReadingResult({
                               <tbody>
                                 {yearMonths.map((monthItem) => {
                                   const isMonthExpanded = expandedMonth?.year === item.year && expandedMonth?.month === monthItem.month;
+                                  const isCurrentMonth = item.year === todayYear && monthItem.month === todayMonth;
                                   
                                   return (
                                     <React.Fragment key={monthItem.month}>
                                       <tr 
                                         className={`cursor-pointer transition-colors ${
-                                          isMonthExpanded ? 'bg-primary/5' : 'hover:bg-muted/30'
+                                          isCurrentMonth
+                                            ? 'bg-orange-50 outline outline-2 outline-orange-500'
+                                            : isMonthExpanded ? 'bg-primary/5' : 'hover:bg-muted/30'
                                         }`}
                                         onClick={(e) => {
                                           e.stopPropagation();
@@ -883,7 +886,9 @@ export function ReadingResult({
                                         }}
                                       >
                                         <td className="border p-2 text-center">
-                                          <div className="text-sm font-medium">{monthItem.month}月</div>
+                                          <div className={`text-sm font-medium ${isCurrentMonth ? 'text-orange-600 font-bold' : ''}`}>
+                                            {monthItem.month}月{isCurrentMonth && <span className="text-[10px] ml-1">(本月)</span>}
+                                          </div>
                                         </td>
                                         <td 
                                           className="border p-2 text-center cursor-pointer hover:bg-primary/10"
@@ -934,10 +939,18 @@ export function ReadingResult({
                                       </tr>
                                                     </thead>
                                                     <tbody>
-                                                      {monthDays.map((dayItem) => (
-                                                        <tr key={dayItem.day} className="hover:bg-muted/30 transition-colors">
+                                                      {monthDays.map((dayItem) => {
+                                                        const isToday = item.year === todayYear && monthItem.month === todayMonth && dayItem.day === todayDay;
+                                                        return (
+                                                        <tr key={dayItem.day} className={`transition-colors ${
+                                                          isToday
+                                                            ? 'bg-orange-50 outline outline-2 outline-orange-500'
+                                                            : 'hover:bg-muted/30'
+                                                        }`}>
                                                           <td className="border p-1.5 text-center">
-                                                            <div className="text-xs font-medium">{dayItem.day}日</div>
+                                                            <div className={`text-xs font-medium ${isToday ? 'text-orange-600 font-bold' : ''}`}>
+                                                              {dayItem.day}日{isToday && <span className="text-[10px] ml-1">(今日)</span>}
+                                                            </div>
                                                           </td>
                                                           <td 
                                                             className="border p-1.5 text-center cursor-pointer hover:bg-primary/10"
@@ -968,7 +981,8 @@ export function ReadingResult({
                                                             </div>
                                                           </td>
                                                         </tr>
-                                                      ))}
+                                                        );
+                                                      })}
                                                     </tbody>
                                                   </table>
                                                 </div>
