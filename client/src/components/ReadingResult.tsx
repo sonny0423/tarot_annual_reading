@@ -181,11 +181,6 @@ export function ReadingResult({
     const months = [];
     
     for (let month = 1; month <= 12; month++) {
-      // 計算國曆每個月份對應的農曆月份（取該月月初1號）
-      const solar = Solar.fromYmd(targetYear, month, 1);
-      const lunar = solar.getLunar();
-      const lunarYearValue = lunar.getYear();
-      const lunarMonthValue = Math.abs(lunar.getMonth()); // 取絕對值，闰月是負數
       // 國曆流月運勢
       const solarBirthSum = birthYear + birthMonth + birthDay;
       const solarMonthSum = solarBirthSum + targetYear + month;
@@ -195,9 +190,9 @@ export function ReadingResult({
         solarMonthCard = solarMonthCard.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
       }
       
-      // 農曆流月心境
+      // 農曆流月心境 = 農曆出生年+月+日 + 國曆目標年+月（與左邊國曆同步）
       const lunarBirthSum = lunarYear + lunarMonth + lunarDay;
-      const lunarMonthSum = lunarBirthSum + lunarYearValue + lunarMonthValue;
+      const lunarMonthSum = lunarBirthSum + targetYear + month;
       const lunarDigitSum = lunarMonthSum.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
       let lunarMonthCard = lunarDigitSum;
       while (lunarMonthCard > 21) {
@@ -208,8 +203,8 @@ export function ReadingResult({
       const lunarCard = allCards.find(c => c.id === lunarMonthCard);
       months.push({
         month,
-        lunarYear: lunarYearValue,
-        lunarMonth: lunarMonthValue,
+        lunarYear: targetYear,
+        lunarMonth: month,
         solarCardNumber: solarMonthCard,
         solarCard,
         lunarCardNumber: lunarMonthCard,
@@ -870,8 +865,8 @@ export function ReadingResult({
                                 <tr className="bg-muted/50">
                                   <th className="border p-2 text-xs font-semibold">國曆月</th>
                                   <th className="border p-2 text-xs font-semibold">流月牌</th>
-                                  <th className="border p-2 text-xs font-semibold">農曆</th>
-                                  <th className="border p-2 text-xs font-semibold">流月牌</th>
+                                  <th className="border p-2 text-xs font-semibold">心境月</th>
+                                  <th className="border p-2 text-xs font-semibold">心境牌</th>
                                 </tr>
                               </thead>
                               <tbody>
