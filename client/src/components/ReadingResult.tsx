@@ -238,10 +238,9 @@ export function ReadingResult({
         solarDayCard = solarDayCard.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
       }
       
-      // 農曆流日心境
+      // 農曆流日心境 = 農曆出生年+月+日 + 國曆目標年+月+日
       const lunarBirthSum = lunarYear + lunarMonth + lunarDay;
-      const lunarMonthSum = lunarBirthSum + lunarYearValue + lunarMonthValue;
-      const lunarDaySum = lunarMonthSum + lunarDayValue;
+      const lunarDaySum = lunarBirthSum + targetYear + targetMonth + day;
       const lunarDigitSum = lunarDaySum.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
       let lunarDayCard = lunarDigitSum;
       while (lunarDayCard > 21) {
@@ -920,7 +919,7 @@ export function ReadingResult({
                                         const monthDays = calculateMonthDays(item.year, monthItem.month);
                                         return (
                                           <tr>
-                                            <td colSpan={4} className="border-0 p-0">
+                                            <td colSpan={3} className="border-0 p-0">
                                               <div className="bg-accent/5 p-3">
                                                 <div className="text-xs font-semibold text-center mb-2">
                                                   {item.year}年{monthItem.month}月 流日運勢表
@@ -928,12 +927,11 @@ export function ReadingResult({
                                                 <div className="overflow-x-auto">
                                                   <table className="w-full border-collapse text-xs">
                                                     <thead>
-                                                      <tr className="bg-muted/50">
-                                                        <th className="border p-1.5 font-semibold">國曆日</th>
-                                                        <th className="border p-1.5 font-semibold">流日牌</th>
-                                                        <th className="border p-1.5 font-semibold">農曆</th>
-                                                        <th className="border p-1.5 font-semibold">流日牌</th>
-                                                      </tr>
+                                      <tr className="bg-muted/50">
+                                        <th className="border p-1.5 font-semibold">日期</th>
+                                        <th className="border p-1.5 font-semibold">運勢</th>
+                                        <th className="border p-1.5 font-semibold">心境</th>
+                                      </tr>
                                                     </thead>
                                                     <tbody>
                                                       {monthDays.map((dayItem) => (
@@ -954,9 +952,6 @@ export function ReadingResult({
                                                               </div>
                                                               <div className="text-[10px]">{dayItem.solarCard?.name || ""}</div>
                                                             </div>
-                                                          </td>
-                                                          <td className="border p-1.5 text-center">
-                                                            <div className="text-xs">{dayItem.lunarYear}年{dayItem.lunarMonth}月{dayItem.lunarDay}日</div>
                                                           </td>
                                                           <td 
                                                             className="border p-1.5 text-center cursor-pointer hover:bg-accent/10"
@@ -1006,10 +1001,8 @@ export function ReadingResult({
                 <thead>
                   <tr className="bg-primary/10">
                     <th className="border border-border p-2 text-center font-semibold">日期</th>
-                    <th className="border border-border p-2 text-center font-semibold">流日牌（運勢）</th>
-                    <th className="border border-border p-2 text-center font-semibold">牌卡名稱</th>
-                    <th className="border border-border p-2 text-center font-semibold bg-accent/10">流日牌（心境）</th>
-                    <th className="border border-border p-2 text-center font-semibold bg-accent/10">牌卡名稱</th>
+                    <th className="border border-border p-2 text-center font-semibold">運勢</th>
+                    <th className="border border-border p-2 text-center font-semibold bg-accent/10">心境</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1024,20 +1017,20 @@ export function ReadingResult({
                           {currentMonth}月{item.day}日 {isToday && <span className="text-xs text-primary ml-1">(今日)</span>}
                         </td>
                         <td className="border border-border p-2 text-center cursor-pointer hover:bg-primary/5" onClick={() => item.solarCard && onCardClick?.(item.solarCard)}>
-                          <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 font-bold text-primary">
-                            {item.solarCardNumber}
-                          </div>
-                        </td>
-                        <td className="border border-border p-2 text-center cursor-pointer hover:bg-primary/5" onClick={() => item.solarCard && onCardClick?.(item.solarCard)}>
-                          {item.solarCard?.name || ""}
-                        </td>
-                        <td className="border border-border p-2 text-center cursor-pointer hover:bg-accent/10" onClick={() => item.lunarCard && onCardClick?.(item.lunarCard)}>
-                          <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-orange-50 font-bold text-orange-500">
-                            {item.lunarCardNumber}
+                          <div className="flex flex-col items-center gap-1">
+                            <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 font-bold text-primary">
+                              {item.solarCardNumber}
+                            </div>
+                            <div className="text-xs">{item.solarCard?.name || ""}</div>
                           </div>
                         </td>
                         <td className="border border-border p-2 text-center cursor-pointer hover:bg-accent/10" onClick={() => item.lunarCard && onCardClick?.(item.lunarCard)}>
-                          {item.lunarCard?.name || ""}
+                          <div className="flex flex-col items-center gap-1">
+                            <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-orange-50 font-bold text-orange-500">
+                              {item.lunarCardNumber}
+                            </div>
+                            <div className="text-xs">{item.lunarCard?.name || ""}</div>
+                          </div>
                         </td>
                       </tr>
                     );
