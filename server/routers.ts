@@ -26,7 +26,7 @@ export const appRouter = router({
     register: publicProcedure
       .input(
         z.object({
-          email: z.string().email("請輸入有效的 Email"),
+          email: z.string().min(3, "帳號至少需要 3 個字元").max(100, "帳號過長"),
           password: z.string().min(8, "密碼至少需要 8 個字元"),
           name: z.string().optional(),
         })
@@ -80,7 +80,7 @@ export const appRouter = router({
     login: publicProcedure
       .input(
         z.object({
-          email: z.string().email("請輸入有效的 Email"),
+          email: z.string().min(1, "請輸入帳號"),
           password: z.string().min(1, "請輸入密碼"),
         })
       )

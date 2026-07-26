@@ -81,15 +81,16 @@ export default function Login() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Email
+                帳號
               </label>
               <input
-                type="email"
+                type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                minLength={3}
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-100 outline-none transition-all text-gray-800"
-                placeholder="your@email.com"
+                placeholder="輸入帳號"
               />
             </div>
 
