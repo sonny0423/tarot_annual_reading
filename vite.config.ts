@@ -35,6 +35,8 @@ export default defineConfig({
       ".manusvm.computer",
       "localhost",
       "127.0.0.1",
+      ".zeabur.app",
+      ".zeabur.com",
     ],
     fs: {
       strict: true,
