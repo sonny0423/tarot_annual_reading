@@ -735,3 +735,10 @@
 - [x] 第三個標籤顯示兩欄：左欄「國曆性格」3張牌，右欄「農曆性格」3張牌（不去重）
 - [x] 建立 checkpoint
 
+
+## Email + 密碼登入機制
+- [x] 資料庫 users 表加入 email 和 password_hash 欄位
+- [x] 後端 API：註冊（register）、登入（login）、取得當前用戶（me）、登出（logout）
+- [x] 前端登入/註冊頁面
+- [x] 路由保護：未登入用戶導向登入頁
+- [x] 登入狀態持久化（JWT cookie）

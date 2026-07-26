@@ -89,6 +89,39 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+// Email auth helpers
+export async function getUserByEmail(email: string) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get user: database not available");
+    return undefined;
+  }
+
+  const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function createEmailUser(email: string, passwordHash: string, name?: string): Promise<number> {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  // Generate a unique openId for email users (prefix with 'email_')
+  const openId = `email_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+
+  const result = await db.insert(users).values({
+    openId,
+    email,
+    passwordHash,
+    name: name || null,
+    loginMethod: 'email',
+    lastSignedIn: new Date(),
+  });
+
+  return result[0].insertId;
+}
+
 // Tarot card queries
 export async function getAllTarotCards(): Promise<TarotCard[]> {
   const db = await getDb();

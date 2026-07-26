@@ -1,11 +1,14 @@
-import { COOKIE_NAME } from "@shared/const";
+import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, router } from "./_core/trpc";
+import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
+import { sdk } from "./_core/sdk";
 import { z } from "zod";
-import { getAllTarotCards, getTarotCardById, getTarotCardsByIds } from "./db";
+import { getAllTarotCards, getTarotCardById, getTarotCardsByIds, getUserByEmail, createEmailUser, getUserByOpenId } from "./db";
 import { calculateFullReading } from "./tarot-calculator";
 import { solarToLunar, lunarToSolar } from "./lunar-converter";
+import bcrypt from "bcryptjs";
+import { TRPCError } from "@trpc/server";
 
 export const appRouter = router({
   system: systemRouter,
@@ -18,6 +21,107 @@ export const appRouter = router({
         success: true,
       } as const;
     }),
+
+    // Email + Password Registration
+    register: publicProcedure
+      .input(
+        z.object({
+          email: z.string().email("請輸入有效的 Email"),
+          password: z.string().min(8, "密碼至少需要 8 個字元"),
+          name: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        // Check if email already exists
+        const existingUser = await getUserByEmail(input.email);
+        if (existingUser) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "此 Email 已被註冊",
+          });
+        }
+
+        // Hash password
+        const passwordHash = await bcrypt.hash(input.password, 12);
+
+        // Create user
+        const userId = await createEmailUser(input.email, passwordHash, input.name);
+
+        // Get the created user to get openId
+        const user = await getUserByEmail(input.email);
+        if (!user) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "註冊失敗，請稍後再試",
+          });
+        }
+
+        // Create session token
+        const sessionToken = await sdk.createSessionToken(user.openId, {
+          name: user.name || "",
+          expiresInMs: ONE_YEAR_MS,
+        });
+
+        // Set cookie
+        const cookieOptions = getSessionCookieOptions(ctx.req);
+        ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+
+        return {
+          success: true,
+          user: {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+          },
+        };
+      }),
+
+    // Email + Password Login
+    login: publicProcedure
+      .input(
+        z.object({
+          email: z.string().email("請輸入有效的 Email"),
+          password: z.string().min(1, "請輸入密碼"),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        // Find user by email
+        const user = await getUserByEmail(input.email);
+        if (!user || !user.passwordHash) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "帳號或密碼錯誤",
+          });
+        }
+
+        // Verify password
+        const isValid = await bcrypt.compare(input.password, user.passwordHash);
+        if (!isValid) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "帳號或密碼錯誤",
+          });
+        }
+
+        // Create session token
+        const sessionToken = await sdk.createSessionToken(user.openId, {
+          name: user.name || "",
+          expiresInMs: ONE_YEAR_MS,
+        });
+
+        // Set cookie
+        const cookieOptions = getSessionCookieOptions(ctx.req);
+        ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+
+        return {
+          success: true,
+          user: {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+          },
+        };
+      }),
   }),
 
   tarot: router({
@@ -87,8 +191,8 @@ export const appRouter = router({
           
           // 計算農曆流日牌
           const lunarBirthSum = lunarBirthYear + lunarBirthMonth + lunarBirthDay;
-          const lunarMonthSum = lunarBirthSum + lunarDate.year + lunarDate.month;
-          const lunarDaySum = lunarMonthSum + lunarDate.day;
+          const lunarMonthSum = lunarBirthSum + targetYear + targetMonth;
+          const lunarDaySum = lunarMonthSum + day;
           let lunarDayCard = lunarDaySum.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
           while (lunarDayCard > 21) {
             lunarDayCard = lunarDayCard.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
