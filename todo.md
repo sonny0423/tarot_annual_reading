@@ -734,3 +734,4 @@
 - [x] 在「生命中的貴人」TabsContent 後新增第三個 TabsTrigger 和 TabsContent
 - [x] 第三個標籤顯示兩欄：左欄「國曆性格」3張牌，右欄「農曆性格」3張牌（不去重）
 - [x] 建立 checkpoint
+
