@@ -85,42 +85,51 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ input, ctx }) => {
-        // Find user by email
-        const user = await getUserByEmail(input.email);
-        if (!user || !user.passwordHash) {
+        try {
+          // Find user by account
+          const user = await getUserByEmail(input.email);
+          if (!user || !user.passwordHash) {
+            throw new TRPCError({
+              code: "UNAUTHORIZED",
+              message: "帳號或密碼錯誤",
+            });
+          }
+
+          // Verify password
+          const isValid = await bcrypt.compare(input.password, user.passwordHash);
+          if (!isValid) {
+            throw new TRPCError({
+              code: "UNAUTHORIZED",
+              message: "帳號或密碼錯誤",
+            });
+          }
+
+          // Create session token
+          const sessionToken = await sdk.createSessionToken(user.openId, {
+            name: user.name || "",
+            expiresInMs: ONE_YEAR_MS,
+          });
+
+          // Set cookie
+          const cookieOptions = getSessionCookieOptions(ctx.req);
+          ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+
+          return {
+            success: true,
+            user: {
+              id: user.id,
+              email: user.email,
+              name: user.name,
+            },
+          };
+        } catch (err) {
+          if (err instanceof TRPCError) throw err;
+          console.error("[Login] Database error:", err);
           throw new TRPCError({
-            code: "UNAUTHORIZED",
-            message: "帳號或密碼錯誤",
+            code: "INTERNAL_SERVER_ERROR",
+            message: "登入失敗，請稍後再試",
           });
         }
-
-        // Verify password
-        const isValid = await bcrypt.compare(input.password, user.passwordHash);
-        if (!isValid) {
-          throw new TRPCError({
-            code: "UNAUTHORIZED",
-            message: "帳號或密碼錯誤",
-          });
-        }
-
-        // Create session token
-        const sessionToken = await sdk.createSessionToken(user.openId, {
-          name: user.name || "",
-          expiresInMs: ONE_YEAR_MS,
-        });
-
-        // Set cookie
-        const cookieOptions = getSessionCookieOptions(ctx.req);
-        ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-
-        return {
-          success: true,
-          user: {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-          },
-        };
       }),
   }),
 
