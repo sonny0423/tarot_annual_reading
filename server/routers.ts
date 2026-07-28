@@ -32,48 +32,65 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ input, ctx }) => {
-        // Check if email already exists
-        const existingUser = await getUserByEmail(input.email);
-        if (existingUser) {
-          throw new TRPCError({
-            code: "CONFLICT",
-            message: "此 Email 已被註冊",
+        try {
+          // Check if account already exists
+          const existingUser = await getUserByEmail(input.email);
+          if (existingUser) {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "此帳號已被使用",
+            });
+          }
+
+          // Hash password
+          const passwordHash = await bcrypt.hash(input.password, 12);
+
+          // Create user
+          await createEmailUser(input.email, passwordHash, input.name);
+
+          // Get the created user to get openId
+          const user = await getUserByEmail(input.email);
+          if (!user) {
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: "註冊失敗，請稍後再試",
+            });
+          }
+
+          // Create session token
+          const sessionToken = await sdk.createSessionToken(user.openId, {
+            name: user.name || "",
+            expiresInMs: ONE_YEAR_MS,
           });
-        }
 
-        // Hash password
-        const passwordHash = await bcrypt.hash(input.password, 12);
+          // Set cookie
+          const cookieOptions = getSessionCookieOptions(ctx.req);
+          ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
 
-        // Create user
-        const userId = await createEmailUser(input.email, passwordHash, input.name);
-
-        // Get the created user to get openId
-        const user = await getUserByEmail(input.email);
-        if (!user) {
+          return {
+            success: true,
+            user: {
+              id: user.id,
+              email: user.email,
+              name: user.name,
+            },
+          };
+        } catch (err) {
+          if (err instanceof TRPCError) throw err;
+          console.error("[Register] Error:", err);
+          // Check for common configuration errors
+          const errMsg = String(err);
+          if (errMsg.includes("JWT_SECRET") || errMsg.includes("Zero-length key")) {
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: "伺服器設定錯誤：請確認 JWT_SECRET 環境變數已正確設定",
+            });
+          }
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
             message: "註冊失敗，請稍後再試",
           });
         }
-
-        // Create session token
-        const sessionToken = await sdk.createSessionToken(user.openId, {
-          name: user.name || "",
-          expiresInMs: ONE_YEAR_MS,
-        });
-
-        // Set cookie
-        const cookieOptions = getSessionCookieOptions(ctx.req);
-        ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-
-        return {
-          success: true,
-          user: {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-          },
-        };
       }),
 
     // Email + Password Login
