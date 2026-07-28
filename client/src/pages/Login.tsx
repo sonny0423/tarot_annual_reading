@@ -133,9 +133,9 @@ export default function Login() {
           </form>
 
           {/* Toggle */}
-          <div className="mt-6 text-center text-sm text-gray-500">
+          <div className="mt-6 text-center text-sm text-gray-500 space-y-2">
             {isRegister ? (
-              <span>
+              <div>
                 已有帳號？{" "}
                 <button
                   onClick={() => { setIsRegister(false); setError(""); }}
@@ -143,17 +143,27 @@ export default function Login() {
                 >
                   登入
                 </button>
-              </span>
+              </div>
             ) : (
-              <span>
-                還沒有帳號？{" "}
-                <button
-                  onClick={() => { setIsRegister(true); setError(""); }}
-                  className="text-purple-600 font-medium hover:text-purple-700 transition-colors"
-                >
-                  註冊
-                </button>
-              </span>
+              <>
+                <div>
+                  還沒有帳號？{" "}
+                  <button
+                    onClick={() => { setIsRegister(true); setError(""); }}
+                    className="text-purple-600 font-medium hover:text-purple-700 transition-colors"
+                  >
+                    註冊
+                  </button>
+                </div>
+                <div>
+                  <a
+                    href="/forgot-password"
+                    className="text-gray-400 hover:text-purple-600 transition-colors"
+                  >
+                    忘記密碼？
+                  </a>
+                </div>
+              </>
             )}
           </div>
         </div>

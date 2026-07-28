@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { eq, and, gt } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, tarotCards, TarotCard } from "../drizzle/schema";
+import { InsertUser, users, tarotCards, TarotCard, passwordResetTokens } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -152,6 +152,50 @@ export async function updateUserRole(userId: number, role: 'user' | 'admin'): Pr
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.update(users).set({ role }).where(eq(users.id, userId));
+}
+
+// Password reset token helpers
+export async function createPasswordResetToken(userId: number, token: string): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  // Invalidate any existing tokens for this user
+  await db.delete(passwordResetTokens).where(eq(passwordResetTokens.userId, userId));
+
+  const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+  await db.insert(passwordResetTokens).values({ userId, token, expiresAt });
+}
+
+export async function getValidResetToken(token: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const now = new Date();
+  const result = await db
+    .select()
+    .from(passwordResetTokens)
+    .where(
+      and(
+        eq(passwordResetTokens.token, token),
+        gt(passwordResetTokens.expiresAt, now)
+      )
+    )
+    .limit(1);
+
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function markTokenUsed(tokenId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(passwordResetTokens).set({ usedAt: new Date() }).where(eq(passwordResetTokens.id, tokenId));
+  await db.delete(passwordResetTokens).where(eq(passwordResetTokens.id, tokenId));
+}
+
+export async function updateUserPassword(userId: number, passwordHash: string): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(users).set({ passwordHash, updatedAt: new Date() }).where(eq(users.id, userId));
 }
 
 // Tarot card queries

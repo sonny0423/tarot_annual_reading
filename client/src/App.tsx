@@ -9,6 +9,8 @@ import CardsLibrary from "./pages/CardsLibrary";
 import Login from "./pages/Login";
 import Landing from "./pages/Landing";
 import AdminUsers from "./pages/AdminUsers";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import { useAuth } from "./_core/hooks/useAuth";
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
@@ -75,6 +77,14 @@ function Router() {
         <PublicOnlyGuard>
           <Login />
         </PublicOnlyGuard>
+      </Route>
+      <Route path="/forgot-password">
+        <PublicOnlyGuard>
+          <ForgotPassword />
+        </PublicOnlyGuard>
+      </Route>
+      <Route path="/reset-password">
+        <ResetPassword />
       </Route>
       <Route path="/">
         <AuthGuard>

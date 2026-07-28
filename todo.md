@@ -764,3 +764,18 @@
 - [x] 首頁右上角顯示登入用戶名稱
 - [x] 首頁右上角加入登出按鈕
 - [x] 登出後跳轉到著陸頁 /welcome
+
+## 忘記密碼功能（Gmail 發送重設連結）
+- [ ] 安裝 nodemailer 套件
+- [ ] 設定 Gmail 憑證環境變數（GMAIL_USER, GMAIL_APP_PASSWORD）
+- [ ] 資料庫新增 password_reset_tokens 表
+- [ ] 後端 API：forgotPassword（產生 token 並發送 Email）
+- [ ] 後端 API：resetPassword（驗證 token 並更新密碼）
+- [ ] 前端：登入頁加入「忘記密碼」連結
+- [ ] 前端：建立 /forgot-password 頁面
+- [ ] 前端：建立 /reset-password 頁面
+- [ ] 測試完整流程
+
+## 管理員後台 - 重設用戶密碼
+- [x] 後端 API：admin.resetUserPassword（admin 直接設定新密碼）
+- [x] 前端 AdminUsers 頁面加入「重設密碼」按鈕和對話框

@@ -4,7 +4,9 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, adminProcedure, router } from "./_core/trpc";
 import { sdk } from "./_core/sdk";
 import { z } from "zod";
-import { getAllTarotCards, getTarotCardById, getTarotCardsByIds, getUserByEmail, createEmailUser, getUserByOpenId, getAllUsers, updateUserRole } from "./db";
+import { getAllTarotCards, getTarotCardById, getTarotCardsByIds, getUserByEmail, createEmailUser, getUserByOpenId, getAllUsers, updateUserRole, createPasswordResetToken, getValidResetToken, markTokenUsed, updateUserPassword } from "./db";
+import { sendPasswordResetEmail } from "./mailer";
+import crypto from "crypto";
 import { calculateFullReading } from "./tarot-calculator";
 import { solarToLunar, lunarToSolar } from "./lunar-converter";
 import bcrypt from "bcryptjs";
@@ -93,6 +95,60 @@ export const appRouter = router({
         }
       }),
 
+    // Forgot Password
+    forgotPassword: publicProcedure
+      .input(z.object({
+        email: z.string().min(1, "請輸入帳號"),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        try {
+          const user = await getUserByEmail(input.email);
+          // Always return success to avoid account enumeration
+          if (!user || !user.email) {
+            return { success: true, message: "若此帳號存在，重設密碼連結已發送到您的 Email" };
+          }
+
+          // Generate secure token
+          const token = crypto.randomBytes(32).toString("hex");
+          await createPasswordResetToken(user.id, token);
+
+          // Build reset URL
+          const protocol = ctx.req.headers["x-forwarded-proto"] || "https";
+          const host = ctx.req.headers["x-forwarded-host"] || ctx.req.headers["host"];
+          const resetUrl = `${protocol}://${host}/reset-password?token=${token}`;
+
+          await sendPasswordResetEmail(user.email, resetUrl);
+
+          return { success: true, message: "若此帳號存在，重設密碼連結已發送到您的 Email" };
+        } catch (err) {
+          if (err instanceof TRPCError) throw err;
+          console.error("[ForgotPassword] Error:", err);
+          return { success: true, message: "若此帳號存在，重設密碼連結已發送到您的 Email" };
+        }
+      }),
+
+    // Reset Password
+    resetPassword: publicProcedure
+      .input(z.object({
+        token: z.string().min(1, "無效的重設連結"),
+        newPassword: z.string().min(8, "密碼至少需要 8 個字元"),
+      }))
+      .mutation(async ({ input }) => {
+        const resetToken = await getValidResetToken(input.token);
+        if (!resetToken) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "重設連結無效或已過期，請重新申請",
+          });
+        }
+
+        const passwordHash = await bcrypt.hash(input.newPassword, 12);
+        await updateUserPassword(resetToken.userId, passwordHash);
+        await markTokenUsed(resetToken.id);
+
+        return { success: true, message: "密碼已成功重設，請使用新密碼登入" };
+      }),
+
     // Email + Password Login
     login: publicProcedure
       .input(
@@ -168,6 +224,17 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         await updateUserRole(input.userId, input.role);
         return { success: true };
+      }),
+
+    resetUserPassword: adminProcedure
+      .input(z.object({
+        userId: z.number(),
+        newPassword: z.string().min(8, "密碼至少需要 8 個字元"),
+      }))
+      .mutation(async ({ input }) => {
+        const passwordHash = await bcrypt.hash(input.newPassword, 12);
+        await updateUserPassword(input.userId, passwordHash);
+        return { success: true, message: "密碼已成功重設" };
       }),
   }),
 

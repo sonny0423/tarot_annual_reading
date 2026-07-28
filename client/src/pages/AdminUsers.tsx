@@ -13,12 +13,26 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
 export default function AdminUsers() {
   const { user } = useAuth();
   const [page, setPage] = useState(1);
   const pageSize = 20;
+
+  // Reset password dialog state
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<{ id: number; name: string | null; email: string | null } | null>(null);
+  const [newPassword, setNewPassword] = useState("");
 
   const { data, isLoading, refetch } = trpc.admin.getUsers.useQuery({ page, pageSize });
 
@@ -31,6 +45,33 @@ export default function AdminUsers() {
       toast.error("更新失敗：" + err.message);
     },
   });
+
+  const resetPasswordMutation = trpc.admin.resetUserPassword.useMutation({
+    onSuccess: () => {
+      toast.success("密碼已成功重設");
+      setResetDialogOpen(false);
+      setNewPassword("");
+      setSelectedUser(null);
+    },
+    onError: (err) => {
+      toast.error("重設失敗：" + err.message);
+    },
+  });
+
+  const handleOpenResetDialog = (u: { id: number; name: string | null; email: string | null }) => {
+    setSelectedUser(u);
+    setNewPassword("");
+    setResetDialogOpen(true);
+  };
+
+  const handleResetPassword = () => {
+    if (!selectedUser) return;
+    if (newPassword.length < 8) {
+      toast.error("密碼至少需要 8 個字元");
+      return;
+    }
+    resetPasswordMutation.mutate({ userId: selectedUser.id, newPassword });
+  };
 
   // Redirect if not admin
   if (!user) {
@@ -110,7 +151,7 @@ export default function AdminUsers() {
                   <TableHead className="w-24">角色</TableHead>
                   <TableHead className="w-44">註冊時間</TableHead>
                   <TableHead className="w-44">最後登入</TableHead>
-                  <TableHead className="w-32">操作</TableHead>
+                  <TableHead className="w-48">操作</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -159,24 +200,34 @@ export default function AdminUsers() {
                         : "—"}
                     </TableCell>
                     <TableCell>
-                      <Select
-                        value={u.role ?? "user"}
-                        onValueChange={(val) =>
-                          updateRoleMutation.mutate({
-                            userId: u.id,
-                            role: val as "user" | "admin",
-                          })
-                        }
-                        disabled={updateRoleMutation.isPending}
-                      >
-                        <SelectTrigger className="h-8 text-xs w-28">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="user">一般用戶</SelectItem>
-                          <SelectItem value="admin">管理員</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <div className="flex items-center gap-2">
+                        <Select
+                          value={u.role ?? "user"}
+                          onValueChange={(val) =>
+                            updateRoleMutation.mutate({
+                              userId: u.id,
+                              role: val as "user" | "admin",
+                            })
+                          }
+                          disabled={updateRoleMutation.isPending}
+                        >
+                          <SelectTrigger className="h-8 text-xs w-24">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="user">一般用戶</SelectItem>
+                            <SelectItem value="admin">管理員</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 text-xs px-2 text-orange-600 border-orange-300 hover:bg-orange-50"
+                          onClick={() => handleOpenResetDialog(u)}
+                        >
+                          重設密碼
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -217,6 +268,51 @@ export default function AdminUsers() {
           </div>
         )}
       </div>
+
+      {/* Reset Password Dialog */}
+      <Dialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>重設用戶密碼</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <p className="text-sm text-muted-foreground">
+              正在為用戶 <span className="font-semibold text-foreground">
+                {selectedUser?.name || selectedUser?.email || `ID: ${selectedUser?.id}`}
+              </span> 重設密碼
+            </p>
+            <div className="space-y-1.5">
+              <Label htmlFor="new-password">新密碼</Label>
+              <Input
+                id="new-password"
+                type="password"
+                placeholder="請輸入新密碼（至少 8 個字元）"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleResetPassword()}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setResetDialogOpen(false);
+                setNewPassword("");
+              }}
+            >
+              取消
+            </Button>
+            <Button
+              onClick={handleResetPassword}
+              disabled={resetPasswordMutation.isPending || newPassword.length < 8}
+              className="bg-orange-500 hover:bg-orange-600 text-white"
+            >
+              {resetPasswordMutation.isPending ? "重設中..." : "確認重設"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
