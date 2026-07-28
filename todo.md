@@ -753,3 +753,9 @@
 - [x] 修改路由：未登入顯示 Landing Page，登入後顯示計算首頁
 - [x] Landing Page 包含登入/註冊按鈕引導用戶登入
 - [x] 測試驗證未登入/已登入的路由切換
+
+## 管理員後台 - 用戶名單
+- [x] 後端 API：admin 專用的 getUsers 查詢（含分頁）
+- [x] 前端管理員頁面 /admin/users 顯示用戶名單
+- [x] 路由保護：只有 admin 角色可進入
+- [x] 設定 richseed 帳號為 admin 角色

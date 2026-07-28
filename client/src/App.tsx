@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import CardsLibrary from "./pages/CardsLibrary";
 import Login from "./pages/Login";
 import Landing from "./pages/Landing";
+import AdminUsers from "./pages/AdminUsers";
 import { useAuth } from "./_core/hooks/useAuth";
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
@@ -83,6 +84,11 @@ function Router() {
       <Route path="/cards">
         <AuthGuard>
           <CardsLibrary />
+        </AuthGuard>
+      </Route>
+      <Route path="/admin/users">
+        <AuthGuard>
+          <AdminUsers />
         </AuthGuard>
       </Route>
       <Route path="/404" component={NotFound} />

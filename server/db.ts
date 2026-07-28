@@ -122,6 +122,38 @@ export async function createEmailUser(email: string, passwordHash: string, name?
   return result[0].insertId;
 }
 
+// Admin: list all users with pagination
+export async function getAllUsers(page: number = 1, pageSize: number = 20) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get users: database not available");
+    return { users: [], total: 0 };
+  }
+
+  const offset = (page - 1) * pageSize;
+  const [rows, countRows] = await Promise.all([
+    db.select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      role: users.role,
+      loginMethod: users.loginMethod,
+      createdAt: users.createdAt,
+      lastSignedIn: users.lastSignedIn,
+    }).from(users).limit(pageSize).offset(offset),
+    db.select({ count: users.id }).from(users),
+  ]);
+
+  return { users: rows, total: countRows.length };
+}
+
+// Admin: update user role
+export async function updateUserRole(userId: number, role: 'user' | 'admin'): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(users).set({ role }).where(eq(users.id, userId));
+}
+
 // Tarot card queries
 export async function getAllTarotCards(): Promise<TarotCard[]> {
   const db = await getDb();

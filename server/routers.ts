@@ -1,10 +1,10 @@
 import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
+import { publicProcedure, protectedProcedure, adminProcedure, router } from "./_core/trpc";
 import { sdk } from "./_core/sdk";
 import { z } from "zod";
-import { getAllTarotCards, getTarotCardById, getTarotCardsByIds, getUserByEmail, createEmailUser, getUserByOpenId } from "./db";
+import { getAllTarotCards, getTarotCardById, getTarotCardsByIds, getUserByEmail, createEmailUser, getUserByOpenId, getAllUsers, updateUserRole } from "./db";
 import { calculateFullReading } from "./tarot-calculator";
 import { solarToLunar, lunarToSolar } from "./lunar-converter";
 import bcrypt from "bcryptjs";
@@ -147,6 +147,27 @@ export const appRouter = router({
             message: "登入失敗，請稍後再試",
           });
         }
+      }),
+  }),
+
+  admin: router({
+    getUsers: adminProcedure
+      .input(z.object({
+        page: z.number().min(1).default(1),
+        pageSize: z.number().min(1).max(100).default(20),
+      }))
+      .query(async ({ input }) => {
+        return getAllUsers(input.page, input.pageSize);
+      }),
+
+    updateRole: adminProcedure
+      .input(z.object({
+        userId: z.number(),
+        role: z.enum(['user', 'admin']),
+      }))
+      .mutation(async ({ input }) => {
+        await updateUserRole(input.userId, input.role);
+        return { success: true };
       }),
   }),
 
@@ -333,3 +354,4 @@ export const appRouter = router({
 });
 
 export type AppRouter = typeof appRouter;
+
