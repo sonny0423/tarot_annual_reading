@@ -4,7 +4,7 @@ import { BirthdayForm } from "@/components/BirthdayForm";
 import { ReadingResult } from "@/components/ReadingResult";
 import { CardDetailDialog } from "@/components/CardDetailDialog";
 import { Button } from "@/components/ui/button";
-import { Sparkles, LogOut, User } from "lucide-react";
+import { Sparkles, LogOut, User, ShieldCheck } from "lucide-react";
 import { Link } from "wouter";
 import type { TarotCard } from "../../../drizzle/schema";
 import { calculateFullReading } from "@/lib/tarotCalculator";
@@ -106,6 +106,18 @@ export default function Home() {
                 <User className="w-4 h-4" />
                 <span className="hidden sm:inline font-medium text-foreground">{user.name && user.name !== user.email ? user.name : (user.email || '使用者')}</span>
               </div>
+            )}
+            {user?.role === 'admin' && (
+              <Link href="/admin/users">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 text-purple-600 border-purple-300 hover:bg-purple-50 hover:text-purple-700"
+                >
+                  <ShieldCheck className="w-4 h-4" />
+                  <span className="hidden sm:inline">管理員後台</span>
+                </Button>
+              </Link>
             )}
             <Button
               variant="outline"
