@@ -51,7 +51,7 @@ export default function Landing() {
             </h1>
 
             <p className="text-lg sm:text-xl text-gray-500 leading-relaxed mb-10 max-w-2xl mx-auto">
-              結合塔羅牌與靈數學，透過您的出生日期計算專屬的靈數 DNA，
+              透過您的出生日期計算專屬的靈數 DNA，
               深入了解本性、外顯與內心特質，以及流年、流月、流日的運勢走向
             </p>
 
