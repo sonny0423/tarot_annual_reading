@@ -4,12 +4,14 @@ import { BirthdayForm } from "@/components/BirthdayForm";
 import { ReadingResult } from "@/components/ReadingResult";
 import { CardDetailDialog } from "@/components/CardDetailDialog";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Library } from "lucide-react";
+import { Sparkles, LogOut, User } from "lucide-react";
 import { Link } from "wouter";
 import type { TarotCard } from "../../../drizzle/schema";
 import { calculateFullReading } from "@/lib/tarotCalculator";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 export default function Home() {
+  const { user, logout } = useAuth();
   const [selectedCard, setSelectedCard] = useState<TarotCard | null>(null);
   const [birthData, setBirthData] = useState<{
     solarYear: number;
@@ -97,14 +99,27 @@ export default function Home() {
               塔羅流年運勢
             </h1>
           </div>
-          {/* 牌卡資料庫入口（暫時隱藏，需要時取消注解即可開啟）
-          <Link href="/cards">
-            <Button variant="outline" className="gap-2">
-              <Library className="w-4 h-4" />
-              牌卡資料庫
+          {/* 右上角使用者資訊與登出 */}
+          <div className="flex items-center gap-3">
+            {user && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <User className="w-4 h-4" />
+                <span className="hidden sm:inline font-medium text-foreground">{user.name && user.name !== user.email ? user.name : (user.email || '使用者')}</span>
+              </div>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 text-muted-foreground hover:text-foreground"
+              onClick={async () => {
+                await logout();
+                window.location.href = '/welcome';
+              }}
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">登出</span>
             </Button>
-          </Link>
-          */}
+          </div>
         </div>
       </header>
 
