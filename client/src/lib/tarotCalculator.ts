@@ -27,26 +27,43 @@ function processYearLastTwoDigits(year: number): number {
   return lastTwo;
 }
 
+/**
+ * 靈魂換日線：在總和縮減前加減 1
+ * soulShift: 0 = 無（預設）, 1 = +1, -1 = -1
+ */
+function applyShiftAndReduce(sum: number, soulShift: number): number {
+  const shifted = sum + soulShift;
+  return reduceToTarotNumber(sumDigits(shifted));
+}
+
 export function calculateCoreCard(year: number, _month: number, _day: number): number {
   return processYearLastTwoDigits(year);
 }
 
-export function calculateOuterCard(year: number, month: number, day: number): number {
+export function calculateOuterCard(year: number, month: number, day: number, soulShift = 0): number {
   const sum = year + month + day;
-  const digitSum = sumDigits(sum);
-  if (digitSum > 21) {
-    return digitSum - 22;
+  if (soulShift === 0) {
+    const digitSum = sumDigits(sum);
+    if (digitSum > 21) {
+      return digitSum - 22;
+    }
+    return digitSum;
   }
-  return digitSum;
+  // 靈魂換日線：對總和加減 1 後再縮減
+  return applyShiftAndReduce(sum, soulShift);
 }
 
-export function calculateInnerCard(year: number, month: number, day: number): number {
+export function calculateInnerCard(year: number, month: number, day: number, soulShift = 0): number {
   const sum = year + month + day;
-  const digitSum = sumDigits(sum);
-  if (digitSum > 21) {
-    return sumDigits(digitSum);
+  if (soulShift === 0) {
+    const digitSum = sumDigits(sum);
+    if (digitSum > 21) {
+      return sumDigits(digitSum);
+    }
+    return digitSum;
   }
-  return digitSum;
+  // 靈魂換日線：對總和加減 1 後再縮減
+  return applyShiftAndReduce(sum, soulShift);
 }
 
 export function calculateBenefactorCoreCard(coreCard: number): number {
@@ -64,10 +81,14 @@ export function calculateBenefactorInnerCard(innerCard: number): number {
   return b > 22 ? b - 22 : b;
 }
 
-export function calculateYearCard(birthMonth: number, birthDay: number, targetYear: number): number {
+export function calculateYearCard(birthMonth: number, birthDay: number, targetYear: number, soulShift = 0): number {
   const benefactorSum = birthMonth + birthDay;
   const yearSum = targetYear + benefactorSum;
-  return reduceToTarotNumber(sumDigits(yearSum));
+  if (soulShift === 0) {
+    return reduceToTarotNumber(sumDigits(yearSum));
+  }
+  // 靈魂換日線：對總和加減 1 後再縮減
+  return applyShiftAndReduce(yearSum, soulShift);
 }
 
 export function calculateMonthCard(
@@ -75,12 +96,17 @@ export function calculateMonthCard(
   birthMonth: number,
   birthDay: number,
   targetYear: number,
-  targetMonth: number
+  targetMonth: number,
+  soulShift = 0
 ): number {
   const birthSum = birthYear + birthMonth + birthDay;
   const monthSum = birthSum + targetYear + targetMonth;
-  const digitSum = sumDigits(monthSum);
-  return reduceToTarotNumber(digitSum);
+  if (soulShift === 0) {
+    const digitSum = sumDigits(monthSum);
+    return reduceToTarotNumber(digitSum);
+  }
+  // 靈魂換日線：對總和加減 1 後再縮減
+  return applyShiftAndReduce(monthSum, soulShift);
 }
 
 export function calculateDayCard(
@@ -89,13 +115,18 @@ export function calculateDayCard(
   birthDay: number,
   targetYear: number,
   targetMonth: number,
-  targetDay: number
+  targetDay: number,
+  soulShift = 0
 ): number {
   const birthSum = birthYear + birthMonth + birthDay;
   const monthSum = birthSum + targetYear + targetMonth;
   const daySum = monthSum + targetDay;
-  const digitSum = sumDigits(daySum);
-  return reduceToTarotNumber(digitSum);
+  if (soulShift === 0) {
+    const digitSum = sumDigits(daySum);
+    return reduceToTarotNumber(digitSum);
+  }
+  // 靈魂換日線：對總和加減 1 後再縮減
+  return applyShiftAndReduce(daySum, soulShift);
 }
 
 export interface TarotReading {
@@ -122,7 +153,8 @@ export function calculateFullReading(
   lunarBirthDay: number,
   targetYear: number,
   targetMonth: number,
-  targetDay: number
+  targetDay: number,
+  soulShift = 0
 ): TarotReading {
   const birthdayThisYear = new Date(targetYear, birthMonth - 1, birthDay);
   const now = new Date(targetYear, targetMonth - 1, targetDay);
@@ -131,20 +163,20 @@ export function calculateFullReading(
   const yearForCalculation = hasBirthdayPassed ? targetYear : targetYear - 1;
 
   const coreCard = calculateCoreCard(birthYear, birthMonth, birthDay);
-  const outerCard = calculateOuterCard(birthYear, birthMonth, birthDay);
-  const innerCard = calculateInnerCard(birthYear, birthMonth, birthDay);
+  const outerCard = calculateOuterCard(birthYear, birthMonth, birthDay, soulShift);
+  const innerCard = calculateInnerCard(birthYear, birthMonth, birthDay, soulShift);
 
   const benefactorCore = calculateBenefactorCoreCard(coreCard);
   const benefactorOuter = calculateBenefactorOuterCard(outerCard);
   const benefactorInner = calculateBenefactorInnerCard(innerCard);
 
-  const yearCard = calculateYearCard(birthMonth, birthDay, yearForCalculation);
-  const monthCard = calculateMonthCard(birthYear, birthMonth, birthDay, targetYear, targetMonth);
-  const dayCard = calculateDayCard(birthYear, birthMonth, birthDay, targetYear, targetMonth, targetDay);
+  const yearCard = calculateYearCard(birthMonth, birthDay, yearForCalculation, soulShift);
+  const monthCard = calculateMonthCard(birthYear, birthMonth, birthDay, targetYear, targetMonth, soulShift);
+  const dayCard = calculateDayCard(birthYear, birthMonth, birthDay, targetYear, targetMonth, targetDay, soulShift);
 
-  const lunarYearCard = calculateYearCard(lunarBirthMonth, lunarBirthDay, yearForCalculation);
-  const lunarMonthCard = calculateMonthCard(lunarBirthYear, lunarBirthMonth, lunarBirthDay, targetYear, targetMonth);
-  const lunarDayCard = calculateDayCard(lunarBirthYear, lunarBirthMonth, lunarBirthDay, targetYear, targetMonth, targetDay);
+  const lunarYearCard = calculateYearCard(lunarBirthMonth, lunarBirthDay, yearForCalculation, soulShift);
+  const lunarMonthCard = calculateMonthCard(lunarBirthYear, lunarBirthMonth, lunarBirthDay, targetYear, targetMonth, soulShift);
+  const lunarDayCard = calculateDayCard(lunarBirthYear, lunarBirthMonth, lunarBirthDay, targetYear, targetMonth, targetDay, soulShift);
 
   return {
     coreCard,
@@ -175,7 +207,8 @@ export function calculateMonthlyDayFortune(
   lunarBirthDay: number,
   targetYear: number,
   targetMonth: number,
-  solarToLunarFn: (y: number, m: number, d: number) => { year: number; month: number; day: number; isLeapMonth: boolean } | null
+  solarToLunarFn: (y: number, m: number, d: number) => { year: number; month: number; day: number; isLeapMonth: boolean } | null,
+  soulShift = 0
 ) {
   const daysInMonth = new Date(targetYear, targetMonth, 0).getDate();
   const days = [];
@@ -188,14 +221,24 @@ export function calculateMonthlyDayFortune(
     if (!lunarDate) continue;
 
     const solarDaySum = solarMonthSum + day;
-    let solarDayCard = sumDigits(solarDaySum);
-    while (solarDayCard > 21) solarDayCard = sumDigits(solarDayCard);
+    let solarDayCard: number;
+    if (soulShift === 0) {
+      solarDayCard = sumDigits(solarDaySum);
+      while (solarDayCard > 21) solarDayCard = sumDigits(solarDayCard);
+    } else {
+      solarDayCard = applyShiftAndReduce(solarDaySum, soulShift);
+    }
 
     // 農曆流日 = 農曆出生年+月+日 + 國曆目標年+月+日
     const lunarBirthSum = lunarBirthYear + lunarBirthMonth + lunarBirthDay;
     const lunarDaySum = lunarBirthSum + targetYear + targetMonth + day;
-    let lunarDayCard = sumDigits(lunarDaySum);
-    while (lunarDayCard > 21) lunarDayCard = sumDigits(lunarDayCard);
+    let lunarDayCard: number;
+    if (soulShift === 0) {
+      lunarDayCard = sumDigits(lunarDaySum);
+      while (lunarDayCard > 21) lunarDayCard = sumDigits(lunarDayCard);
+    } else {
+      lunarDayCard = applyShiftAndReduce(lunarDaySum, soulShift);
+    }
 
     days.push({
       solarDay: day,

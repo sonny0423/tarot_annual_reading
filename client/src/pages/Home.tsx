@@ -21,6 +21,7 @@ export default function Home() {
     lunarMonth: number;
     lunarDay: number;
     isLeapMonth: boolean;
+    soulShift: number;
   } | null>(null);
 
   const [readingData, setReadingData] = useState<any>(null);
@@ -45,7 +46,8 @@ export default function Home() {
         birthData.lunarDay,
         currentYear,
         currentMonth,
-        currentDay
+        currentDay,
+        birthData.soulShift
       );
 
       // 建立牌卡 Map
@@ -80,6 +82,7 @@ export default function Home() {
     lunarMonth: number;
     lunarDay: number;
     isLeapMonth: boolean;
+    soulShift: number;
   }) => {
     setBirthData(data);
   };
@@ -171,6 +174,7 @@ export default function Home() {
               lunarYear={birthData?.lunarYear ?? 0}
               lunarMonth={birthData?.lunarMonth ?? 0}
               lunarDay={birthData?.lunarDay ?? 0}
+              soulShift={birthData?.soulShift ?? 0}
               cards={readingData.cards}
               onReset={handleReset}
               onCardClick={setSelectedCard}

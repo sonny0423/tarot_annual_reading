@@ -18,6 +18,7 @@ interface ReadingResultProps {
   lunarYear: number;
   lunarMonth: number;
   lunarDay: number;
+  soulShift?: number;
   cards: {
     core?: TarotCardType;
     outer?: TarotCardType;
@@ -44,6 +45,7 @@ export function ReadingResult({
   lunarYear,
   lunarMonth,
   lunarDay,
+  soulShift = 0,
   cards, 
   onReset, 
   onCardClick, 
@@ -77,22 +79,30 @@ export function ReadingResult({
   const todayLunarMonth = todayLunar.getMonth();
   const todayLunarDay = todayLunar.getDay();
   
+  // 靈魂換日線輔助函式（在總和縮減前加減 1）
+  const applyShiftAndReduce = (sum: number): number => {
+    const shifted = sum + soulShift;
+    let n = shifted.toString().split('').map(Number).reduce((s: number, d: number) => s + d, 0);
+    while (n > 21) n = n.toString().split('').map(Number).reduce((s: number, d: number) => s + d, 0);
+    return n;
+  };
+  const reduceNum = (sum: number): number => {
+    let n = sum.toString().split('').map(Number).reduce((s: number, d: number) => s + d, 0);
+    while (n > 21) n = n.toString().split('').map(Number).reduce((s: number, d: number) => s + d, 0);
+    return n;
+  };
+  const calcCard = (sum: number): number => soulShift !== 0 ? applyShiftAndReduce(sum) : reduceNum(sum);
+
   // 計算當前日期的流月牌和流日牌
   const lunarBirthSum = lunarYear + lunarMonth + lunarDay;
   
   // 當前月份的流月牌（農曆心境）= 農曆出生年+月+日 + 國曆目標年+月
   const currentMonthSum = lunarBirthSum + todayYear + todayMonth;
-  let currentMonthDigitSum = currentMonthSum.toString().split('').map(Number).reduce((sum: number, digit: number) => sum + digit, 0);
-  while (currentMonthDigitSum > 21) {
-    currentMonthDigitSum = currentMonthDigitSum.toString().split('').map(Number).reduce((sum: number, digit: number) => sum + digit, 0);
-  }
+  const currentMonthDigitSum = calcCard(currentMonthSum);
   
   // 今天的流日牌（農曆心境）= 農曆出生年+月+日 + 國曆目標年+月+日
   const currentDaySum = lunarBirthSum + todayYear + todayMonth + todayDay;
-  let currentDayDigitSum = currentDaySum.toString().split('').map(Number).reduce((sum: number, digit: number) => sum + digit, 0);
-  while (currentDayDigitSum > 21) {
-    currentDayDigitSum = currentDayDigitSum.toString().split('').map(Number).reduce((sum: number, digit: number) => sum + digit, 0);
-  }
+  const currentDayDigitSum = calcCard(currentDaySum);
   
   // 找到對應的牌卡
   const currentMonthCard = allCards.find(c => c.id === currentMonthDigitSum);
@@ -116,7 +126,8 @@ export function ReadingResult({
     const reading = calculateFullReading(
       lunarYear, lunarMonth, lunarDay,
       lunarYear, lunarMonth, lunarDay,
-      currentYear, currentMonth, currentDay
+      currentYear, currentMonth, currentDay,
+      soulShift
     );
     const cardMap = new Map(allCards.map(c => [c.id, c]));
     return {
@@ -145,20 +156,12 @@ export function ReadingResult({
       // 國曆流年運勢
       const solarBenefactorSum = birthMonth + birthDay;
       const solarYearSum = targetYear + solarBenefactorSum;
-      const solarDigitSum = solarYearSum.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
-      let solarYearCard = solarDigitSum;
-      while (solarYearCard > 21) {
-        solarYearCard = solarYearCard.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
-      }
+      const solarYearCard = calcCard(solarYearSum);
       
       // 農曆流年心境
       const lunarBenefactorSum = lunarMonth + lunarDay;
       const lunarYearSum = targetYear + lunarBenefactorSum;
-      const lunarDigitSum = lunarYearSum.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
-      let lunarYearCard = lunarDigitSum;
-      while (lunarYearCard > 21) {
-        lunarYearCard = lunarYearCard.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
-      }
+      const lunarYearCard = calcCard(lunarYearSum);
       
       const solarCard = allCards.find(c => c.id === solarYearCard);
       const lunarCard = allCards.find(c => c.id === lunarYearCard);
@@ -184,20 +187,12 @@ export function ReadingResult({
       // 國曆流月運勢
       const solarBirthSum = birthYear + birthMonth + birthDay;
       const solarMonthSum = solarBirthSum + targetYear + month;
-      const solarDigitSum = solarMonthSum.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
-      let solarMonthCard = solarDigitSum;
-      while (solarMonthCard > 21) {
-        solarMonthCard = solarMonthCard.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
-      }
+      const solarMonthCard = calcCard(solarMonthSum);
       
       // 農曆流月心境 = 農曆出生年+月+日 + 國曆目標年+月（與左邊國曆同步）
       const lunarBirthSum = lunarYear + lunarMonth + lunarDay;
       const lunarMonthSum = lunarBirthSum + targetYear + month;
-      const lunarDigitSum = lunarMonthSum.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
-      let lunarMonthCard = lunarDigitSum;
-      while (lunarMonthCard > 21) {
-        lunarMonthCard = lunarMonthCard.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
-      }
+      const lunarMonthCard = calcCard(lunarMonthSum);
       
       const solarCard = allCards.find(c => c.id === solarMonthCard);
       const lunarCard = allCards.find(c => c.id === lunarMonthCard);
@@ -232,20 +227,12 @@ export function ReadingResult({
       const solarBirthSum = birthYear + birthMonth + birthDay;
       const solarMonthSum = solarBirthSum + targetYear + targetMonth;
       const solarDaySum = solarMonthSum + day;
-      const solarDigitSum = solarDaySum.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
-      let solarDayCard = solarDigitSum;
-      while (solarDayCard > 21) {
-        solarDayCard = solarDayCard.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
-      }
+      const solarDayCard = calcCard(solarDaySum);
       
       // 農曆流日心境 = 農曆出生年+月+日 + 國曆目標年+月+日
       const lunarBirthSum = lunarYear + lunarMonth + lunarDay;
       const lunarDaySum = lunarBirthSum + targetYear + targetMonth + day;
-      const lunarDigitSum = lunarDaySum.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
-      let lunarDayCard = lunarDigitSum;
-      while (lunarDayCard > 21) {
-        lunarDayCard = lunarDayCard.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
-      }
+      const lunarDayCard = calcCard(lunarDaySum);
       
       const solarCard = allCards.find(c => c.id === solarDayCard);
       const lunarCard = allCards.find(c => c.id === lunarDayCard);
@@ -271,7 +258,8 @@ export function ReadingResult({
     birthYear, birthMonth, birthDay,
     lunarYear, lunarMonth, lunarDay,
     currentYear, currentMonth,
-    solarToLunar
+    solarToLunar,
+    soulShift
   ).map(item => ({
     day: item.solarDay,
     lunarYear: item.lunarYear,
