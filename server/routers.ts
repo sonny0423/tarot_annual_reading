@@ -4,7 +4,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, adminProcedure, router } from "./_core/trpc";
 import { sdk } from "./_core/sdk";
 import { z } from "zod";
-import { getAllTarotCards, getTarotCardById, getTarotCardsByIds, getUserByEmail, createEmailUser, getUserByOpenId, getAllUsers, updateUserRole, createPasswordResetToken, getValidResetToken, markTokenUsed, updateUserPassword } from "./db";
+import { getAllTarotCards, getTarotCardById, getTarotCardsByIds, getUserByEmail, createEmailUser, getUserByOpenId, getAllUsers, updateUserRole, createPasswordResetToken, getValidResetToken, markTokenUsed, updateUserPassword, deleteUser } from "./db";
 import { sendPasswordResetEmail } from "./mailer";
 import crypto from "crypto";
 import { calculateFullReading } from "./tarot-calculator";
@@ -235,6 +235,41 @@ export const appRouter = router({
         const passwordHash = await bcrypt.hash(input.newPassword, 12);
         await updateUserPassword(input.userId, passwordHash);
         return { success: true, message: "密碼已成功重設" };
+      }),
+
+    createUser: adminProcedure
+      .input(z.object({
+        email: z.string().min(3, "帳號至少需要 3 個字元").max(100, "帳號過長"),
+        password: z.string().min(8, "密碼至少需要 8 個字元"),
+        name: z.string().optional(),
+        role: z.enum(['user', 'admin']).default('user'),
+      }))
+      .mutation(async ({ input }) => {
+        const existing = await getUserByEmail(input.email);
+        if (existing) {
+          throw new TRPCError({ code: 'CONFLICT', message: '此帳號已被使用' });
+        }
+        const passwordHash = await bcrypt.hash(input.password, 12);
+        await createEmailUser(input.email, passwordHash, input.name);
+        // Set role if admin
+        if (input.role === 'admin') {
+          const newUser = await getUserByEmail(input.email);
+          if (newUser) await updateUserRole(newUser.id, 'admin');
+        }
+        return { success: true, message: '使用者已新增' };
+      }),
+
+    deleteUser: adminProcedure
+      .input(z.object({
+        userId: z.number(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        // Prevent admin from deleting themselves
+        if (ctx.user.id === input.userId) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: '不能刪除自己的帳號' });
+        }
+        await deleteUser(input.userId);
+        return { success: true, message: '使用者已刪除' };
       }),
   }),
 

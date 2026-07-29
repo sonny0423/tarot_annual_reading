@@ -19,10 +19,12 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { UserPlus, Trash2 } from "lucide-react";
 
 export default function AdminUsers() {
   const { user } = useAuth();
@@ -33,6 +35,14 @@ export default function AdminUsers() {
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<{ id: number; name: string | null; email: string | null } | null>(null);
   const [newPassword, setNewPassword] = useState("");
+
+  // Create user dialog state
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [createForm, setCreateForm] = useState({ email: "", password: "", name: "", role: "user" as "user" | "admin" });
+
+  // Delete user dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<{ id: number; name: string | null; email: string | null } | null>(null);
 
   const { data, isLoading, refetch } = trpc.admin.getUsers.useQuery({ page, pageSize });
 
@@ -58,6 +68,30 @@ export default function AdminUsers() {
     },
   });
 
+  const createUserMutation = trpc.admin.createUser.useMutation({
+    onSuccess: () => {
+      toast.success("使用者已新增");
+      setCreateDialogOpen(false);
+      setCreateForm({ email: "", password: "", name: "", role: "user" });
+      refetch();
+    },
+    onError: (err) => {
+      toast.error("新增失敗：" + err.message);
+    },
+  });
+
+  const deleteUserMutation = trpc.admin.deleteUser.useMutation({
+    onSuccess: () => {
+      toast.success("使用者已刪除");
+      setDeleteDialogOpen(false);
+      setUserToDelete(null);
+      refetch();
+    },
+    onError: (err) => {
+      toast.error("刪除失敗：" + err.message);
+    },
+  });
+
   const handleOpenResetDialog = (u: { id: number; name: string | null; email: string | null }) => {
     setSelectedUser(u);
     setNewPassword("");
@@ -71,6 +105,33 @@ export default function AdminUsers() {
       return;
     }
     resetPasswordMutation.mutate({ userId: selectedUser.id, newPassword });
+  };
+
+  const handleCreateUser = () => {
+    if (createForm.email.length < 3) {
+      toast.error("帳號至少需要 3 個字元");
+      return;
+    }
+    if (createForm.password.length < 8) {
+      toast.error("密碼至少需要 8 個字元");
+      return;
+    }
+    createUserMutation.mutate({
+      email: createForm.email,
+      password: createForm.password,
+      name: createForm.name || undefined,
+      role: createForm.role,
+    });
+  };
+
+  const handleOpenDeleteDialog = (u: { id: number; name: string | null; email: string | null }) => {
+    setUserToDelete(u);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteUser = () => {
+    if (!userToDelete) return;
+    deleteUserMutation.mutate({ userId: userToDelete.id });
   };
 
   // Redirect if not admin
@@ -132,6 +193,17 @@ export default function AdminUsers() {
               共 <span className="font-semibold text-foreground">{data?.total ?? 0}</span> 位用戶
             </p>
           </div>
+          {/* 新增使用者按鈕 */}
+          <Button
+            onClick={() => {
+              setCreateForm({ email: "", password: "", name: "", role: "user" });
+              setCreateDialogOpen(true);
+            }}
+            className="gap-2"
+          >
+            <UserPlus className="w-4 h-4" />
+            新增使用者
+          </Button>
         </div>
 
         {/* Table */}
@@ -151,7 +223,7 @@ export default function AdminUsers() {
                   <TableHead className="w-24">角色</TableHead>
                   <TableHead className="w-44">註冊時間</TableHead>
                   <TableHead className="w-44">最後登入</TableHead>
-                  <TableHead className="w-48">操作</TableHead>
+                  <TableHead className="w-56">操作</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -200,7 +272,7 @@ export default function AdminUsers() {
                         : "—"}
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
                         <Select
                           value={u.role ?? "user"}
                           onValueChange={(val) =>
@@ -227,6 +299,18 @@ export default function AdminUsers() {
                         >
                           重設密碼
                         </Button>
+                        {/* 不能刪除自己 */}
+                        {u.id !== user.id && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 text-xs px-2 text-red-600 border-red-300 hover:bg-red-50"
+                            onClick={() => handleOpenDeleteDialog(u)}
+                            disabled={deleteUserMutation.isPending}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -309,6 +393,116 @@ export default function AdminUsers() {
               className="bg-orange-500 hover:bg-orange-600 text-white"
             >
               {resetPasswordMutation.isPending ? "重設中..." : "確認重設"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create User Dialog */}
+      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>新增使用者</DialogTitle>
+            <DialogDescription>
+              填寫以下資料以新增一位使用者帳號
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="create-name">姓名（選填）</Label>
+              <Input
+                id="create-name"
+                type="text"
+                placeholder="使用者姓名"
+                value={createForm.name}
+                onChange={(e) => setCreateForm(f => ({ ...f, name: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="create-email">帳號 <span className="text-red-500">*</span></Label>
+              <Input
+                id="create-email"
+                type="text"
+                placeholder="帳號（至少 3 個字元）"
+                value={createForm.email}
+                onChange={(e) => setCreateForm(f => ({ ...f, email: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="create-password">密碼 <span className="text-red-500">*</span></Label>
+              <Input
+                id="create-password"
+                type="password"
+                placeholder="密碼（至少 8 個字元）"
+                value={createForm.password}
+                onChange={(e) => setCreateForm(f => ({ ...f, password: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="create-role">角色</Label>
+              <Select
+                value={createForm.role}
+                onValueChange={(val) => setCreateForm(f => ({ ...f, role: val as "user" | "admin" }))}
+              >
+                <SelectTrigger id="create-role">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="user">一般用戶</SelectItem>
+                  <SelectItem value="admin">管理員</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setCreateDialogOpen(false)}
+            >
+              取消
+            </Button>
+            <Button
+              onClick={handleCreateUser}
+              disabled={createUserMutation.isPending || createForm.email.length < 3 || createForm.password.length < 8}
+            >
+              {createUserMutation.isPending ? "新增中..." : "確認新增"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete User Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>確認刪除使用者</DialogTitle>
+            <DialogDescription>
+              此操作無法復原，請確認是否要刪除此帳號。
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-2">
+            <p className="text-sm text-muted-foreground">
+              即將刪除用戶：<span className="font-semibold text-foreground">
+                {userToDelete?.name || userToDelete?.email || `ID: ${userToDelete?.id}`}
+              </span>
+            </p>
+            {userToDelete?.email && userToDelete?.name && (
+              <p className="text-sm text-muted-foreground mt-1">帳號：{userToDelete.email}</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+            >
+              取消
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteUser}
+              disabled={deleteUserMutation.isPending}
+            >
+              {deleteUserMutation.isPending ? "刪除中..." : "確認刪除"}
             </Button>
           </DialogFooter>
         </DialogContent>

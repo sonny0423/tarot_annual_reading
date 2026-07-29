@@ -198,6 +198,15 @@ export async function updateUserPassword(userId: number, passwordHash: string): 
   await db.update(users).set({ passwordHash, updatedAt: new Date() }).where(eq(users.id, userId));
 }
 
+// Admin: delete user by ID
+export async function deleteUser(userId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  // Also clean up any password reset tokens for this user
+  await db.delete(passwordResetTokens).where(eq(passwordResetTokens.userId, userId));
+  await db.delete(users).where(eq(users.id, userId));
+}
+
 // Tarot card queries
 export async function getAllTarotCards(): Promise<TarotCard[]> {
   const db = await getDb();
