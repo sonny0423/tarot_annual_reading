@@ -419,14 +419,11 @@ export function BirthdayForm({ onSubmit }: BirthdayFormProps) {
 
           {/* 靈魂換日線選項 */}
           <div className="space-y-3 pt-2 border-t border-border/50">
-            <div className="flex items-center gap-2">
-              <Label className="text-sm font-medium text-foreground">靈魂換日線</Label>
-              <span className="text-xs text-muted-foreground">（在總和縮減前加減 1）</span>
-            </div>
+            <Label className="text-sm font-medium text-foreground">靈魂換日線</Label>
             <div className="flex gap-2">
               <button
                 type="button"
-                onClick={() => setSoulShift(-1)}
+                onClick={() => setSoulShift(soulShift === -1 ? 0 : -1)}
                 className={`flex-1 py-2 px-4 rounded-lg border text-sm font-medium transition-all ${
                   soulShift === -1
                     ? "bg-primary text-primary-foreground border-primary shadow-md"
@@ -437,18 +434,7 @@ export function BirthdayForm({ onSubmit }: BirthdayFormProps) {
               </button>
               <button
                 type="button"
-                onClick={() => setSoulShift(0)}
-                className={`flex-1 py-2 px-4 rounded-lg border text-sm font-medium transition-all ${
-                  soulShift === 0
-                    ? "bg-primary text-primary-foreground border-primary shadow-md"
-                    : "bg-transparent text-muted-foreground border-border hover:border-primary/50 hover:text-foreground"
-                }`}
-              >
-                無
-              </button>
-              <button
-                type="button"
-                onClick={() => setSoulShift(1)}
+                onClick={() => setSoulShift(soulShift === 1 ? 0 : 1)}
                 className={`flex-1 py-2 px-4 rounded-lg border text-sm font-medium transition-all ${
                   soulShift === 1
                     ? "bg-primary text-primary-foreground border-primary shadow-md"
