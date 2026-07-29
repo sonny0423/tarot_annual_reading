@@ -123,11 +123,12 @@ export function ReadingResult({
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth() + 1;
     const currentDay = now.getDate();
+    // 本命牌組不套用靈魂換日線
     const reading = calculateFullReading(
       lunarYear, lunarMonth, lunarDay,
       lunarYear, lunarMonth, lunarDay,
       currentYear, currentMonth, currentDay,
-      soulShift
+      0
     );
     const cardMap = new Map(allCards.map(c => [c.id, c]));
     return {

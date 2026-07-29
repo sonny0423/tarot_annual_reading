@@ -40,30 +40,22 @@ export function calculateCoreCard(year: number, _month: number, _day: number): n
   return processYearLastTwoDigits(year);
 }
 
-export function calculateOuterCard(year: number, month: number, day: number, soulShift = 0): number {
+export function calculateOuterCard(year: number, month: number, day: number): number {
   const sum = year + month + day;
-  if (soulShift === 0) {
-    const digitSum = sumDigits(sum);
-    if (digitSum > 21) {
-      return digitSum - 22;
-    }
-    return digitSum;
+  const digitSum = sumDigits(sum);
+  if (digitSum > 21) {
+    return digitSum - 22;
   }
-  // 靈魂換日線：對總和加減 1 後再縮減
-  return applyShiftAndReduce(sum, soulShift);
+  return digitSum;
 }
 
-export function calculateInnerCard(year: number, month: number, day: number, soulShift = 0): number {
+export function calculateInnerCard(year: number, month: number, day: number): number {
   const sum = year + month + day;
-  if (soulShift === 0) {
-    const digitSum = sumDigits(sum);
-    if (digitSum > 21) {
-      return sumDigits(digitSum);
-    }
-    return digitSum;
+  const digitSum = sumDigits(sum);
+  if (digitSum > 21) {
+    return sumDigits(digitSum);
   }
-  // 靈魂換日線：對總和加減 1 後再縮減
-  return applyShiftAndReduce(sum, soulShift);
+  return digitSum;
 }
 
 export function calculateBenefactorCoreCard(coreCard: number): number {
@@ -162,14 +154,16 @@ export function calculateFullReading(
 
   const yearForCalculation = hasBirthdayPassed ? targetYear : targetYear - 1;
 
+  // 本命牌組與貴人牌組不套用靈魂換日線
   const coreCard = calculateCoreCard(birthYear, birthMonth, birthDay);
-  const outerCard = calculateOuterCard(birthYear, birthMonth, birthDay, soulShift);
-  const innerCard = calculateInnerCard(birthYear, birthMonth, birthDay, soulShift);
+  const outerCard = calculateOuterCard(birthYear, birthMonth, birthDay);
+  const innerCard = calculateInnerCard(birthYear, birthMonth, birthDay);
 
   const benefactorCore = calculateBenefactorCoreCard(coreCard);
   const benefactorOuter = calculateBenefactorOuterCard(outerCard);
   const benefactorInner = calculateBenefactorInnerCard(innerCard);
 
+  // 流年/流月/流日套用靈魂換日線
   const yearCard = calculateYearCard(birthMonth, birthDay, yearForCalculation, soulShift);
   const monthCard = calculateMonthCard(birthYear, birthMonth, birthDay, targetYear, targetMonth, soulShift);
   const dayCard = calculateDayCard(birthYear, birthMonth, birthDay, targetYear, targetMonth, targetDay, soulShift);
