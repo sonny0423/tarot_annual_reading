@@ -793,3 +793,11 @@
 - [x] 後端 db.ts：新增 deleteUser 查詢函式
 - [x] 前端 AdminUsers：新增「新增使用者」按鈕與對話框
 - [x] 前端 AdminUsers：每列新增「刪除」按鈕與確認對話框
+
+## 助教角色功能
+- [x] drizzle/schema.ts：users.role enum 新增 'assistant'
+- [x] 執行 pnpm db:push 更新 Manus 資料庫
+- [x] server/routers.ts：admin.updateUserRole 與 admin.createUser 支援 'assistant' 角色
+- [x] client/src/pages/AdminUsers.tsx：角色下拉選單新增「助教」選項
+- [x] client/src/components/ReadingResult.tsx：卡牌點擊只有 admin/assistant 可開啟說明，user 顯示無法查看提示
+- [x] 同步 Zeabur 資料庫 schema（ALTER TABLE users MODIFY role enum 加入 assistant）

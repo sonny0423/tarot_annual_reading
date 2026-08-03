@@ -38,7 +38,7 @@ export default function AdminUsers() {
 
   // Create user dialog state
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [createForm, setCreateForm] = useState({ email: "", password: "", name: "", role: "user" as "user" | "admin" });
+  const [createForm, setCreateForm] = useState({ email: "", password: "", name: "", role: "user" as "user" | "admin" | "assistant" });
 
   // Delete user dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -243,10 +243,10 @@ export default function AdminUsers() {
                     </TableCell>
                     <TableCell>
                       <Badge
-                        variant={u.role === "admin" ? "default" : "secondary"}
-                        className={u.role === "admin" ? "bg-purple-600 text-white" : ""}
+                        variant={u.role === "admin" ? "default" : u.role === "assistant" ? "outline" : "secondary"}
+                        className={u.role === "admin" ? "bg-purple-600 text-white" : u.role === "assistant" ? "border-blue-400 text-blue-600" : ""}
                       >
-                        {u.role === "admin" ? "管理員" : "一般用戶"}
+                        {u.role === "admin" ? "管理員" : u.role === "assistant" ? "助教" : "一般用戶"}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
@@ -278,7 +278,7 @@ export default function AdminUsers() {
                           onValueChange={(val) =>
                             updateRoleMutation.mutate({
                               userId: u.id,
-                              role: val as "user" | "admin",
+                              role: val as "user" | "admin" | "assistant",
                             })
                           }
                           disabled={updateRoleMutation.isPending}
@@ -288,6 +288,7 @@ export default function AdminUsers() {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="user">一般用戶</SelectItem>
+                            <SelectItem value="assistant">助教</SelectItem>
                             <SelectItem value="admin">管理員</SelectItem>
                           </SelectContent>
                         </Select>
@@ -442,13 +443,14 @@ export default function AdminUsers() {
               <Label htmlFor="create-role">角色</Label>
               <Select
                 value={createForm.role}
-                onValueChange={(val) => setCreateForm(f => ({ ...f, role: val as "user" | "admin" }))}
+                onValueChange={(val) => setCreateForm(f => ({ ...f, role: val as "user" | "admin" | "assistant" }))}
               >
                 <SelectTrigger id="create-role">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="user">一般用戶</SelectItem>
+                  <SelectItem value="assistant">助教</SelectItem>
                   <SelectItem value="admin">管理員</SelectItem>
                 </SelectContent>
               </Select>

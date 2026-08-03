@@ -148,7 +148,7 @@ export async function getAllUsers(page: number = 1, pageSize: number = 20) {
 }
 
 // Admin: update user role
-export async function updateUserRole(userId: number, role: 'user' | 'admin'): Promise<void> {
+export async function updateUserRole(userId: number, role: 'user' | 'admin' | 'assistant'): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.update(users).set({ role }).where(eq(users.id, userId));

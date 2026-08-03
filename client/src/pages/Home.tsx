@@ -177,7 +177,7 @@ export default function Home() {
               soulShift={birthData?.soulShift ?? 0}
               cards={readingData.cards}
               onReset={handleReset}
-              onCardClick={setSelectedCard}
+              onCardClick={(user?.role === 'admin' || user?.role === 'assistant') ? setSelectedCard : undefined}
               allCards={readingData.allCards || []}
             />
           ) : (

@@ -42,7 +42,7 @@ export function TarotCard({ card, label, onClick, className = "", displayMode = 
 
   return (
     <Card
-      className={`group relative overflow-hidden border-2 border-primary/20 bg-gradient-to-br from-card to-accent/30 shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-105 hover:border-primary/40 cursor-pointer ${className}`}
+      className={`group relative overflow-hidden border-2 border-primary/20 bg-gradient-to-br from-card to-accent/30 shadow-lg transition-all duration-300 ${onClick ? 'hover:shadow-2xl hover:scale-105 hover:border-primary/40 cursor-pointer' : 'cursor-default'} ${className}`}
       onClick={onClick}
     >
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

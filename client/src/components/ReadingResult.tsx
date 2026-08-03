@@ -51,6 +51,9 @@ export function ReadingResult({
   onCardClick, 
   allCards 
 }: ReadingResultProps) {
+  // 是否可點擊卡牌（onCardClick 有傳入才可點擊）
+  const canClick = !!onCardClick;
+
   // 當前日期的農曆轉換
   const today = new Date();
   const todayYear = today.getFullYear();
@@ -778,7 +781,7 @@ export function ReadingResult({
                     <div key={item.year} className="flex-shrink-0" data-year={item.year}>
                       <Card 
                         data-current-year={isCurrentYear}
-                        className={`w-32 cursor-pointer transition-all ${
+                        className={`w-32 transition-all ${canClick ? 'cursor-pointer' : 'cursor-default'} ${
                           isCurrentYear 
                             ? 'border-2 border-primary shadow-lg' 
                             : 'border border-border'
@@ -799,8 +802,8 @@ export function ReadingResult({
                       <CardContent className="p-3 pt-0 space-y-3">
                         {/* 運勢牌 */}
                         <div 
-                          className="cursor-pointer hover:bg-primary/5 p-2 rounded transition-colors"
-                          onClick={() => item.solarCard && onCardClick?.(item.solarCard)}
+                          className={`${canClick ? 'cursor-pointer hover:bg-primary/5' : 'cursor-default'} p-2 rounded transition-colors`}
+                          onClick={() => canClick && item.solarCard && onCardClick?.(item.solarCard)}
                         >
                           <div className="flex items-center gap-1 mb-1">
                             <Sun className="w-3 h-3 text-primary" />
@@ -815,8 +818,8 @@ export function ReadingResult({
                         </div>
                         {/* 心境牌 */}
                         <div 
-                          className="cursor-pointer hover:bg-accent/5 p-2 rounded transition-colors"
-                          onClick={() => item.lunarCard && onCardClick?.(item.lunarCard)}
+                          className={`${canClick ? 'cursor-pointer hover:bg-accent/5' : 'cursor-default'} p-2 rounded transition-colors`}
+                          onClick={() => canClick && item.lunarCard && onCardClick?.(item.lunarCard)}
                         >
                           <div className="flex items-center gap-1 mb-1">
                             <Moon className="w-3 h-3 text-accent" />
@@ -880,10 +883,10 @@ export function ReadingResult({
                                           </div>
                                         </td>
                                         <td 
-                                          className="border p-2 text-center cursor-pointer hover:bg-primary/10"
+                                          className={`border p-2 text-center ${canClick ? 'cursor-pointer hover:bg-primary/10' : 'cursor-default'}`}
                                           onClick={(e) => {
                                             e.stopPropagation();
-                                            monthItem.solarCard && onCardClick?.(monthItem.solarCard);
+                                            canClick && monthItem.solarCard && onCardClick?.(monthItem.solarCard);
                                           }}
                                         >
                                           <div className="flex flex-col items-center gap-1">
@@ -894,10 +897,10 @@ export function ReadingResult({
                                           </div>
                                         </td>
                                         <td 
-                                          className="border p-2 text-center cursor-pointer hover:bg-accent/10"
+                                          className={`border p-2 text-center ${canClick ? 'cursor-pointer hover:bg-accent/10' : 'cursor-default'}`}
                                           onClick={(e) => {
                                             e.stopPropagation();
-                                            monthItem.lunarCard && onCardClick?.(monthItem.lunarCard);
+                                            canClick && monthItem.lunarCard && onCardClick?.(monthItem.lunarCard);
                                           }}
                                         >
                                           <div className="flex flex-col items-center gap-1">
@@ -942,10 +945,10 @@ export function ReadingResult({
                                                             </div>
                                                           </td>
                                                           <td 
-                                                            className="border p-1.5 text-center cursor-pointer hover:bg-primary/10"
+                                                            className={`border p-1.5 text-center ${canClick ? 'cursor-pointer hover:bg-primary/10' : 'cursor-default'}`}
                                                             onClick={(e) => {
                                                               e.stopPropagation();
-                                                              dayItem.solarCard && onCardClick?.(dayItem.solarCard);
+                                                              canClick && dayItem.solarCard && onCardClick?.(dayItem.solarCard);
                                                             }}
                                                           >
                                                             <div className="flex flex-col items-center gap-0.5">
@@ -956,10 +959,10 @@ export function ReadingResult({
                                                             </div>
                                                           </td>
                                                           <td 
-                                                            className="border p-1.5 text-center cursor-pointer hover:bg-accent/10"
+                                                            className={`border p-1.5 text-center ${canClick ? 'cursor-pointer hover:bg-accent/10' : 'cursor-default'}`}
                                                             onClick={(e) => {
                                                               e.stopPropagation();
-                                                              dayItem.lunarCard && onCardClick?.(dayItem.lunarCard);
+                                                              canClick && dayItem.lunarCard && onCardClick?.(dayItem.lunarCard);
                                                             }}
                                                           >
                                                             <div className="flex flex-col items-center gap-0.5">
@@ -1019,7 +1022,7 @@ export function ReadingResult({
                         <td className="border border-border p-2 text-center font-medium">
                           {currentMonth}月{item.day}日 {isToday && <span className="text-xs text-primary ml-1">(今日)</span>}
                         </td>
-                        <td className="border border-border p-2 text-center cursor-pointer hover:bg-primary/5" onClick={() => item.solarCard && onCardClick?.(item.solarCard)}>
+                        <td className={`border border-border p-2 text-center ${canClick ? 'cursor-pointer hover:bg-primary/5' : 'cursor-default'}`} onClick={() => canClick && item.solarCard && onCardClick?.(item.solarCard)}>
                           <div className="flex flex-col items-center gap-1">
                             <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 font-bold text-primary">
                               {item.solarCardNumber}
@@ -1027,7 +1030,7 @@ export function ReadingResult({
                             <div className="text-xs">{item.solarCard?.name || ""}</div>
                           </div>
                         </td>
-                        <td className="border border-border p-2 text-center cursor-pointer hover:bg-accent/10" onClick={() => item.lunarCard && onCardClick?.(item.lunarCard)}>
+                        <td className={`border border-border p-2 text-center ${canClick ? 'cursor-pointer hover:bg-accent/10' : 'cursor-default'}`} onClick={() => canClick && item.lunarCard && onCardClick?.(item.lunarCard)}>
                           <div className="flex flex-col items-center gap-1">
                             <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-orange-50 font-bold text-orange-500">
                               {item.lunarCardNumber}

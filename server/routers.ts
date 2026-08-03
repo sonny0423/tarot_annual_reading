@@ -219,7 +219,7 @@ export const appRouter = router({
     updateRole: adminProcedure
       .input(z.object({
         userId: z.number(),
-        role: z.enum(['user', 'admin']),
+        role: z.enum(['user', 'admin', 'assistant']),
       }))
       .mutation(async ({ input }) => {
         await updateUserRole(input.userId, input.role);
@@ -242,7 +242,7 @@ export const appRouter = router({
         email: z.string().min(3, "帳號至少需要 3 個字元").max(100, "帳號過長"),
         password: z.string().min(8, "密碼至少需要 8 個字元"),
         name: z.string().optional(),
-        role: z.enum(['user', 'admin']).default('user'),
+        role: z.enum(['user', 'admin', 'assistant']).default('user'),
       }))
       .mutation(async ({ input }) => {
         const existing = await getUserByEmail(input.email);
@@ -251,10 +251,10 @@ export const appRouter = router({
         }
         const passwordHash = await bcrypt.hash(input.password, 12);
         await createEmailUser(input.email, passwordHash, input.name);
-        // Set role if admin
-        if (input.role === 'admin') {
+        // Set role if not default user
+        if (input.role !== 'user') {
           const newUser = await getUserByEmail(input.email);
-          if (newUser) await updateUserRole(newUser.id, 'admin');
+          if (newUser) await updateUserRole(newUser.id, input.role);
         }
         return { success: true, message: '使用者已新增' };
       }),
