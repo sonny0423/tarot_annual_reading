@@ -13,8 +13,36 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import { useAuth } from "./_core/hooks/useAuth";
 
+function SubscriptionBlockedPage({ status, user, onLogout }: { status: 'suspended' | 'expired'; user: any; onLogout: () => void }) {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-white to-amber-50">
+      <div className="text-center max-w-md mx-auto p-8">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-gray-400 to-gray-600 mb-6">
+          <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+        </div>
+        <h1 className="text-2xl font-bold text-gray-800 mb-3">
+          {status === 'suspended' ? '帳號已暫停' : '使用期限已到期'}
+        </h1>
+        <p className="text-gray-500 mb-6">
+          {status === 'suspended'
+            ? '您的帳號已被管理員暫停，請聯繫管理員以恢復使用權限。'
+            : '您的 180 天使用期限已到期，請聯繫管理員以續期。'}
+        </p>
+        <button
+          onClick={onLogout}
+          className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors"
+        >
+          登出
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading, logout } = useAuth();
 
   if (loading) {
     return (
@@ -33,6 +61,13 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 
   if (!user) {
     return <Redirect to="/welcome" />;
+  }
+
+  // Admin is never blocked by subscription
+  const isAdmin = (user as any).role === 'admin';
+  const subStatus = (user as any).subscriptionStatus;
+  if (!isAdmin && (subStatus === 'suspended' || subStatus === 'expired')) {
+    return <SubscriptionBlockedPage status={subStatus} user={user} onLogout={logout} />;
   }
 
   return <>{children}</>;

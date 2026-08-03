@@ -110,6 +110,20 @@ export default function Home() {
                 <span className="hidden sm:inline font-medium text-foreground">{user.name && user.name !== user.email ? user.name : (user.email || '使用者')}</span>
               </div>
             )}
+            {user && user.role !== 'admin' && (user as any).daysLeft !== undefined && (
+              <div className={`hidden sm:flex items-center gap-1 text-xs px-2 py-1 rounded-full font-medium ${
+                (user as any).daysLeft <= 7
+                  ? 'bg-red-100 text-red-600'
+                  : (user as any).daysLeft <= 30
+                  ? 'bg-amber-100 text-amber-600'
+                  : 'bg-green-100 text-green-600'
+              }`}>
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                剩 {(user as any).daysLeft} 天
+              </div>
+            )}
             {user?.role === 'admin' && (
               <Link href="/admin/users">
                 <Button

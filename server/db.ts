@@ -140,6 +140,8 @@ export async function getAllUsers(page: number = 1, pageSize: number = 20) {
       loginMethod: users.loginMethod,
       createdAt: users.createdAt,
       lastSignedIn: users.lastSignedIn,
+      subscriptionStart: users.subscriptionStart,
+      subscriptionStatus: users.subscriptionStatus,
     }).from(users).limit(pageSize).offset(offset),
     db.select({ count: users.id }).from(users),
   ]);
@@ -196,6 +198,23 @@ export async function updateUserPassword(userId: number, passwordHash: string): 
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.update(users).set({ passwordHash, updatedAt: new Date() }).where(eq(users.id, userId));
+}
+
+// Subscription: set subscription start date (first login)
+export async function initSubscriptionStart(userId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  // Only set if not already set
+  await db.update(users)
+    .set({ subscriptionStart: new Date() })
+    .where(and(eq(users.id, userId), eq(users.subscriptionStart as any, null)));
+}
+
+// Admin: update subscription status (active/suspended)
+export async function updateSubscriptionStatus(userId: number, status: 'active' | 'suspended' | 'expired'): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(users).set({ subscriptionStatus: status }).where(eq(users.id, userId));
 }
 
 // Admin: delete user by ID

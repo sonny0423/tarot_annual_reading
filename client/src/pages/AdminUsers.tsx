@@ -24,7 +24,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { UserPlus, Trash2 } from "lucide-react";
+import { UserPlus, Trash2, PauseCircle, PlayCircle } from "lucide-react";
 
 export default function AdminUsers() {
   const { user } = useAuth();
@@ -89,6 +89,16 @@ export default function AdminUsers() {
     },
     onError: (err) => {
       toast.error("刪除失敗：" + err.message);
+    },
+  });
+
+  const updateSubscriptionMutation = trpc.admin.updateSubscriptionStatus.useMutation({
+    onSuccess: () => {
+      toast.success("訂閱狀態已更新");
+      refetch();
+    },
+    onError: (err) => {
+      toast.error("更新失敗：" + err.message);
     },
   });
 
@@ -223,7 +233,8 @@ export default function AdminUsers() {
                   <TableHead className="w-24">角色</TableHead>
                   <TableHead className="w-44">註冊時間</TableHead>
                   <TableHead className="w-44">最後登入</TableHead>
-                  <TableHead className="w-56">操作</TableHead>
+                  <TableHead className="w-28">訂閱剩餘</TableHead>
+                  <TableHead className="w-64">操作</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -272,6 +283,27 @@ export default function AdminUsers() {
                         : "—"}
                     </TableCell>
                     <TableCell>
+                      {u.role !== 'admin' ? (() => {
+                        const subStatus = (u as any).subscriptionStatus || 'active';
+                        const subStart = (u as any).subscriptionStart;
+                        const elapsed = subStart
+                          ? Math.floor((Date.now() - new Date(subStart).getTime()) / (1000 * 60 * 60 * 24))
+                          : 0;
+                        const daysLeft = Math.max(0, 180 - elapsed);
+                        if (subStatus === 'suspended') {
+                          return <Badge variant="outline" className="text-xs border-orange-400 text-orange-600">已暫停</Badge>;
+                        }
+                        if (subStatus === 'expired' || daysLeft === 0) {
+                          return <Badge variant="outline" className="text-xs border-red-400 text-red-600">已到期</Badge>;
+                        }
+                        return (
+                          <span className={`text-xs font-medium ${
+                            daysLeft <= 7 ? 'text-red-600' : daysLeft <= 30 ? 'text-amber-600' : 'text-green-600'
+                          }`}>剩 {daysLeft} 天</span>
+                        );
+                      })() : <span className="text-xs text-muted-foreground">無限制</span>}
+                    </TableCell>
+                    <TableCell>
                       <div className="flex items-center gap-1.5">
                         <Select
                           value={u.role ?? "user"}
@@ -300,6 +332,32 @@ export default function AdminUsers() {
                         >
                           重設密碼
                         </Button>
+                        {/* 暫停/繼續按鈕（不顯示對管理員自己） */}
+                        {u.id !== user.id && u.role !== 'admin' && (() => {
+                          const subStatus = (u as any).subscriptionStatus || 'active';
+                          const isSuspended = subStatus === 'suspended';
+                          return (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className={`h-8 text-xs px-2 ${
+                                isSuspended
+                                  ? 'text-green-600 border-green-300 hover:bg-green-50'
+                                  : 'text-orange-600 border-orange-300 hover:bg-orange-50'
+                              }`}
+                              onClick={() => updateSubscriptionMutation.mutate({
+                                userId: u.id,
+                                status: isSuspended ? 'active' : 'suspended',
+                              })}
+                              disabled={updateSubscriptionMutation.isPending}
+                              title={isSuspended ? '繼續使用' : '暫停使用'}
+                            >
+                              {isSuspended
+                                ? <PlayCircle className="w-3 h-3" />
+                                : <PauseCircle className="w-3 h-3" />}
+                            </Button>
+                          );
+                        })()}
                         {/* 不能刪除自己 */}
                         {u.id !== user.id && (
                           <Button

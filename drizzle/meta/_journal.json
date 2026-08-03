@@ -50,6 +50,13 @@
       "when": 1785732309957,
       "tag": "0006_bored_archangel",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1785755974185,
+      "tag": "0007_fine_chimera",
+      "breakpoints": true
     }
   ]
 }

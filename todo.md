@@ -801,3 +801,14 @@
 - [x] client/src/pages/AdminUsers.tsx：角色下拉選單新增「助教」選項
 - [x] client/src/components/ReadingResult.tsx：卡牌點擊只有 admin/assistant 可開啟說明，user 顯示無法查看提示
 - [x] 同步 Zeabur 資料庫 schema（ALTER TABLE users MODIFY role enum 加入 assistant）
+
+## 使用者 180 天訂閱週期功能
+- [x] drizzle/schema.ts：users 表新增 subscriptionStart（首次登入時間）、subscriptionStatus（active/suspended/expired）
+- [x] 執行 pnpm db:push 更新 Manus 資料庫
+- [x] server/db.ts：新增 updateSubscriptionStatus、getSubscriptionInfo 查詢函式
+- [x] server/routers.ts：auth.me 回傳訂閱剩餘天數；admin.updateSubscriptionStatus（暫停/繼續）
+- [x] server/routers.ts：登入時自動設定 subscriptionStart（若尚未設定）
+- [x] 前端：登入後顯示剩餘天數倒數（header 區域綠/橘/紅色指示）
+- [x] 前端：到期或暫停時顯示提示頁面，無法使用主要功能
+- [x] 前端 AdminUsers：新增訂閱剩餘欄位、暫停/繼續按鈕
+- [x] 同步 Zeabur 資料庫 schema（新增 subscriptionStart、subscriptionStatus 欄位）

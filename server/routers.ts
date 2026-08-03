@@ -4,7 +4,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, adminProcedure, router } from "./_core/trpc";
 import { sdk } from "./_core/sdk";
 import { z } from "zod";
-import { getAllTarotCards, getTarotCardById, getTarotCardsByIds, getUserByEmail, createEmailUser, getUserByOpenId, getAllUsers, updateUserRole, createPasswordResetToken, getValidResetToken, markTokenUsed, updateUserPassword, deleteUser } from "./db";
+import { getAllTarotCards, getTarotCardById, getTarotCardsByIds, getUserByEmail, createEmailUser, getUserByOpenId, getAllUsers, updateUserRole, createPasswordResetToken, getValidResetToken, markTokenUsed, updateUserPassword, deleteUser, initSubscriptionStart, updateSubscriptionStatus } from "./db";
 import { sendPasswordResetEmail } from "./mailer";
 import crypto from "crypto";
 import { calculateFullReading } from "./tarot-calculator";
@@ -15,7 +15,35 @@ import { TRPCError } from "@trpc/server";
 export const appRouter = router({
   system: systemRouter,
   auth: router({
-    me: publicProcedure.query(opts => opts.ctx.user),
+    me: publicProcedure.query(async (opts) => {
+      const user = opts.ctx.user;
+      if (!user) return null;
+      // Calculate subscription info
+      const SUBSCRIPTION_DAYS = 180;
+      const dbUser = await getUserByOpenId(user.openId);
+      if (!dbUser) return user;
+      // Init subscription start if not set
+      if (!dbUser.subscriptionStart) {
+        await initSubscriptionStart(dbUser.id);
+        // Refetch
+        const refreshed = await getUserByOpenId(user.openId);
+        if (refreshed?.subscriptionStart) {
+          const elapsed = Math.floor((Date.now() - refreshed.subscriptionStart.getTime()) / (1000 * 60 * 60 * 24));
+          const daysLeft = Math.max(0, SUBSCRIPTION_DAYS - elapsed);
+          return { ...user, subscriptionStart: refreshed.subscriptionStart, subscriptionStatus: refreshed.subscriptionStatus, daysLeft, subscriptionDays: SUBSCRIPTION_DAYS };
+        }
+      }
+      const elapsed = dbUser.subscriptionStart
+        ? Math.floor((Date.now() - dbUser.subscriptionStart.getTime()) / (1000 * 60 * 60 * 24))
+        : 0;
+      const daysLeft = Math.max(0, SUBSCRIPTION_DAYS - elapsed);
+      // Auto-expire if past 180 days
+      if (daysLeft === 0 && dbUser.subscriptionStatus === 'active') {
+        await updateSubscriptionStatus(dbUser.id, 'expired');
+        return { ...user, subscriptionStart: dbUser.subscriptionStart, subscriptionStatus: 'expired' as const, daysLeft: 0, subscriptionDays: SUBSCRIPTION_DAYS };
+      }
+      return { ...user, subscriptionStart: dbUser.subscriptionStart, subscriptionStatus: dbUser.subscriptionStatus, daysLeft, subscriptionDays: SUBSCRIPTION_DAYS };
+    }),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
@@ -177,6 +205,9 @@ export const appRouter = router({
             });
           }
 
+          // Init subscription start on first login
+          await initSubscriptionStart(user.id);
+
           // Create session token
           const sessionToken = await sdk.createSessionToken(user.openId, {
             name: user.name || "",
@@ -270,6 +301,16 @@ export const appRouter = router({
         }
         await deleteUser(input.userId);
         return { success: true, message: '使用者已刪除' };
+      }),
+
+    updateSubscriptionStatus: adminProcedure
+      .input(z.object({
+        userId: z.number(),
+        status: z.enum(['active', 'suspended', 'expired']),
+      }))
+      .mutation(async ({ input }) => {
+        await updateSubscriptionStatus(input.userId, input.status);
+        return { success: true };
       }),
   }),
 
