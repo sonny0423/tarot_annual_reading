@@ -81,17 +81,19 @@ export default function Login() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                帳號
+                {isRegister ? "Email" : "帳號"}
               </label>
               <input
-                type="text"
+                type={isRegister ? "email" : "text"}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                minLength={3}
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-100 outline-none transition-all text-gray-800"
-                placeholder="輸入帳號"
+                placeholder={isRegister ? "請輸入完整 Email（例如：user@example.com）" : "Email 或 Email @ 前面的帳號"}
               />
+              {!isRegister && (
+                <p className="text-xs text-gray-400 mt-1">支援完整 Email 或 @ 前面的帳號名稱登入</p>
+              )}
             </div>
 
             <div>

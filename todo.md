@@ -812,3 +812,10 @@
 - [x] 前端：到期或暫停時顯示提示頁面，無法使用主要功能
 - [x] 前端 AdminUsers：新增訂閱剩餘欄位、暫停/繼續按鈕
 - [x] 同步 Zeabur 資料庫 schema（新增 subscriptionStart、subscriptionStatus 欄位）
+
+## 帳號系統修正
+- [x] server/routers.ts：register 加入完整 Email 格式驗證（z.string().email()）
+- [x] server/routers.ts：login 支援完整 Email 或 @ 前綴兩種格式
+- [x] server/routers.ts：admin.createUser 加入完整 Email 格式驗證
+- [x] client/src/pages/Login.tsx：登入欄位標籤改為「帳號」，加入提示文字說明支援兩種格式
+- [x] client/src/pages/Login.tsx：註冊模式欄位標籤改為「Email」，輸入類型改為 email，加入格式驗證提示

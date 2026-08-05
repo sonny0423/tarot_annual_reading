@@ -56,7 +56,7 @@ export const appRouter = router({
     register: publicProcedure
       .input(
         z.object({
-          email: z.string().min(3, "帳號至少需要 3 個字元").max(100, "帳號過長"),
+          email: z.string().email("請輸入有效的 Email 格式（例如：user@example.com）").max(100, "Email 過長"),
           password: z.string().min(8, "密碼至少需要 8 個字元"),
           name: z.string().optional(),
         })
@@ -187,8 +187,19 @@ export const appRouter = router({
       )
       .mutation(async ({ input, ctx }) => {
         try {
-          // Find user by account
-          const user = await getUserByEmail(input.email);
+          // Find user by account: support full email or prefix before @
+          let user = await getUserByEmail(input.email);
+          // If not found and input doesn't contain @, try searching by email prefix
+          if (!user && !input.email.includes('@')) {
+            const { getDb } = await import('./db');
+            const { users } = await import('../drizzle/schema');
+            const { like } = await import('drizzle-orm');
+            const db = await getDb();
+            if (db) {
+              const results = await db.select().from(users).where(like(users.email, `${input.email}@%`)).limit(1);
+              if (results.length > 0) user = results[0];
+            }
+          }
           if (!user || !user.passwordHash) {
             throw new TRPCError({
               code: "UNAUTHORIZED",
@@ -270,7 +281,7 @@ export const appRouter = router({
 
     createUser: adminProcedure
       .input(z.object({
-        email: z.string().min(3, "帳號至少需要 3 個字元").max(100, "帳號過長"),
+        email: z.string().email("請輸入有效的 Email 格式（例如：user@example.com）").max(100, "Email 過長"),
         password: z.string().min(8, "密碼至少需要 8 個字元"),
         name: z.string().optional(),
         role: z.enum(['user', 'admin', 'assistant']).default('user'),
