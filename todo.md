@@ -819,3 +819,9 @@
 - [x] server/routers.ts：admin.createUser 加入完整 Email 格式驗證
 - [x] client/src/pages/Login.tsx：登入欄位標籤改為「帳號」，加入提示文字說明支援兩種格式
 - [x] client/src/pages/Login.tsx：註冊模式欄位標籤改為「Email」，輸入類型改為 email，加入格式驗證提示
+
+## 登入使用者自行變更密碼
+- [x] 後端：新增受登入保護的 auth.changePassword API，驗證目前密碼後更新密碼雜湊
+- [x] 前端：新增 /change-password 頁面，提供目前密碼、新密碼與確認新密碼欄位
+- [x] 前端：在首頁使用者區域新增「變更密碼」入口（鑰匙圖示按鈕）
+- [x] 測試：vitest 8 項全部通過（含目前密碼錯誤、確認不一致、成功變更後以新密碼登入）

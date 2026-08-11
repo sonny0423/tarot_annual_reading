@@ -177,6 +177,34 @@ export const appRouter = router({
         return { success: true, message: "密碼已成功重設，請使用新密碼登入" };
       }),
 
+    // Logged-in user changes their own password after verifying the current password.
+    changePassword: protectedProcedure
+      .input(z.object({
+        currentPassword: z.string().min(1, "請輸入目前密碼"),
+        newPassword: z.string().min(8, "新密碼至少需要 8 個字元"),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const dbUser = await getUserByOpenId(ctx.user.openId);
+        if (!dbUser?.passwordHash) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "此帳號無法使用密碼變更功能",
+          });
+        }
+
+        const currentPasswordIsValid = await bcrypt.compare(input.currentPassword, dbUser.passwordHash);
+        if (!currentPasswordIsValid) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "目前密碼不正確",
+          });
+        }
+
+        const passwordHash = await bcrypt.hash(input.newPassword, 12);
+        await updateUserPassword(dbUser.id, passwordHash);
+        return { success: true, message: "密碼已成功變更" };
+      }),
+
     // Email + Password Login
     login: publicProcedure
       .input(
@@ -508,4 +536,3 @@ export const appRouter = router({
 });
 
 export type AppRouter = typeof appRouter;
-

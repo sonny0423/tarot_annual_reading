@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
+import { getUserByEmail } from "./db";
 
 // Mock cookie storage
 let cookies: Record<string, string> = {};
@@ -73,7 +74,7 @@ describe("Email Auth", () => {
         email: uniqueEmail,
         password: "password456",
       })
-    ).rejects.toThrow("此 Email 已被註冊");
+    ).rejects.toThrow("此帳號已被使用");
   });
 
   it("should login with correct credentials", async () => {
@@ -166,5 +167,46 @@ describe("Email Auth", () => {
         password: "short",
       })
     ).rejects.toThrow();
+  });
+
+  it("should change a logged-in user's password only after current password verification", async () => {
+    const email = `change_password_${Date.now()}@example.com`;
+    const registerCtx = createMockContext();
+    const registerCaller = appRouter.createCaller(registerCtx);
+    await registerCaller.auth.register({
+      email,
+      password: "oldpassword123",
+    });
+
+    const dbUser = await getUserByEmail(email);
+    expect(dbUser).toBeTruthy();
+
+    const changeCtx = createMockContext();
+    changeCtx.user = dbUser as any;
+    const changeCaller = appRouter.createCaller(changeCtx);
+
+    await expect(
+      changeCaller.auth.changePassword({
+        currentPassword: "incorrect-password",
+        newPassword: "newpassword123",
+      })
+    ).rejects.toThrow("目前密碼不正確");
+
+    await expect(
+      changeCaller.auth.changePassword({
+        currentPassword: "oldpassword123",
+        newPassword: "newpassword123",
+      })
+    ).resolves.toMatchObject({ success: true });
+
+    const loginCtx = createMockContext();
+    const loginCaller = appRouter.createCaller(loginCtx);
+    await expect(
+      loginCaller.auth.login({ email, password: "oldpassword123" })
+    ).rejects.toThrow("帳號或密碼錯誤");
+
+    await expect(
+      loginCaller.auth.login({ email, password: "newpassword123" })
+    ).resolves.toMatchObject({ success: true });
   });
 });

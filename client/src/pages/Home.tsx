@@ -4,7 +4,7 @@ import { BirthdayForm } from "@/components/BirthdayForm";
 import { ReadingResult } from "@/components/ReadingResult";
 import { CardDetailDialog } from "@/components/CardDetailDialog";
 import { Button } from "@/components/ui/button";
-import { Sparkles, LogOut, User, ShieldCheck } from "lucide-react";
+import { Sparkles, LogOut, User, ShieldCheck, KeyRound } from "lucide-react";
 import { Link } from "wouter";
 import type { TarotCard } from "../../../drizzle/schema";
 import { calculateFullReading } from "@/lib/tarotCalculator";
@@ -136,6 +136,17 @@ export default function Home() {
                 </Button>
               </Link>
             )}
+            <Link href="/change-password">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2 text-muted-foreground hover:text-purple-700"
+                aria-label="變更密碼"
+              >
+                <KeyRound className="w-4 h-4" />
+                <span className="hidden md:inline">變更密碼</span>
+              </Button>
+            </Link>
             <Button
               variant="outline"
               size="sm"

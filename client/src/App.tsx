@@ -11,6 +11,7 @@ import Landing from "./pages/Landing";
 import AdminUsers from "./pages/AdminUsers";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import ChangePassword from "./pages/ChangePassword";
 import { useAuth } from "./_core/hooks/useAuth";
 
 function SubscriptionBlockedPage({ status, user, onLogout }: { status: 'suspended' | 'expired'; user: any; onLogout: () => void }) {
@@ -120,6 +121,11 @@ function Router() {
       </Route>
       <Route path="/reset-password">
         <ResetPassword />
+      </Route>
+      <Route path="/change-password">
+        <AuthGuard>
+          <ChangePassword />
+        </AuthGuard>
       </Route>
       <Route path="/">
         <AuthGuard>
