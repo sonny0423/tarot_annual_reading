@@ -204,10 +204,11 @@ export async function updateUserPassword(userId: number, passwordHash: string): 
 export async function initSubscriptionStart(userId: number): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  // Only set if not already set
+  // Only set if not already set (use isNull for proper SQL NULL comparison)
+  const { isNull } = await import('drizzle-orm');
   await db.update(users)
     .set({ subscriptionStart: new Date() })
-    .where(and(eq(users.id, userId), eq(users.subscriptionStart as any, null)));
+    .where(and(eq(users.id, userId), isNull(users.subscriptionStart)));
 }
 
 // Admin: update subscription status (active/suspended)
