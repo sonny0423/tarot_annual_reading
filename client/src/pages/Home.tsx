@@ -8,6 +8,7 @@ import { Sparkles, LogOut, User, ShieldCheck, KeyRound } from "lucide-react";
 import { Link } from "wouter";
 import type { TarotCard } from "../../../drizzle/schema";
 import { calculateFullReading } from "@/lib/tarotCalculator";
+import { getSubscriptionBadgeColor, getSubscriptionRemainingLabel } from "@/lib/subscriptionDisplay";
 import { useAuth } from "@/_core/hooks/useAuth";
 
 export default function Home() {
@@ -95,15 +96,16 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-br from-background via-accent/10 to-background">
       {/* Header */}
       <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Sparkles className="w-8 h-8 text-primary" />
-            <h1 className="text-2xl md:text-3xl font-serif bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              塔羅流年運勢
-            </h1>
-          </div>
-          {/* 右上角使用者資訊與登出 */}
-          <div className="flex items-center gap-3">
+        <div className="container py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Sparkles className="w-7 h-7 sm:w-8 sm:h-8 text-primary shrink-0" />
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-serif bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent whitespace-nowrap">
+                塔羅流年運勢
+              </h1>
+            </div>
+            {/* 右上角使用者資訊與登出 */}
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             {user && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <User className="w-4 h-4" />
@@ -111,17 +113,11 @@ export default function Home() {
               </div>
             )}
             {user && user.role !== 'admin' && (user as any).daysLeft !== undefined && (
-              <div className={`hidden sm:flex items-center gap-1 text-xs px-2 py-1 rounded-full font-medium ${
-                (user as any).daysLeft <= 7
-                  ? 'bg-red-100 text-red-600'
-                  : (user as any).daysLeft <= 30
-                  ? 'bg-amber-100 text-amber-600'
-                  : 'bg-green-100 text-green-600'
-              }`}>
+              <div className={`hidden sm:flex items-center gap-1 text-xs px-2 py-1 rounded-full font-medium ${getSubscriptionBadgeColor((user as any).daysLeft)}`}>
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                剩 {(user as any).daysLeft} 天
+                {getSubscriptionRemainingLabel((user as any).daysLeft, true)}
               </div>
             )}
             {user?.role === 'admin' && (
@@ -159,7 +155,18 @@ export default function Home() {
               <LogOut className="w-4 h-4" />
               <span className="hidden sm:inline">登出</span>
             </Button>
+            </div>
           </div>
+          {user && user.role !== 'admin' && (user as any).daysLeft !== undefined && (
+            <div className="flex sm:hidden justify-end mt-2">
+              <div className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium ${getSubscriptionBadgeColor((user as any).daysLeft)}`}>
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {getSubscriptionRemainingLabel((user as any).daysLeft)}
+              </div>
+            </div>
+          )}
         </div>
       </header>
 
