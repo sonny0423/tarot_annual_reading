@@ -10,6 +10,7 @@ import {
   calculateMonthCard,
   calculateDayCard,
   calculateFullReading,
+  calculateMonthlyDayFortune,
 } from "./tarot-calculator";
 
 describe("Tarot Calculator", () => {
@@ -217,6 +218,40 @@ describe("Tarot Calculator", () => {
       // daySum = 4036 + 21 = 4057
       // digitSum = 4 + 0 + 5 + 7 = 16
       expect(reading.dayCard).toBe(16); // 高塔
+    });
+
+    it("should apply soulShift only to fortune cards, never natal or benefactor cards", () => {
+      const baseReading = calculateFullReading(1981, 4, 23, 1981, 3, 19, 2026, 2, 21, 0);
+      const plusReading = calculateFullReading(1981, 4, 23, 1981, 3, 19, 2026, 2, 21, 1);
+      const minusReading = calculateFullReading(1981, 4, 23, 1981, 3, 19, 2026, 2, 21, -1);
+
+      expect(baseReading).toMatchObject({ yearCard: 9, monthCard: 13, dayCard: 16, lunarYearCard: 13, lunarMonthCard: 8, lunarDayCard: 11 });
+      expect(plusReading).toMatchObject({ yearCard: 10, monthCard: 14, dayCard: 17, lunarYearCard: 14, lunarMonthCard: 9, lunarDayCard: 12 });
+      expect(minusReading).toMatchObject({ yearCard: 8, monthCard: 12, dayCard: 15, lunarYearCard: 12, lunarMonthCard: 7, lunarDayCard: 10 });
+
+      expect(plusReading.coreCard).toBe(baseReading.coreCard);
+      expect(plusReading.outerCard).toBe(baseReading.outerCard);
+      expect(plusReading.innerCard).toBe(baseReading.innerCard);
+      expect(plusReading.benefactorCore).toBe(baseReading.benefactorCore);
+      expect(plusReading.benefactorOuter).toBe(baseReading.benefactorOuter);
+      expect(plusReading.benefactorInner).toBe(baseReading.benefactorInner);
+    });
+  });
+
+  describe("calculateMonthlyDayFortune", () => {
+    it("should use the same shifted formula for every daily fortune row", () => {
+      const solarToLunar = (year: number, month: number, day: number) => ({ year, month, day, isLeapMonth: false });
+      const results = calculateMonthlyDayFortune(1981, 4, 23, 1981, 3, 19, 2026, 2, solarToLunar, 1);
+      const dayTwentyFirst = results.find((item) => item.solarDay === 21);
+
+      expect(results).toHaveLength(28);
+      expect(dayTwentyFirst).toMatchObject({
+        lunarYear: 2026,
+        lunarMonth: 2,
+        lunarDay: 21,
+        solarCardNumber: 17,
+        lunarCardNumber: 12,
+      });
     });
   });
 });

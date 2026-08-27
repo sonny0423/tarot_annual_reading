@@ -7,10 +7,74 @@ import { z } from "zod";
 import { getAllTarotCards, getTarotCardById, getTarotCardsByIds, getUserByEmail, createEmailUser, getUserByOpenId, getAllUsers, updateUserRole, createPasswordResetToken, getValidResetToken, markTokenUsed, updateUserPassword, deleteUser, initSubscriptionStart, updateSubscriptionStatus } from "./db";
 import { sendPasswordResetEmail } from "./mailer";
 import crypto from "crypto";
-import { calculateFullReading } from "./tarot-calculator";
+import {
+  calculateDayCard,
+  calculateFullReading,
+  calculateMonthCard,
+  calculateMonthlyDayFortune,
+  calculateYearCard,
+  type TarotReading,
+} from "./tarot-calculator";
 import { solarToLunar, lunarToSolar } from "./lunar-converter";
 import bcrypt from "bcryptjs";
 import { TRPCError } from "@trpc/server";
+
+const SUBSCRIPTION_DAYS = 180;
+
+const tarotAccessProcedure = protectedProcedure.use(async ({ ctx, next }) => {
+  const dbUser = await getUserByOpenId(ctx.user.openId);
+  if (!dbUser || ctx.user.role === "admin") {
+    return next({ ctx });
+  }
+
+  const elapsedDays = dbUser.subscriptionStart
+    ? Math.floor((Date.now() - dbUser.subscriptionStart.getTime()) / (1000 * 60 * 60 * 24))
+    : 0;
+  const isExpired = elapsedDays >= SUBSCRIPTION_DAYS;
+
+  if (isExpired && dbUser.subscriptionStatus === "active") {
+    await updateSubscriptionStatus(dbUser.id, "expired");
+  }
+
+  if (dbUser.subscriptionStatus === "suspended" || dbUser.subscriptionStatus === "expired" || isExpired) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "您的使用權限目前無法查詢塔羅結果",
+    });
+  }
+
+  return next({ ctx });
+});
+
+const privilegedTarotProcedure = tarotAccessProcedure.use(({ ctx, next }) => {
+  if (ctx.user.role !== "admin" && ctx.user.role !== "assistant") {
+    throw new TRPCError({ code: "FORBIDDEN", message: "只有助教與管理員可以查看完整牌卡說明" });
+  }
+  return next({ ctx });
+});
+
+type CardSummary = { id: number; name: string };
+
+function toCardSummaryMap(cards: Array<{ id: number; name: string }>) {
+  return new Map<number, CardSummary>(cards.map((card) => [card.id, { id: card.id, name: card.name }]));
+}
+
+function toReadingCards(reading: TarotReading, cardMap: Map<number, Awaited<ReturnType<typeof getAllTarotCards>>[number]>) {
+  return {
+    core: cardMap.get(reading.coreCard),
+    outer: cardMap.get(reading.outerCard),
+    inner: cardMap.get(reading.innerCard),
+    benefactorCore: cardMap.get(reading.benefactorCore),
+    benefactorOuter: cardMap.get(reading.benefactorOuter),
+    benefactorInner: cardMap.get(reading.benefactorInner),
+    year: cardMap.get(reading.yearCard),
+    month: cardMap.get(reading.monthCard),
+    day: cardMap.get(reading.dayCard),
+    lunarYear: cardMap.get(reading.lunarYearCard),
+    lunarMonth: cardMap.get(reading.lunarMonthCard),
+    lunarDay: cardMap.get(reading.lunarDayCard),
+  };
+}
 
 export const appRouter = router({
   system: systemRouter,
@@ -19,7 +83,6 @@ export const appRouter = router({
       const user = opts.ctx.user;
       if (!user) return null;
       // Calculate subscription info
-      const SUBSCRIPTION_DAYS = 180;
       const dbUser = await getUserByOpenId(user.openId);
       if (!dbUser) return user;
       // Init subscription start if not set
@@ -381,8 +444,8 @@ export const appRouter = router({
         return lunarToSolar(input.year, input.month, input.day, input.isLeapMonth);
       }),
 
-    // 批次計算本月流日
-    calculateMonthlyDayFortune: publicProcedure
+    // 批次計算本月流日；僅回傳表格顯示需要的牌卡摘要。
+    calculateMonthlyDayFortune: tarotAccessProcedure
       .input(
         z.object({
           solarBirthYear: z.number(),
@@ -393,75 +456,50 @@ export const appRouter = router({
           lunarBirthDay: z.number(),
           targetYear: z.number(),
           targetMonth: z.number(),
+          soulShift: z.union([z.literal(-1), z.literal(0), z.literal(1)]).default(0),
         })
       )
       .query(async ({ input }) => {
-        const { solarBirthYear, solarBirthMonth, solarBirthDay, lunarBirthYear, lunarBirthMonth, lunarBirthDay, targetYear, targetMonth } = input;
-        const daysInMonth = new Date(targetYear, targetMonth, 0).getDate();
-        const days = [];
-        
-        // 國曆流日計算
-        const solarBirthSum = solarBirthYear + solarBirthMonth + solarBirthDay;
-        const solarMonthSum = solarBirthSum + targetYear + targetMonth;
-        
-        for (let day = 1; day <= daysInMonth; day++) {
-          // 國曆轉農曆
-          const lunarDate = solarToLunar(targetYear, targetMonth, day);
-          if (!lunarDate) {
-            continue; // 跳過無效日期
-          }
-          
-          // 計算國曆流日牌
-          const solarDaySum = solarMonthSum + day;
-          let solarDayCard = solarDaySum.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
-          while (solarDayCard > 21) {
-            solarDayCard = solarDayCard.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
-          }
-          
-          // 計算農曆流日牌
-          const lunarBirthSum = lunarBirthYear + lunarBirthMonth + lunarBirthDay;
-          const lunarMonthSum = lunarBirthSum + targetYear + targetMonth;
-          const lunarDaySum = lunarMonthSum + day;
-          let lunarDayCard = lunarDaySum.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
-          while (lunarDayCard > 21) {
-            lunarDayCard = lunarDayCard.toString().split('').map(Number).reduce((sum, digit) => sum + digit, 0);
-          }
-          
-          days.push({
-            solarDay: day,
-            lunarYear: lunarDate.year,
-            lunarMonth: lunarDate.month,
-            lunarDay: lunarDate.day,
-            isLeapMonth: lunarDate.isLeapMonth,
-            solarCardNumber: solarDayCard,
-            lunarCardNumber: lunarDayCard,
-          });
-        }
-        
-        return days;
+        const summaries = toCardSummaryMap(await getAllTarotCards());
+        return calculateMonthlyDayFortune(
+          input.solarBirthYear,
+          input.solarBirthMonth,
+          input.solarBirthDay,
+          input.lunarBirthYear,
+          input.lunarBirthMonth,
+          input.lunarBirthDay,
+          input.targetYear,
+          input.targetMonth,
+          solarToLunar,
+          input.soulShift,
+        ).map((item) => ({
+          ...item,
+          solarCard: summaries.get(item.solarCardNumber),
+          lunarCard: summaries.get(item.lunarCardNumber),
+        }));
       }),
 
     // 取得所有塔羅牌
-    getAllCards: publicProcedure.query(async () => {
+    getAllCards: privilegedTarotProcedure.query(async () => {
       return await getAllTarotCards();
     }),
 
     // 取得單張塔羅牌
-    getCard: publicProcedure
+    getCard: privilegedTarotProcedure
       .input(z.object({ id: z.number().min(0).max(21) }))
       .query(async ({ input }) => {
         return await getTarotCardById(input.id);
       }),
 
     // 取得多張塔羅牌
-    getCards: publicProcedure
+    getCards: privilegedTarotProcedure
       .input(z.object({ ids: z.array(z.number().min(0).max(21)) }))
       .query(async ({ input }) => {
         return await getTarotCardsByIds(input.ids);
       }),
 
-    // 計算完整運勢
-    calculateReading: publicProcedure
+    // 計算當次完整運勢；完整公式只在伺服器執行。
+    calculateReading: tarotAccessProcedure
       .input(
         z.object({
           birthYear: z.number().min(1900).max(2100),
@@ -470,9 +508,10 @@ export const appRouter = router({
           lunarBirthYear: z.number().min(1900).max(2100),
           lunarBirthMonth: z.number().min(1).max(12),
           lunarBirthDay: z.number().min(1).max(31),
-          targetYear: z.number().min(1900).max(2100).optional(),
-          targetMonth: z.number().min(1).max(12).optional(),
-          targetDay: z.number().min(1).max(31).optional(),
+          targetYear: z.number().min(1900).max(2100),
+          targetMonth: z.number().min(1).max(12),
+          targetDay: z.number().min(1).max(31),
+          soulShift: z.union([z.literal(-1), z.literal(0), z.literal(1)]).default(0),
         })
       )
       .mutation(async ({ input }) => {
@@ -485,7 +524,22 @@ export const appRouter = router({
           input.lunarBirthDay,
           input.targetYear,
           input.targetMonth,
-          input.targetDay
+          input.targetDay,
+          input.soulShift,
+        );
+
+        // 農曆性格與貴人同樣由後端計算，且依規則不套用靈魂換日線。
+        const lunarPersonalityReading = calculateFullReading(
+          input.lunarBirthYear,
+          input.lunarBirthMonth,
+          input.lunarBirthDay,
+          input.lunarBirthYear,
+          input.lunarBirthMonth,
+          input.lunarBirthDay,
+          input.targetYear,
+          input.targetMonth,
+          input.targetDay,
+          0,
         );
 
         // 取得所有相關牌卡的詳細資訊
@@ -504,33 +558,89 @@ export const appRouter = router({
           reading.lunarDayCard,
         ];
 
-        const uniqueCardIds = Array.from(new Set(cardIds));
+        const lunarPersonalityIds = [
+          lunarPersonalityReading.coreCard,
+          lunarPersonalityReading.outerCard,
+          lunarPersonalityReading.innerCard,
+          lunarPersonalityReading.benefactorCore,
+          lunarPersonalityReading.benefactorOuter,
+          lunarPersonalityReading.benefactorInner,
+        ];
+        const uniqueCardIds = Array.from(new Set([...cardIds, ...lunarPersonalityIds]));
         const cards = await getTarotCardsByIds(uniqueCardIds);
 
         // 建立卡片映射
         const cardMap = new Map(cards.map(card => [card.id, card]));
 
-        // 取得所有塔羅牌供前端計算多年流年和每月流日
-        const allCards = await getAllTarotCards();
-
         return {
           reading,
-          cards: {
-            core: cardMap.get(reading.coreCard),
-            outer: cardMap.get(reading.outerCard),
-            inner: cardMap.get(reading.innerCard),
-            benefactorCore: cardMap.get(reading.benefactorCore),
-            benefactorOuter: cardMap.get(reading.benefactorOuter),
-            benefactorInner: cardMap.get(reading.benefactorInner),
-            year: cardMap.get(reading.yearCard),
-            month: cardMap.get(reading.monthCard),
-            day: cardMap.get(reading.dayCard),
-            lunarYear: cardMap.get(reading.lunarYearCard),
-            lunarMonth: cardMap.get(reading.lunarMonthCard),
-            lunarDay: cardMap.get(reading.lunarDayCard),
+          cards: toReadingCards(reading, cardMap),
+          lunarPersonality: {
+            cards: {
+              core: cardMap.get(lunarPersonalityReading.coreCard),
+              outer: cardMap.get(lunarPersonalityReading.outerCard),
+              inner: cardMap.get(lunarPersonalityReading.innerCard),
+              benefactorCore: cardMap.get(lunarPersonalityReading.benefactorCore),
+              benefactorOuter: cardMap.get(lunarPersonalityReading.benefactorOuter),
+              benefactorInner: cardMap.get(lunarPersonalityReading.benefactorInner),
+            },
           },
-          allCards,
         };
+      }),
+    calculateLifeFortune: tarotAccessProcedure
+      .input(z.object({
+        birthYear: z.number().min(1900).max(2100),
+        birthMonth: z.number().min(1).max(12),
+        birthDay: z.number().min(1).max(31),
+        lunarBirthMonth: z.number().min(1).max(12),
+        lunarBirthDay: z.number().min(1).max(31),
+        soulShift: z.union([z.literal(-1), z.literal(0), z.literal(1)]).default(0),
+      }))
+      .query(async ({ input }) => {
+        const summaries = toCardSummaryMap(await getAllTarotCards());
+        const currentAge = new Date().getFullYear() - input.birthYear;
+        return Array.from({ length: 101 }, (_, age) => {
+          const year = input.birthYear + age;
+          const solarCardNumber = calculateYearCard(input.birthMonth, input.birthDay, year, input.soulShift);
+          const lunarCardNumber = calculateYearCard(input.lunarBirthMonth, input.lunarBirthDay, year, input.soulShift);
+          return {
+            year,
+            age,
+            isCurrentYear: age === currentAge,
+            solarCardNumber,
+            solarCard: summaries.get(solarCardNumber),
+            lunarCardNumber,
+            lunarCard: summaries.get(lunarCardNumber),
+          };
+        });
+      }),
+    calculateYearMonths: tarotAccessProcedure
+      .input(z.object({
+        birthYear: z.number().min(1900).max(2100),
+        birthMonth: z.number().min(1).max(12),
+        birthDay: z.number().min(1).max(31),
+        lunarBirthYear: z.number().min(1900).max(2100),
+        lunarBirthMonth: z.number().min(1).max(12),
+        lunarBirthDay: z.number().min(1).max(31),
+        targetYear: z.number().min(1900).max(2200),
+        soulShift: z.union([z.literal(-1), z.literal(0), z.literal(1)]).default(0),
+      }))
+      .query(async ({ input }) => {
+        const summaries = toCardSummaryMap(await getAllTarotCards());
+        return Array.from({ length: 12 }, (_, index) => {
+          const month = index + 1;
+          const solarCardNumber = calculateMonthCard(input.birthYear, input.birthMonth, input.birthDay, input.targetYear, month, input.soulShift);
+          const lunarCardNumber = calculateMonthCard(input.lunarBirthYear, input.lunarBirthMonth, input.lunarBirthDay, input.targetYear, month, input.soulShift);
+          return {
+            month,
+            lunarYear: input.targetYear,
+            lunarMonth: month,
+            solarCardNumber,
+            solarCard: summaries.get(solarCardNumber),
+            lunarCardNumber,
+            lunarCard: summaries.get(lunarCardNumber),
+          };
+        });
       }),
   }),
 });

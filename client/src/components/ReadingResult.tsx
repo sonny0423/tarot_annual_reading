@@ -5,11 +5,26 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { RefreshCw, User, Heart, Eye, Star, Calendar, Moon, Sun, TrendingUp } from "lucide-react";
+import { RefreshCw, User, Eye, Star, Calendar, Moon, Sun } from "lucide-react";
 import type { TarotCard as TarotCardType } from "../../../drizzle/schema";
-import { Solar } from "lunar-javascript";
-import { calculateMonthlyDayFortune, calculateFullReading } from "@/lib/tarotCalculator";
-import { solarToLunar } from "@/lib/lunarConverter";
+import { trpc } from "@/lib/trpc";
+
+type TarotCardSummary = Pick<TarotCardType, "id" | "name">;
+
+type ReadingCards = {
+  core?: TarotCardType;
+  outer?: TarotCardType;
+  inner?: TarotCardType;
+  benefactorCore?: TarotCardType;
+  benefactorOuter?: TarotCardType;
+  benefactorInner?: TarotCardType;
+  year?: TarotCardType;
+  month?: TarotCardType;
+  day?: TarotCardType;
+  lunarYear?: TarotCardType;
+  lunarMonth?: TarotCardType;
+  lunarDay?: TarotCardType;
+};
 
 interface ReadingResultProps {
   birthYear: number;
@@ -19,23 +34,12 @@ interface ReadingResultProps {
   lunarMonth: number;
   lunarDay: number;
   soulShift?: number;
-  cards: {
-    core?: TarotCardType;
-    outer?: TarotCardType;
-    inner?: TarotCardType;
-    benefactorCore?: TarotCardType;
-    benefactorOuter?: TarotCardType;
-    benefactorInner?: TarotCardType;
-    year?: TarotCardType;
-    month?: TarotCardType;
-    day?: TarotCardType;
-    lunarYear?: TarotCardType;
-    lunarMonth?: TarotCardType;
-    lunarDay?: TarotCardType;
+  cards: ReadingCards;
+  lunarPersonality: {
+    cards: Pick<ReadingCards, "core" | "outer" | "inner" | "benefactorCore" | "benefactorOuter" | "benefactorInner">;
   };
   onReset: () => void;
-  onCardClick?: (card: TarotCardType) => void;
-  allCards: TarotCardType[];
+  onCardClick?: (card: TarotCardSummary) => void;
 }
 
 export function ReadingResult({ 
@@ -47,234 +51,76 @@ export function ReadingResult({
   lunarDay,
   soulShift = 0,
   cards, 
+  lunarPersonality,
   onReset, 
-  onCardClick, 
-  allCards 
+  onCardClick,
 }: ReadingResultProps) {
   // 是否可點擊卡牌（onCardClick 有傳入才可點擊）
   const canClick = !!onCardClick;
-
-  // 當前日期的農曆轉換
-  const today = new Date();
+  const [today] = useState(() => new Date());
   const todayYear = today.getFullYear();
   const todayMonth = today.getMonth() + 1;
   const todayDay = today.getDate();
-  
-  // 判斷今年生日是否已過（國曆）
-  const thisYearBirthday = new Date(todayYear, birthMonth - 1, birthDay);
-  const isBirthdayPassed = today >= thisYearBirthday;
-  const birthdayStatusText = isBirthdayPassed ? "今年生日已過" : "今年生日未過";
-  
-  // 判斷今年農曆生日是否已過
-  const todaySolarForLunar = Solar.fromYmd(todayYear, todayMonth, todayDay);
-  const todayLunarForCheck = todaySolarForLunar.getLunar();
-  const currentLunarMonth = todayLunarForCheck.getMonth();
-  const currentLunarDay = todayLunarForCheck.getDay();
-  // 比較當前農曆月日與出生農曆月日
-  const isLunarBirthdayPassed = currentLunarMonth > lunarMonth || 
-    (currentLunarMonth === lunarMonth && currentLunarDay >= lunarDay);
-  const lunarBirthdayStatusText = isLunarBirthdayPassed ? "今年生日已過" : "今年生日未過";
-  
-  // 轉換當前日期為農曆
-  const todaySolar = Solar.fromYmd(todayYear, todayMonth, todayDay);
-  const todayLunar = todaySolar.getLunar();
-  const todayLunarYear = todayLunar.getYear();
-  const todayLunarMonth = todayLunar.getMonth();
-  const todayLunarDay = todayLunar.getDay();
-  
-  // 靈魂換日線輔助函式（在總和縮減前加減 1）
-  const applyShiftAndReduce = (sum: number): number => {
-    const shifted = sum + soulShift;
-    let n = shifted.toString().split('').map(Number).reduce((s: number, d: number) => s + d, 0);
-    while (n > 21) n = n.toString().split('').map(Number).reduce((s: number, d: number) => s + d, 0);
-    return n;
-  };
-  const reduceNum = (sum: number): number => {
-    let n = sum.toString().split('').map(Number).reduce((s: number, d: number) => s + d, 0);
-    while (n > 21) n = n.toString().split('').map(Number).reduce((s: number, d: number) => s + d, 0);
-    return n;
-  };
-  const calcCard = (sum: number): number => soulShift !== 0 ? applyShiftAndReduce(sum) : reduceNum(sum);
+  const normalizedSoulShift: -1 | 0 | 1 = soulShift === 1 ? 1 : soulShift === -1 ? -1 : 0;
 
-  // 計算當前日期的流月牌和流日牌
-  const lunarBirthSum = lunarYear + lunarMonth + lunarDay;
-  
-  // 當前月份的流月牌（農曆心境）= 農曆出生年+月+日 + 國曆目標年+月
-  const currentMonthSum = lunarBirthSum + todayYear + todayMonth;
-  const currentMonthDigitSum = calcCard(currentMonthSum);
-  
-  // 今天的流日牌（農曆心境）= 農曆出生年+月+日 + 國曆目標年+月+日
-  const currentDaySum = lunarBirthSum + todayYear + todayMonth + todayDay;
-  const currentDayDigitSum = calcCard(currentDaySum);
-  
-  // 找到對應的牌卡
-  const currentMonthCard = allCards.find(c => c.id === currentMonthDigitSum);
-  const currentDayCard = allCards.find(c => c.id === currentDayDigitSum);
-  
   // 流年總表滾動容器的ref
   const multiYearScrollRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState("current");
-  // 展開的年份狀態（儲存年份，為 null 表示沒有展開）
   const [expandedYear, setExpandedYear] = useState<number | null>(null);
-  // 展開的月份狀態（儲存 { year, month }，為 null 表示沒有展開）
   const [expandedMonth, setExpandedMonth] = useState<{ year: number; month: number } | null>(null);
-  
-  // 計算農曆本命牌組（前端本地計算）
-  const lunarReadingData = (() => {
-    if (!allCards || allCards.length === 0) return null;
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth() + 1;
-    const currentDay = now.getDate();
-    // 本命牌組不套用靈魂換日線
-    const reading = calculateFullReading(
-      lunarYear, lunarMonth, lunarDay,
-      lunarYear, lunarMonth, lunarDay,
-      currentYear, currentMonth, currentDay,
-      0
-    );
-    const cardMap = new Map(allCards.map(c => [c.id, c]));
-    return {
-      reading,
-      cards: {
-        core: cardMap.get(reading.coreCard),
-        outer: cardMap.get(reading.outerCard),
-        inner: cardMap.get(reading.innerCard),
-        benefactorCore: cardMap.get(reading.benefactorCore),
-        benefactorOuter: cardMap.get(reading.benefactorOuter),
-        benefactorInner: cardMap.get(reading.benefactorInner),
-      },
-    };
-  })();
 
-  // 計算流年總表（0-100歲完整生命週期）
-  const calculateMultiYearFortune = () => {
-    const currentYear = new Date().getFullYear();
-    const currentAge = currentYear - birthYear;
-    const years = [];
-    
-    // 從0歲開始，到100歲結束
-    for (let age = 0; age <= 100; age++) {
-      const targetYear = birthYear + age;
-      
-      // 國曆流年運勢
-      const solarBenefactorSum = birthMonth + birthDay;
-      const solarYearSum = targetYear + solarBenefactorSum;
-      const solarYearCard = calcCard(solarYearSum);
-      
-      // 農曆流年心境
-      const lunarBenefactorSum = lunarMonth + lunarDay;
-      const lunarYearSum = targetYear + lunarBenefactorSum;
-      const lunarYearCard = calcCard(lunarYearSum);
-      
-      const solarCard = allCards.find(c => c.id === solarYearCard);
-      const lunarCard = allCards.find(c => c.id === lunarYearCard);
-      years.push({
-        year: targetYear,
-        age: age,
-        isCurrentYear: age === currentAge,
-        solarCardNumber: solarYearCard,
-        solarCard,
-        lunarCardNumber: lunarYearCard,
-        lunarCard,
-      });
-    }
-    
-    return years;
-  };
+  const { data: multiYearFortune = [] } = trpc.tarot.calculateLifeFortune.useQuery({
+    birthYear,
+    birthMonth,
+    birthDay,
+    lunarBirthMonth: lunarMonth,
+    lunarBirthDay: lunarDay,
+    soulShift: normalizedSoulShift,
+  });
+  const { data: expandedYearMonths = [] } = trpc.tarot.calculateYearMonths.useQuery(
+    {
+      birthYear,
+      birthMonth,
+      birthDay,
+      lunarBirthYear: lunarYear,
+      lunarBirthMonth: lunarMonth,
+      lunarBirthDay: lunarDay,
+      targetYear: expandedYear ?? birthYear,
+      soulShift: normalizedSoulShift,
+    },
+    { enabled: expandedYear !== null },
+  );
+  const { data: expandedMonthDays = [] } = trpc.tarot.calculateMonthlyDayFortune.useQuery(
+    {
+      solarBirthYear: birthYear,
+      solarBirthMonth: birthMonth,
+      solarBirthDay: birthDay,
+      lunarBirthYear: lunarYear,
+      lunarBirthMonth: lunarMonth,
+      lunarBirthDay: lunarDay,
+      targetYear: expandedMonth?.year ?? todayYear,
+      targetMonth: expandedMonth?.month ?? todayMonth,
+      soulShift: normalizedSoulShift,
+    },
+    { enabled: expandedMonth !== null },
+  );
+  const { data: currentMonthDays = [] } = trpc.tarot.calculateMonthlyDayFortune.useQuery({
+    solarBirthYear: birthYear,
+    solarBirthMonth: birthMonth,
+    solarBirthDay: birthDay,
+    lunarBirthYear: lunarYear,
+    lunarBirthMonth: lunarMonth,
+    lunarBirthDay: lunarDay,
+    targetYear: todayYear,
+    targetMonth: todayMonth,
+    soulShift: normalizedSoulShift,
+  });
 
-  // 計算指定年份12個月的流月運勢
-  const calculateYearMonths = (targetYear: number) => {
-    const months = [];
-    
-    for (let month = 1; month <= 12; month++) {
-      // 國曆流月運勢
-      const solarBirthSum = birthYear + birthMonth + birthDay;
-      const solarMonthSum = solarBirthSum + targetYear + month;
-      const solarMonthCard = calcCard(solarMonthSum);
-      
-      // 農曆流月心境 = 農曆出生年+月+日 + 國曆目標年+月（與左邊國曆同步）
-      const lunarBirthSum = lunarYear + lunarMonth + lunarDay;
-      const lunarMonthSum = lunarBirthSum + targetYear + month;
-      const lunarMonthCard = calcCard(lunarMonthSum);
-      
-      const solarCard = allCards.find(c => c.id === solarMonthCard);
-      const lunarCard = allCards.find(c => c.id === lunarMonthCard);
-      months.push({
-        month,
-        lunarYear: targetYear,
-        lunarMonth: month,
-        solarCardNumber: solarMonthCard,
-        solarCard,
-        lunarCardNumber: lunarMonthCard,
-        lunarCard,
-      });
-    }
-    
-     return months;
-  };
-
-  // 計算指定年月的每日流日運勢
-  const calculateMonthDays = (targetYear: number, targetMonth: number) => {
-    const daysInMonth = new Date(targetYear, targetMonth, 0).getDate();
-    const days = [];
-    
-    for (let day = 1; day <= daysInMonth; day++) {
-      // 轉換為農曆日期
-      const solar = Solar.fromYmd(targetYear, targetMonth, day);
-      const lunar = solar.getLunar();
-      const lunarYearValue = lunar.getYear();
-      const lunarMonthValue = Math.abs(lunar.getMonth());
-      const lunarDayValue = lunar.getDay();
-      
-      // 國曆流日運勢
-      const solarBirthSum = birthYear + birthMonth + birthDay;
-      const solarMonthSum = solarBirthSum + targetYear + targetMonth;
-      const solarDaySum = solarMonthSum + day;
-      const solarDayCard = calcCard(solarDaySum);
-      
-      // 農曆流日心境 = 農曆出生年+月+日 + 國曆目標年+月+日
-      const lunarBirthSum = lunarYear + lunarMonth + lunarDay;
-      const lunarDaySum = lunarBirthSum + targetYear + targetMonth + day;
-      const lunarDayCard = calcCard(lunarDaySum);
-      
-      const solarCard = allCards.find(c => c.id === solarDayCard);
-      const lunarCard = allCards.find(c => c.id === lunarDayCard);
-      days.push({
-        day,
-        lunarYear: lunarYearValue,
-        lunarMonth: lunarMonthValue,
-        lunarDay: lunarDayValue,
-        solarCardNumber: solarDayCard,
-        solarCard,
-        lunarCardNumber: lunarDayCard,
-        lunarCard,
-      });
-    }
-    
-    return days;
-  };
-
-  // 使用後端API計算當月每日流日運勢勢
-  const currentYear = new Date().getFullYear();
-  const currentMonth = new Date().getMonth() + 1;
-  const monthlyDayFortune = calculateMonthlyDayFortune(
-    birthYear, birthMonth, birthDay,
-    lunarYear, lunarMonth, lunarDay,
-    currentYear, currentMonth,
-    solarToLunar,
-    soulShift
-  ).map(item => ({
-    day: item.solarDay,
-    lunarYear: item.lunarYear,
-    lunarMonth: item.lunarMonth,
-    lunarDay: item.lunarDay,
-    isLeapMonth: item.isLeapMonth,
-    solarCardNumber: item.solarCardNumber,
-    solarCard: allCards.find(c => c.id === item.solarCardNumber),
-    lunarCardNumber: item.lunarCardNumber,
-    lunarCard: allCards.find(c => c.id === item.lunarCardNumber),
-  }));
+  const currentMonthCard = cards.lunarMonth;
+  const currentDayCard = cards.lunarDay;
+  const lunarReadingData = lunarPersonality;
+  const monthlyDayFortune = currentMonthDays.map((item) => ({ ...item, day: item.solarDay }));
+  const expandedMonthDaysForDisplay = expandedMonthDays.map((item) => ({ ...item, day: item.solarDay }));
 
    // 當展開月份時，自動滾動到該年份卡片位置（置中）
   useEffect(() => {
@@ -299,8 +145,9 @@ export function ReadingResult({
     }
   }, [activeTab]);
 
-  const multiYearFortune = calculateMultiYearFortune();
-  const currentDay = new Date().getDate();
+  const currentYear = todayYear;
+  const currentMonth = todayMonth;
+  const currentDay = todayDay;
 
   return (
     <div className="w-full space-y-12 animate-fade-in">
@@ -775,7 +622,7 @@ export function ReadingResult({
                 {multiYearFortune.map((item) => {
                   const isCurrentYear = item.isCurrentYear;
                   const isExpanded = expandedYear === item.year;
-                  const yearMonths = isExpanded ? calculateYearMonths(item.year) : [];
+                  const yearMonths = isExpanded ? expandedYearMonths : [];
                   
                   return (
                     <div key={item.year} className="flex-shrink-0" data-year={item.year}>
@@ -843,7 +690,7 @@ export function ReadingResult({
               {expandedYear && (() => {
                 const item = multiYearFortune.find(y => y.year === expandedYear);
                 if (!item) return null;
-                const yearMonths = calculateYearMonths(item.year);
+                const yearMonths = expandedYearMonths;
                 return (
                   <div className="w-full">
                         <div className="text-center mb-3">
@@ -913,7 +760,7 @@ export function ReadingResult({
                                       </tr>
                                       {/* 展開的流日表 */}
                                       {isMonthExpanded && (() => {
-                                        const monthDays = calculateMonthDays(item.year, monthItem.month);
+                                        const monthDays = expandedMonthDaysForDisplay;
                                         return (
                                           <tr>
                                             <td colSpan={3} className="border-0 p-0">

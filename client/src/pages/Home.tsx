@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { BirthdayForm } from "@/components/BirthdayForm";
 import { ReadingResult } from "@/components/ReadingResult";
@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Sparkles, LogOut, User, ShieldCheck, KeyRound } from "lucide-react";
 import { Link } from "wouter";
 import type { TarotCard } from "../../../drizzle/schema";
-import { calculateFullReading } from "@/lib/tarotCalculator";
 import { getSubscriptionBadgeColor, getSubscriptionRemainingLabel } from "@/lib/subscriptionDisplay";
 import { useAuth } from "@/_core/hooks/useAuth";
 
@@ -26,54 +25,16 @@ export default function Home() {
   } | null>(null);
 
   const [readingData, setReadingData] = useState<any>(null);
+  const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
 
-  // 預先載入所有塔羅牌資料（只需一次，之後本地快取）
-  const { data: allCardsData } = trpc.tarot.getAllCards.useQuery();
+  const calculateReading = trpc.tarot.calculateReading.useMutation({
+    onSuccess: (data) => setReadingData(data),
+  });
 
-  useEffect(() => {
-    if (birthData && allCardsData && allCardsData.length > 0) {
-      // 使用瀏覽器的當前日期，完全本地計算
-      const now = new Date();
-      const currentYear = now.getFullYear();
-      const currentMonth = now.getMonth() + 1;
-      const currentDay = now.getDate();
-
-      const reading = calculateFullReading(
-        birthData.solarYear,
-        birthData.solarMonth,
-        birthData.solarDay,
-        birthData.lunarYear,
-        birthData.lunarMonth,
-        birthData.lunarDay,
-        currentYear,
-        currentMonth,
-        currentDay,
-        birthData.soulShift
-      );
-
-      // 建立牌卡 Map
-      const cardMap = new Map(allCardsData.map((c: TarotCard) => [c.id, c]));
-
-      setReadingData({
-        reading,
-        cards: {
-          core: cardMap.get(reading.coreCard),
-          outer: cardMap.get(reading.outerCard),
-          inner: cardMap.get(reading.innerCard),
-          benefactorCore: cardMap.get(reading.benefactorCore),
-          benefactorOuter: cardMap.get(reading.benefactorOuter),
-          benefactorInner: cardMap.get(reading.benefactorInner),
-          year: cardMap.get(reading.yearCard),
-          month: cardMap.get(reading.monthCard),
-          day: cardMap.get(reading.dayCard),
-          lunarYear: cardMap.get(reading.lunarYearCard),
-          lunarMonth: cardMap.get(reading.lunarMonthCard),
-          lunarDay: cardMap.get(reading.lunarDayCard),
-        },
-        allCards: allCardsData,
-      });
-    }
-  }, [birthData, allCardsData]);
+  const { data: cardDetail } = trpc.tarot.getCard.useQuery(
+    { id: selectedCardId ?? 0 },
+    { enabled: selectedCardId !== null },
+  );
 
   const handleFormSubmit = (data: {
     solarYear: number;
@@ -86,10 +47,26 @@ export default function Home() {
     soulShift: number;
   }) => {
     setBirthData(data);
+    setReadingData(null);
+    const now = new Date();
+    calculateReading.mutate({
+      birthYear: data.solarYear,
+      birthMonth: data.solarMonth,
+      birthDay: data.solarDay,
+      lunarBirthYear: data.lunarYear,
+      lunarBirthMonth: data.lunarMonth,
+      lunarBirthDay: data.lunarDay,
+      targetYear: now.getFullYear(),
+      targetMonth: now.getMonth() + 1,
+      targetDay: now.getDate(),
+      soulShift: data.soulShift as -1 | 0 | 1,
+    });
   };
 
   const handleReset = () => {
     setBirthData(null);
+    setReadingData(null);
+    setSelectedCardId(null);
   };
 
   return (
@@ -193,7 +170,7 @@ export default function Home() {
       {/* Results Section */}
       {birthData && (
         <section className="container py-12 md:py-16">
-          {!readingData ? (
+          {calculateReading.isPending ? (
             <div className="flex flex-col items-center justify-center py-24 space-y-4">
               <Sparkles className="w-16 h-16 text-primary animate-spin" />
               <p className="text-xl text-muted-foreground">正在為您計算塔羅靈數...</p>
@@ -208,13 +185,13 @@ export default function Home() {
               lunarDay={birthData?.lunarDay ?? 0}
               soulShift={birthData?.soulShift ?? 0}
               cards={readingData.cards}
+              lunarPersonality={readingData.lunarPersonality}
               onReset={handleReset}
-              onCardClick={(user?.role === 'admin' || user?.role === 'assistant') ? setSelectedCard : undefined}
-              allCards={readingData.allCards || []}
+              onCardClick={(user?.role === 'admin' || user?.role === 'assistant') ? (card) => setSelectedCardId(card.id) : undefined}
             />
           ) : (
             <div className="text-center py-24">
-              <p className="text-xl text-destructive">計算失敗，請重試</p>
+              <p className="text-xl text-destructive">{calculateReading.error?.message || '計算失敗，請重試'}</p>
               <Button onClick={handleReset} className="mt-4">
                 重新開始
               </Button>
@@ -232,9 +209,9 @@ export default function Home() {
 
       {/* Card Detail Dialog */}
       <CardDetailDialog
-        card={selectedCard}
-        open={!!selectedCard}
-        onOpenChange={(open) => !open && setSelectedCard(null)}
+        card={cardDetail as TarotCard | null}
+        open={selectedCardId !== null}
+        onOpenChange={(open) => !open && setSelectedCardId(null)}
       />
     </div>
   );
