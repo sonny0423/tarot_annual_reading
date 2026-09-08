@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { index, int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -19,7 +19,9 @@ export const users = mysqlTable("users", {
   approvalStatus: mysqlEnum("approvalStatus", ["pending", "approved", "rejected"]).default("approved").notNull(),
   reviewedAt: timestamp("reviewedAt"),
   reviewedBy: int("reviewedBy"),
-});
+}, (table) => ({
+  approvalStatusIdx: index("users_approval_status_idx").on(table.approvalStatus),
+}));
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;

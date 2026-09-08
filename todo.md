@@ -864,6 +864,10 @@
 - [x] 檢查本地正式建置、啟動流程與 migration 一致性
 - [x] 定位並修正造成 Zeabur 失敗的程式或環境問題
 - [x] 執行部署相關回歸測試並確認既有功能
-- [ ] 保存修正版 checkpoint 並確認 Zeabur 同步狀態
+- [x] 保存修正版 checkpoint 並確認 Zeabur 同步狀態
+
+    
+
+- [ ] 保存 0009 schema 保險 migration 修正版 checkpoint，並在 Zeabur 更新後重新驗證管理員登入
 
     
