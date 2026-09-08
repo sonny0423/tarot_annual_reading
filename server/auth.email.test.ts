@@ -1,10 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
-import { getUserByEmail } from "./db";
+import { getUserByEmail, updateUserApprovalStatus } from "./db";
 
 // Mock cookie storage
 let cookies: Record<string, string> = {};
+
+async function approveEmail(email: string) {
+  const user = await getUserByEmail(email);
+  if (!user) throw new Error(`Test user not found: ${email}`);
+  await updateUserApprovalStatus(user.id, "approved", 1);
+}
 
 function createMockContext(withCookie?: string): TrpcContext {
   const req = {
@@ -42,18 +48,12 @@ describe("Email Auth", () => {
       name: "Test User",
     });
 
-    expect(result.success).toBe(true);
-    expect(result.user.email).toBe(uniqueEmail);
-    expect(result.user.name).toBe("Test User");
-    // Should have set a session cookie
-    expect(ctx.res.cookie).toHaveBeenCalledWith(
-      "app_session_id",
-      expect.any(String),
-      expect.objectContaining({
-        httpOnly: true,
-        path: "/",
-      })
-    );
+    expect(result).toMatchObject({
+      success: true,
+      pendingApproval: true,
+      message: "註冊申請已送出，請等待管理員審核通過後再登入",
+    });
+    expect(ctx.res.cookie).not.toHaveBeenCalled();
   });
 
   it("should reject duplicate email registration", async () => {
@@ -89,6 +89,8 @@ describe("Email Auth", () => {
       password: "mypassword",
     });
 
+    await approveEmail(uniqueEmail);
+
     // Login
     const loginCtx = createMockContext();
     const loginCaller = appRouter.createCaller(loginCtx);
@@ -109,6 +111,31 @@ describe("Email Auth", () => {
     );
   });
 
+  it("should reject login while registration is pending", async () => {
+    const email = `pending_${Date.now()}@example.com`;
+    const caller = appRouter.createCaller(createMockContext());
+    await caller.auth.register({ email, password: "password123" });
+
+    await expect(caller.auth.login({ email, password: "password123" })).rejects.toThrow("註冊申請尚在審核中");
+  });
+
+  it("should let an admin approve a pending registration before login", async () => {
+    const email = `approved_${Date.now()}@example.com`;
+    const registerCaller = appRouter.createCaller(createMockContext());
+    await registerCaller.auth.register({ email, password: "password123" });
+    const pendingUser = await getUserByEmail(email);
+    expect(pendingUser?.approvalStatus).toBe("pending");
+
+    const adminContext = createMockContext();
+    adminContext.user = { id: 1, openId: "test-admin", role: "admin", name: "Test Admin" } as any;
+    const adminCaller = appRouter.createCaller(adminContext);
+    await expect(adminCaller.admin.reviewRegistration({ userId: pendingUser!.id, decision: "approved" }))
+      .resolves.toMatchObject({ success: true });
+
+    await expect(appRouter.createCaller(createMockContext()).auth.login({ email, password: "password123" }))
+      .resolves.toMatchObject({ success: true });
+  });
+
   it("should reject login with wrong password", async () => {
     const ctx = createMockContext();
     const caller = appRouter.createCaller(ctx);
@@ -120,6 +147,8 @@ describe("Email Auth", () => {
       email: uniqueEmail,
       password: "correctpassword",
     });
+
+    await approveEmail(uniqueEmail);
 
     // Try login with wrong password
     const loginCtx = createMockContext();
@@ -177,6 +206,7 @@ describe("Email Auth", () => {
       email,
       password: "oldpassword123",
     });
+    await approveEmail(email);
 
     const dbUser = await getUserByEmail(email);
     expect(dbUser).toBeTruthy();

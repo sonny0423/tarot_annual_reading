@@ -16,6 +16,9 @@ export const users = mysqlTable("users", {
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
   subscriptionStart: timestamp("subscriptionStart"),
   subscriptionStatus: mysqlEnum("subscriptionStatus", ["active", "suspended", "expired"]).default("active").notNull(),
+  approvalStatus: mysqlEnum("approvalStatus", ["pending", "approved", "rejected"]).default("approved").notNull(),
+  reviewedAt: timestamp("reviewedAt"),
+  reviewedBy: int("reviewedBy"),
 });
 
 export type User = typeof users.$inferSelect;

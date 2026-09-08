@@ -9,6 +9,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
   const utils = trpc.useUtils();
@@ -24,8 +25,10 @@ export default function Login() {
   });
 
   const registerMutation = trpc.auth.register.useMutation({
-    onSuccess: () => {
-      window.location.href = "/";
+    onSuccess: (result) => {
+      setLoading(false);
+      setSuccessMessage(result.message || "註冊申請已送出，請等待管理員審核");
+      setPassword("");
     },
     onError: (err) => {
       setError(err.message);
@@ -36,6 +39,7 @@ export default function Login() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSuccessMessage("");
     setLoading(true);
 
     if (isRegister) {
@@ -116,6 +120,11 @@ export default function Login() {
                 {error}
               </div>
             )}
+            {successMessage && (
+              <div className="bg-green-50 border border-green-200 text-green-700 text-sm rounded-xl px-4 py-3">
+                {successMessage}
+              </div>
+            )}
 
             <button
               type="submit"
@@ -140,7 +149,7 @@ export default function Login() {
               <div>
                 已有帳號？{" "}
                 <button
-                  onClick={() => { setIsRegister(false); setError(""); }}
+                  onClick={() => { setIsRegister(false); setError(""); setSuccessMessage(""); }}
                   className="text-purple-600 font-medium hover:text-purple-700 transition-colors"
                 >
                   登入
@@ -151,7 +160,7 @@ export default function Login() {
                 <div>
                   還沒有帳號？{" "}
                   <button
-                    onClick={() => { setIsRegister(true); setError(""); }}
+                    onClick={() => { setIsRegister(true); setError(""); setSuccessMessage(""); }}
                     className="text-purple-600 font-medium hover:text-purple-700 transition-colors"
                   >
                     註冊

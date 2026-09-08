@@ -4,7 +4,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, adminProcedure, router } from "./_core/trpc";
 import { sdk } from "./_core/sdk";
 import { z } from "zod";
-import { getAllTarotCards, getTarotCardById, getTarotCardsByIds, getUserByEmail, createEmailUser, getUserByOpenId, getAllUsers, updateUserRole, createPasswordResetToken, getValidResetToken, markTokenUsed, updateUserPassword, deleteUser, initSubscriptionStart, updateSubscriptionStatus } from "./db";
+import { getAllTarotCards, getTarotCardById, getTarotCardsByIds, getUserByEmail, createEmailUser, getUserByOpenId, getAllUsers, getPendingRegistrationApplications, updateUserApprovalStatus, updateUserRole, createPasswordResetToken, getValidResetToken, markTokenUsed, updateUserPassword, deleteUser, initSubscriptionStart, updateSubscriptionStatus } from "./db";
 import { sendPasswordResetEmail } from "./mailer";
 import crypto from "crypto";
 import {
@@ -141,32 +141,10 @@ export const appRouter = router({
           // Create user
           await createEmailUser(input.email, passwordHash, input.name);
 
-          // Get the created user to get openId
-          const user = await getUserByEmail(input.email);
-          if (!user) {
-            throw new TRPCError({
-              code: "INTERNAL_SERVER_ERROR",
-              message: "註冊失敗，請稍後再試",
-            });
-          }
-
-          // Create session token
-          const sessionToken = await sdk.createSessionToken(user.openId, {
-            name: user.name || "",
-            expiresInMs: ONE_YEAR_MS,
-          });
-
-          // Set cookie
-          const cookieOptions = getSessionCookieOptions(ctx.req);
-          ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-
           return {
             success: true,
-            user: {
-              id: user.id,
-              email: user.email,
-              name: user.name,
-            },
+            pendingApproval: true,
+            message: "註冊申請已送出，請等待管理員審核通過後再登入",
           };
         } catch (err) {
           if (err instanceof TRPCError) throw err;
@@ -298,6 +276,19 @@ export const appRouter = router({
             });
           }
 
+          if (user.approvalStatus === "pending") {
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: "註冊申請尚在審核中，核准後才能登入使用",
+            });
+          }
+          if (user.approvalStatus === "rejected") {
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: "註冊申請未通過，請聯絡管理員",
+            });
+          }
+
           // Verify password
           const isValid = await bcrypt.compare(input.password, user.passwordHash);
           if (!isValid) {
@@ -340,6 +331,23 @@ export const appRouter = router({
   }),
 
   admin: router({
+    getPendingApplications: adminProcedure.query(async () => {
+      return getPendingRegistrationApplications();
+    }),
+
+    reviewRegistration: adminProcedure
+      .input(z.object({
+        userId: z.number(),
+        decision: z.enum(["approved", "rejected"]),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        await updateUserApprovalStatus(input.userId, input.decision, ctx.user.id);
+        return {
+          success: true,
+          message: input.decision === "approved" ? "註冊申請已核准" : "註冊申請已拒絕",
+        };
+      }),
+
     getUsers: adminProcedure
       .input(z.object({
         page: z.number().min(1).default(1),
@@ -383,7 +391,7 @@ export const appRouter = router({
           throw new TRPCError({ code: 'CONFLICT', message: '此帳號已被使用' });
         }
         const passwordHash = await bcrypt.hash(input.password, 12);
-        await createEmailUser(input.email, passwordHash, input.name);
+        await createEmailUser(input.email, passwordHash, input.name, 'approved');
         // Set role if not default user
         if (input.role !== 'user') {
           const newUser = await getUserByEmail(input.email);

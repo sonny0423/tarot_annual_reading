@@ -24,7 +24,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { UserPlus, Trash2, PauseCircle, PlayCircle } from "lucide-react";
+import { UserPlus, Trash2, PauseCircle, PlayCircle, Clock3, Check, X } from "lucide-react";
 
 export default function AdminUsers() {
   const { user } = useAuth();
@@ -45,6 +45,18 @@ export default function AdminUsers() {
   const [userToDelete, setUserToDelete] = useState<{ id: number; name: string | null; email: string | null } | null>(null);
 
   const { data, isLoading, refetch } = trpc.admin.getUsers.useQuery({ page, pageSize });
+  const { data: pendingApplications, refetch: refetchPending } = trpc.admin.getPendingApplications.useQuery();
+
+  const reviewRegistrationMutation = trpc.admin.reviewRegistration.useMutation({
+    onSuccess: (result) => {
+      toast.success(result.message);
+      refetchPending();
+      refetch();
+    },
+    onError: (err) => {
+      toast.error("審核失敗：" + err.message);
+    },
+  });
 
   const updateRoleMutation = trpc.admin.updateRole.useMutation({
     onSuccess: () => {
@@ -196,6 +208,66 @@ export default function AdminUsers() {
 
       {/* Content */}
       <div className="max-w-6xl mx-auto px-4 py-8">
+        <section className="mb-8 rounded-lg border border-amber-200 bg-amber-50/60 overflow-hidden">
+          <div className="px-5 py-4 border-b border-amber-200 flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-amber-900 flex items-center gap-2">
+                <Clock3 className="w-5 h-5" /> 待審核註冊申請
+              </h2>
+              <p className="text-sm text-amber-800 mt-1">核准前，申請人無法登入或使用運勢功能。</p>
+            </div>
+            <Badge className="bg-amber-500 text-white hover:bg-amber-500">{pendingApplications?.length ?? 0} 筆</Badge>
+          </div>
+          {pendingApplications && pendingApplications.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow className="border-amber-200 hover:bg-transparent">
+                  <TableHead>姓名</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>申請時間</TableHead>
+                  <TableHead className="w-48">審核操作</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {pendingApplications.map((application) => (
+                  <TableRow key={application.id} className="border-amber-200 hover:bg-amber-100/50">
+                    <TableCell className="font-medium">{application.name || "（未設定）"}</TableCell>
+                    <TableCell className="text-sm">{application.email || "—"}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {new Date(application.createdAt).toLocaleString("zh-TW", {
+                        year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit",
+                      })}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          className="h-8 gap-1 bg-green-600 hover:bg-green-700"
+                          onClick={() => reviewRegistrationMutation.mutate({ userId: application.id, decision: "approved" })}
+                          disabled={reviewRegistrationMutation.isPending}
+                        >
+                          <Check className="w-3.5 h-3.5" /> 核准
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8 gap-1 text-red-600 border-red-300 hover:bg-red-50"
+                          onClick={() => reviewRegistrationMutation.mutate({ userId: application.id, decision: "rejected" })}
+                          disabled={reviewRegistrationMutation.isPending}
+                        >
+                          <X className="w-3.5 h-3.5" /> 拒絕
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <div className="px-5 py-8 text-center text-sm text-muted-foreground">目前沒有待審核的註冊申請</div>
+          )}
+        </section>
+
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-2xl font-bold text-foreground">註冊用戶名單</h2>

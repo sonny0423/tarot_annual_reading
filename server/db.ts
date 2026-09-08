@@ -101,7 +101,12 @@ export async function getUserByEmail(email: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-export async function createEmailUser(email: string, passwordHash: string, name?: string): Promise<number> {
+export async function createEmailUser(
+  email: string,
+  passwordHash: string,
+  name?: string,
+  approvalStatus: 'pending' | 'approved' = 'pending',
+): Promise<number> {
   const db = await getDb();
   if (!db) {
     throw new Error("Database not available");
@@ -117,6 +122,7 @@ export async function createEmailUser(email: string, passwordHash: string, name?
     name: name || null,
     loginMethod: 'email',
     lastSignedIn: new Date(),
+    approvalStatus,
   });
 
   return result[0].insertId;
@@ -142,11 +148,48 @@ export async function getAllUsers(page: number = 1, pageSize: number = 20) {
       lastSignedIn: users.lastSignedIn,
       subscriptionStart: users.subscriptionStart,
       subscriptionStatus: users.subscriptionStatus,
+      approvalStatus: users.approvalStatus,
+      reviewedAt: users.reviewedAt,
+      reviewedBy: users.reviewedBy,
     }).from(users).limit(pageSize).offset(offset),
     db.select({ count: users.id }).from(users),
   ]);
 
   return { users: rows, total: countRows.length };
+}
+
+// Admin: list pending registration applications
+export async function getPendingRegistrationApplications() {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get pending applications: database not available");
+    return [];
+  }
+
+  return db.select({
+    id: users.id,
+    name: users.name,
+    email: users.email,
+    createdAt: users.createdAt,
+    approvalStatus: users.approvalStatus,
+    reviewedAt: users.reviewedAt,
+    reviewedBy: users.reviewedBy,
+  }).from(users).where(eq(users.approvalStatus, 'pending')).orderBy(users.createdAt);
+}
+
+// Admin: approve or reject a registration application
+export async function updateUserApprovalStatus(
+  userId: number,
+  approvalStatus: 'approved' | 'rejected',
+  reviewedBy: number,
+): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(users).set({
+    approvalStatus,
+    reviewedAt: new Date(),
+    reviewedBy,
+  }).where(eq(users.id, userId));
 }
 
 // Admin: update user role
