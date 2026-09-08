@@ -1,0 +1,1 @@
+-- Registration approval mode tables and index are created safely by server/migrate.ts before Drizzle records this migration.

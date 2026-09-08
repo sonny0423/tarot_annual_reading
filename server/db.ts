@@ -1,6 +1,14 @@
-import { eq, and, gt } from "drizzle-orm";
+import { eq, and, desc, gt } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, tarotCards, TarotCard, passwordResetTokens } from "../drizzle/schema";
+import {
+  InsertUser,
+  users,
+  tarotCards,
+  TarotCard,
+  passwordResetTokens,
+  registrationApprovalModeEvents,
+  registrationApprovalSettings,
+} from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -190,6 +198,54 @@ export async function updateUserApprovalStatus(
     reviewedAt: new Date(),
     reviewedBy,
   }).where(eq(users.id, userId));
+}
+
+export type RegistrationApprovalMode = "manual" | "instant";
+
+export async function getRegistrationApprovalMode() {
+  const db = await getDb();
+  if (!db) {
+    return { mode: "manual" as const, updatedAt: null, updatedBy: null };
+  }
+
+  const result = await db
+    .select()
+    .from(registrationApprovalSettings)
+    .where(eq(registrationApprovalSettings.id, 1))
+    .limit(1);
+  const setting = result[0];
+  return setting
+    ? { mode: setting.mode, updatedAt: setting.updatedAt, updatedBy: setting.updatedBy }
+    : { mode: "manual" as const, updatedAt: null, updatedBy: null };
+}
+
+export async function getRecentRegistrationApprovalModeEvents(limit = 5) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(registrationApprovalModeEvents)
+    .orderBy(desc(registrationApprovalModeEvents.changedAt))
+    .limit(limit);
+}
+
+export async function setRegistrationApprovalMode(mode: RegistrationApprovalMode, changedBy: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const current = await getRegistrationApprovalMode();
+  const now = new Date();
+  await db
+    .insert(registrationApprovalSettings)
+    .values({ id: 1, mode, updatedAt: now, updatedBy: changedBy })
+    .onDuplicateKeyUpdate({ set: { mode, updatedAt: now, updatedBy: changedBy } });
+
+  const changed = current.mode !== mode;
+  if (changed) {
+    await db.insert(registrationApprovalModeEvents).values({ mode, changedAt: now, changedBy });
+  }
+
+  return { mode, updatedAt: now, updatedBy: changedBy, changed };
 }
 
 // Admin: update user role

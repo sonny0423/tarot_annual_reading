@@ -1,7 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { afterAll, beforeAll } from "vitest";
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
-import { getUserByEmail, updateUserApprovalStatus } from "./db";
+import {
+  deleteUser,
+  getDb,
+  getRegistrationApprovalMode,
+  getRecentRegistrationApprovalModeEvents,
+  getUserByEmail,
+  updateUserApprovalStatus,
+} from "./db";
+import { passwordResetTokens, registrationApprovalModeEvents, registrationApprovalSettings, users } from "../drizzle/schema";
+import { eq, inArray, like, or } from "drizzle-orm";
 
 // Mock cookie storage
 let cookies: Record<string, string> = {};
@@ -10,6 +20,30 @@ async function approveEmail(email: string) {
   const user = await getUserByEmail(email);
   if (!user) throw new Error(`Test user not found: ${email}`);
   await updateUserApprovalStatus(user.id, "approved", 1);
+}
+
+const authTestEmailPatterns = [
+  "test_%@example.com",
+  "dup_%@example.com",
+  "login_%@example.com",
+  "pending_%@example.com",
+  "approved_%@example.com",
+  "quick_open_%@example.com",
+  "wrongpw_%@example.com",
+  "change_password_%@example.com",
+];
+
+async function cleanupAuthTestUsers() {
+  const db = await getDb();
+  if (!db) return;
+  const testUsers = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(or(...authTestEmailPatterns.map((pattern) => like(users.email, pattern))));
+  const userIds = testUsers.map((user) => user.id);
+  if (userIds.length === 0) return;
+  await db.delete(passwordResetTokens).where(inArray(passwordResetTokens.userId, userIds));
+  await db.delete(users).where(inArray(users.id, userIds));
 }
 
 function createMockContext(withCookie?: string): TrpcContext {
@@ -33,8 +67,31 @@ function createMockContext(withCookie?: string): TrpcContext {
 }
 
 describe("Email Auth", () => {
+  const testModeAdminId = 999991;
+  let initialApprovalSetting: { mode: "manual" | "instant"; updatedAt: Date; updatedBy: number | null } | undefined;
+
   beforeEach(() => {
     cookies = {};
+  });
+
+  beforeAll(async () => {
+    await cleanupAuthTestUsers();
+    const db = await getDb();
+    initialApprovalSetting = db
+      ? (await db.select().from(registrationApprovalSettings).where(eq(registrationApprovalSettings.id, 1)).limit(1))[0]
+      : undefined;
+  });
+
+  afterAll(async () => {
+    const db = await getDb();
+    if (!db) return;
+    await cleanupAuthTestUsers();
+    await db.delete(registrationApprovalModeEvents).where(eq(registrationApprovalModeEvents.changedBy, testModeAdminId));
+    if (initialApprovalSetting) {
+      await db.insert(registrationApprovalSettings).values(initialApprovalSetting).onDuplicateKeyUpdate({ set: initialApprovalSetting });
+    } else {
+      await db.delete(registrationApprovalSettings).where(eq(registrationApprovalSettings.id, 1));
+    }
   });
 
   it("should register a new user with email and password", async () => {
@@ -134,6 +191,40 @@ describe("Email Auth", () => {
 
     await expect(appRouter.createCaller(createMockContext()).auth.login({ email, password: "password123" }))
       .resolves.toMatchObject({ success: true });
+  });
+
+  it("should immediately approve and sign in a new user during class quick-open mode", async () => {
+    const adminContext = createMockContext();
+    adminContext.user = { id: testModeAdminId, openId: "mode-admin", role: "admin", name: "Mode Admin" } as any;
+    await appRouter.createCaller(adminContext).admin.setRegistrationApprovalMode({ mode: "instant" });
+
+    const email = `quick_open_${Date.now()}@example.com`;
+    const registerContext = createMockContext();
+    const result = await appRouter.createCaller(registerContext).auth.register({
+      email,
+      password: "password123",
+    });
+    const user = await getUserByEmail(email);
+
+    expect(result).toMatchObject({ success: true, pendingApproval: false, autoLogin: true });
+    expect(registerContext.res.cookie).toHaveBeenCalledWith("app_session_id", expect.any(String), expect.any(Object));
+    expect(user?.approvalStatus).toBe("approved");
+    expect(user?.subscriptionStart).toBeTruthy();
+
+    await deleteUser(user!.id);
+  });
+
+  it("should record an admin's registration mode change", async () => {
+    const adminContext = createMockContext();
+    adminContext.user = { id: testModeAdminId, openId: "mode-admin", role: "admin", name: "Mode Admin" } as any;
+    const caller = appRouter.createCaller(adminContext);
+    const result = await caller.admin.setRegistrationApprovalMode({ mode: "manual" });
+    const setting = await getRegistrationApprovalMode();
+    const events = await getRecentRegistrationApprovalModeEvents();
+
+    expect(result).toMatchObject({ mode: "manual" });
+    expect(setting).toMatchObject({ mode: "manual", updatedBy: testModeAdminId });
+    expect(events.some((event) => event.changedBy === testModeAdminId && event.mode === "manual")).toBe(true);
   });
 
   it("should reject login with wrong password", async () => {
@@ -238,5 +329,5 @@ describe("Email Auth", () => {
     await expect(
       loginCaller.auth.login({ email, password: "newpassword123" })
     ).resolves.toMatchObject({ success: true });
-  });
+  }, 10_000);
 });

@@ -64,6 +64,26 @@ async function ensureLegacyUsersSchema(databaseUrl: string) {
   }
 }
 
+async function ensureRegistrationApprovalModeSchema(databaseUrl: string) {
+  const connection = await createConnection(databaseUrl);
+  try {
+    await connection.query(
+      "CREATE TABLE IF NOT EXISTS `registration_approval_settings` (`id` int NOT NULL, `mode` enum('manual','instant') NOT NULL DEFAULT 'manual', `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, `updatedBy` int, CONSTRAINT `registration_approval_settings_id` PRIMARY KEY (`id`))",
+    );
+    await connection.query(
+      "CREATE TABLE IF NOT EXISTS `registration_approval_mode_events` (`id` int AUTO_INCREMENT NOT NULL, `mode` enum('manual','instant') NOT NULL, `changedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, `changedBy` int NOT NULL, CONSTRAINT `registration_approval_mode_events_id` PRIMARY KEY (`id`))",
+    );
+    const [indexRows] = await connection.query(
+      "SELECT 1 AS present FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'registration_approval_mode_events' AND INDEX_NAME = 'registration_approval_events_changed_at_idx' LIMIT 1",
+    );
+    if (Array.isArray(indexRows) && indexRows.length === 0) {
+      await connection.query("CREATE INDEX `registration_approval_events_changed_at_idx` ON `registration_approval_mode_events` (`changedAt`)");
+    }
+  } finally {
+    await connection.end();
+  }
+}
+
 export async function runMigrations() {
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) {
@@ -76,6 +96,7 @@ export async function runMigrations() {
     // Zeabur's legacy MySQL schema predates Drizzle's migration history. Ensure
     // the users fields expected by the current app exist before replaying history.
     await ensureLegacyUsersSchema(databaseUrl);
+    await ensureRegistrationApprovalModeSchema(databaseUrl);
     const db = drizzle(databaseUrl);
     // In dev (tsx): __dirname = server/, drizzle is at ../drizzle
     // In prod (built): __dirname = dist/, drizzle is at ./drizzle (copied by build script)

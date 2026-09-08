@@ -71,6 +71,13 @@
       "when": 1788886615288,
       "tag": "0009_needy_rictor",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1788888899029,
+      "tag": "0010_same_smasher",
+      "breakpoints": true
     }
   ]
 }

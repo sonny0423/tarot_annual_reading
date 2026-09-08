@@ -23,8 +23,9 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { UserPlus, Trash2, PauseCircle, PlayCircle, Clock3, Check, X } from "lucide-react";
+import { UserPlus, Trash2, PauseCircle, PlayCircle, Clock3, Check, X, Zap } from "lucide-react";
 
 export default function AdminUsers() {
   const { user } = useAuth();
@@ -46,6 +47,19 @@ export default function AdminUsers() {
 
   const { data, isLoading, refetch } = trpc.admin.getUsers.useQuery({ page, pageSize });
   const { data: pendingApplications, refetch: refetchPending } = trpc.admin.getPendingApplications.useQuery();
+  const { data: approvalMode, refetch: refetchApprovalMode } = trpc.admin.getRegistrationApprovalMode.useQuery();
+
+  const updateApprovalModeMutation = trpc.admin.setRegistrationApprovalMode.useMutation({
+    onSuccess: (result) => {
+      toast.success(result.message);
+      refetchApprovalMode();
+      refetchPending();
+      refetch();
+    },
+    onError: (err) => {
+      toast.error("切換註冊模式失敗：" + err.message);
+    },
+  });
 
   const reviewRegistrationMutation = trpc.admin.reviewRegistration.useMutation({
     onSuccess: (result) => {
@@ -208,13 +222,54 @@ export default function AdminUsers() {
 
       {/* Content */}
       <div className="max-w-6xl mx-auto px-4 py-8">
+        <section className={`mb-6 rounded-lg border overflow-hidden ${approvalMode?.mode === "instant" ? "border-violet-200 bg-violet-50/70" : "border-slate-200 bg-slate-50/80"}`}>
+          <div className="px-5 py-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                <Zap className={`w-5 h-5 ${approvalMode?.mode === "instant" ? "text-violet-600" : "text-slate-600"}`} />
+                註冊審核模式
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                {approvalMode?.mode === "instant"
+                  ? "課堂快速開放中：新同學註冊後會立即啟用並登入系統。"
+                  : "人工審核中：新同學送出申請後，須由管理員逐筆核准。"}
+              </p>
+              {approvalMode?.updatedAt && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  最後切換：{new Date(approvalMode.updatedAt).toLocaleString("zh-TW")}（管理員 #{approvalMode.updatedBy ?? "—"}）
+                </p>
+              )}
+            </div>
+            <div className="flex items-center gap-3 rounded-md bg-background/70 px-3 py-2 border border-border">
+              <span className={`text-sm font-medium ${approvalMode?.mode === "instant" ? "text-violet-700" : "text-slate-700"}`}>
+                {approvalMode?.mode === "instant" ? "課堂快速開放" : "人工審核"}
+              </span>
+              <Switch
+                aria-label="切換課堂快速開放模式"
+                checked={approvalMode?.mode === "instant"}
+                onCheckedChange={(checked) => updateApprovalModeMutation.mutate({ mode: checked ? "instant" : "manual" })}
+                disabled={!approvalMode || updateApprovalModeMutation.isPending}
+              />
+            </div>
+          </div>
+          {approvalMode?.events?.[0] && (
+            <div className="px-5 py-2 border-t border-inherit text-xs text-muted-foreground">
+              最近模式紀錄：{approvalMode.events[0].mode === "instant" ? "課堂快速開放" : "人工審核"}，由管理員 #{approvalMode.events[0].changedBy} 於 {new Date(approvalMode.events[0].changedAt).toLocaleString("zh-TW")} 切換。
+            </div>
+          )}
+        </section>
+
         <section className="mb-8 rounded-lg border border-amber-200 bg-amber-50/60 overflow-hidden">
           <div className="px-5 py-4 border-b border-amber-200 flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-amber-900 flex items-center gap-2">
                 <Clock3 className="w-5 h-5" /> 待審核註冊申請
               </h2>
-              <p className="text-sm text-amber-800 mt-1">核准前，申請人無法登入或使用運勢功能。</p>
+              <p className="text-sm text-amber-800 mt-1">
+                {approvalMode?.mode === "instant"
+                  ? "快速開放期間的新帳號會立即啟用；此處仍可處理先前的待審核申請。"
+                  : "核准前，申請人無法登入或使用運勢功能。"}
+              </p>
             </div>
             <Badge className="bg-amber-500 text-white hover:bg-amber-500">{pendingApplications?.length ?? 0} 筆</Badge>
           </div>

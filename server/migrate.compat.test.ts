@@ -65,7 +65,7 @@ describe("legacy Zeabur users schema compatibility", () => {
     expect(sql).toContain("ADD COLUMN `reviewedBy` int");
     expect(sql).toContain("CREATE INDEX `users_approval_status_idx`");
     expect(mocks.migrate).toHaveBeenCalledTimes(1);
-    expect(mocks.connection.end).toHaveBeenCalledTimes(2);
+    expect(mocks.connection.end).toHaveBeenCalledTimes(3);
   });
 
   it("skips all work when DATABASE_URL is unavailable", async () => {

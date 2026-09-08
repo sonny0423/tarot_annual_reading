@@ -4,7 +4,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, adminProcedure, router } from "./_core/trpc";
 import { sdk } from "./_core/sdk";
 import { z } from "zod";
-import { getAllTarotCards, getTarotCardById, getTarotCardsByIds, getUserByEmail, createEmailUser, getUserByOpenId, getAllUsers, getPendingRegistrationApplications, updateUserApprovalStatus, updateUserRole, createPasswordResetToken, getValidResetToken, markTokenUsed, updateUserPassword, deleteUser, initSubscriptionStart, updateSubscriptionStatus } from "./db";
+import { getAllTarotCards, getTarotCardById, getTarotCardsByIds, getUserByEmail, createEmailUser, getUserByOpenId, getAllUsers, getPendingRegistrationApplications, updateUserApprovalStatus, updateUserRole, createPasswordResetToken, getValidResetToken, markTokenUsed, updateUserPassword, deleteUser, initSubscriptionStart, updateSubscriptionStatus, getRecentRegistrationApprovalModeEvents, getRegistrationApprovalMode, setRegistrationApprovalMode } from "./db";
 import { sendPasswordResetEmail } from "./mailer";
 import crypto from "crypto";
 import {
@@ -138,12 +138,32 @@ export const appRouter = router({
           // Hash password
           const passwordHash = await bcrypt.hash(input.password, 12);
 
-          // Create user
-          await createEmailUser(input.email, passwordHash, input.name);
+          const registrationMode = await getRegistrationApprovalMode();
+          const approvalStatus = registrationMode.mode === "instant" ? "approved" : "pending";
+          await createEmailUser(input.email, passwordHash, input.name, approvalStatus);
+
+          if (approvalStatus === "approved") {
+            const user = await getUserByEmail(input.email);
+            if (!user) throw new Error("Registered user was not found");
+            await initSubscriptionStart(user.id);
+            const sessionToken = await sdk.createSessionToken(user.openId, {
+              name: user.name || "",
+              expiresInMs: ONE_YEAR_MS,
+            });
+            const cookieOptions = getSessionCookieOptions(ctx.req);
+            ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+            return {
+              success: true,
+              pendingApproval: false,
+              autoLogin: true,
+              message: "課堂快速開放中，帳號已啟用並完成登入",
+            };
+          }
 
           return {
             success: true,
             pendingApproval: true,
+            autoLogin: false,
             message: "註冊申請已送出，請等待管理員審核通過後再登入",
           };
         } catch (err) {
@@ -331,6 +351,26 @@ export const appRouter = router({
   }),
 
   admin: router({
+    getRegistrationApprovalMode: adminProcedure.query(async () => {
+      const [setting, events] = await Promise.all([
+        getRegistrationApprovalMode(),
+        getRecentRegistrationApprovalModeEvents(),
+      ]);
+      return { ...setting, events };
+    }),
+
+    setRegistrationApprovalMode: adminProcedure
+      .input(z.object({ mode: z.enum(["manual", "instant"]) }))
+      .mutation(async ({ input, ctx }) => {
+        const result = await setRegistrationApprovalMode(input.mode, ctx.user.id);
+        return {
+          ...result,
+          message: input.mode === "instant"
+            ? "已啟用課堂快速開放：新註冊帳號會立即啟用"
+            : "已切換為人工審核：後續註冊申請須逐筆核准",
+        };
+      }),
+
     getPendingApplications: adminProcedure.query(async () => {
       return getPendingRegistrationApplications();
     }),

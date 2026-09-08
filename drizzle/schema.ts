@@ -80,3 +80,30 @@ export const passwordResetTokens = mysqlTable("password_reset_tokens", {
 
 export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
 export type InsertPasswordResetToken = typeof passwordResetTokens.$inferInsert;
+
+/**
+ * Singleton setting (id = 1) controlling whether new registrations are
+ * individually reviewed or immediately activated for a live class.
+ */
+export const registrationApprovalSettings = mysqlTable("registration_approval_settings", {
+  id: int("id").primaryKey(),
+  mode: mysqlEnum("mode", ["manual", "instant"]).default("manual").notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedBy: int("updatedBy"),
+});
+
+export type RegistrationApprovalSetting = typeof registrationApprovalSettings.$inferSelect;
+
+/**
+ * Immutable audit trail for each class-mode / manual-review-mode switch.
+ */
+export const registrationApprovalModeEvents = mysqlTable("registration_approval_mode_events", {
+  id: int("id").autoincrement().primaryKey(),
+  mode: mysqlEnum("mode", ["manual", "instant"]).notNull(),
+  changedAt: timestamp("changedAt").defaultNow().notNull(),
+  changedBy: int("changedBy").notNull(),
+}, (table) => ({
+  changedAtIdx: index("registration_approval_events_changed_at_idx").on(table.changedAt),
+}));
+
+export type RegistrationApprovalModeEvent = typeof registrationApprovalModeEvents.$inferSelect;

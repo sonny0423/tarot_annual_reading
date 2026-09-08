@@ -27,6 +27,10 @@ export default function Login() {
   const registerMutation = trpc.auth.register.useMutation({
     onSuccess: (result) => {
       setLoading(false);
+      if (result.autoLogin) {
+        window.location.href = "/";
+        return;
+      }
       setSuccessMessage(result.message || "註冊申請已送出，請等待管理員審核");
       setPassword("");
     },
