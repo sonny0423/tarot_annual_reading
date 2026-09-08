@@ -866,9 +866,9 @@
 - [x] 執行部署相關回歸測試並確認既有功能
 - [x] 保存修正版 checkpoint 並確認 Zeabur 同步狀態
 
-    
+- [x] 改用伺服器端 schema 相容檢查補齊訂閱與審核欄位，避免 Zeabur MySQL 不支援 IF NOT EXISTS 導致 migration 停止
+- [ ] 重新部署並驗證管理員登入與待審核清單 API
 
-- [x] 將舊訂閱 migration 改為可重複執行，避免 Zeabur 因既有 subscription 欄位停止後續審核欄位 migration
 - [ ] 保存 migration 相容性修正版 checkpoint，並在 Zeabur 更新後重新驗證管理員登入與待審核清單
 
     

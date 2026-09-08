@@ -1,9 +1,68 @@
 import { drizzle } from "drizzle-orm/mysql2";
 import { migrate } from "drizzle-orm/mysql2/migrator";
+import { createConnection } from "mysql2/promise";
 import path from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+type ColumnInfo = {
+  COLUMN_NAME: string;
+  COLUMN_TYPE: string;
+};
+
+async function ensureLegacyUsersSchema(databaseUrl: string) {
+  const connection = await createConnection(databaseUrl);
+  try {
+    const [tableRows] = await connection.query(
+      "SELECT 1 AS present FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' LIMIT 1",
+    );
+    if (!Array.isArray(tableRows) || tableRows.length === 0) return;
+
+    const [columnRows] = await connection.query(
+      "SELECT COLUMN_NAME, COLUMN_TYPE FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'",
+    );
+    const columns = new Map(
+      (columnRows as ColumnInfo[]).map((column) => [column.COLUMN_NAME, column]),
+    );
+
+    const addColumnIfMissing = async (name: string, definition: string) => {
+      if (columns.has(name)) return;
+      await connection.query(`ALTER TABLE \`users\` ADD COLUMN \`${name}\` ${definition}`);
+      columns.set(name, { COLUMN_NAME: name, COLUMN_TYPE: definition });
+      console.log(`[Migrate] Added missing legacy users.${name} column`);
+    };
+
+    const roleColumn = columns.get("role");
+    if (roleColumn && !roleColumn.COLUMN_TYPE.includes("'assistant'")) {
+      await connection.query(
+        "ALTER TABLE `users` MODIFY COLUMN `role` enum('user','admin','assistant') NOT NULL DEFAULT 'user'",
+      );
+      console.log("[Migrate] Updated legacy users.role enum");
+    }
+
+    await addColumnIfMissing("passwordHash", "varchar(255)");
+    await addColumnIfMissing("subscriptionStart", "timestamp");
+    await addColumnIfMissing(
+      "subscriptionStatus",
+      "enum('active','suspended','expired') NOT NULL DEFAULT 'active'",
+    );
+    await addColumnIfMissing(
+      "approvalStatus",
+      "enum('pending','approved','rejected') NOT NULL DEFAULT 'approved'",
+    );
+    await addColumnIfMissing("reviewedAt", "timestamp");
+    await addColumnIfMissing("reviewedBy", "int");
+
+    const [indexRows] = await connection.query("SHOW INDEX FROM `users` WHERE Key_name = 'users_approval_status_idx'");
+    if (Array.isArray(indexRows) && indexRows.length === 0) {
+      await connection.query("CREATE INDEX `users_approval_status_idx` ON `users` (`approvalStatus`)");
+      console.log("[Migrate] Added users_approval_status_idx index");
+    }
+  } finally {
+    await connection.end();
+  }
+}
 
 export async function runMigrations() {
   const databaseUrl = process.env.DATABASE_URL;
@@ -14,6 +73,9 @@ export async function runMigrations() {
 
   try {
     console.log("[Migrate] Running database migrations...");
+    // Zeabur's legacy MySQL schema predates Drizzle's migration history. Ensure
+    // the users fields expected by the current app exist before replaying history.
+    await ensureLegacyUsersSchema(databaseUrl);
     const db = drizzle(databaseUrl);
     // In dev (tsx): __dirname = server/, drizzle is at ../drizzle
     // In prod (built): __dirname = dist/, drizzle is at ./drizzle (copied by build script)
@@ -22,6 +84,9 @@ export async function runMigrations() {
       ? path.resolve(__dirname, "../drizzle")
       : path.resolve(__dirname, "./drizzle");
     await migrate(db, { migrationsFolder });
+    // A fresh database creates `users` during migration 0000, so run once more
+    // after Drizzle has created its base tables.
+    await ensureLegacyUsersSchema(databaseUrl);
     console.log("[Migrate] Migrations completed successfully");
   } catch (err) {
     console.error("[Migrate] Migration failed:", err);
