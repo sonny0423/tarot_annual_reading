@@ -868,6 +868,7 @@
 
     
 
-- [ ] 保存 0009 schema 保險 migration 修正版 checkpoint，並在 Zeabur 更新後重新驗證管理員登入
+- [x] 將舊訂閱 migration 改為可重複執行，避免 Zeabur 因既有 subscription 欄位停止後續審核欄位 migration
+- [ ] 保存 migration 相容性修正版 checkpoint，並在 Zeabur 更新後重新驗證管理員登入與待審核清單
 
     
