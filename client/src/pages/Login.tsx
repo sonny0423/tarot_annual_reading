@@ -75,14 +75,14 @@ export default function Login() {
             {isRegister && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  姓名（選填）
+                  姓名
                 </label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-100 outline-none transition-all text-gray-800"
-                  placeholder="您的姓名"
+                  placeholder="請輸入您的全名，以便核對身份"
                 />
               </div>
             )}
