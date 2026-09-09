@@ -136,8 +136,8 @@ export async function createEmailUser(
   return result[0].insertId;
 }
 
-// Admin: list all users with pagination
-export async function getAllUsers(page: number = 1, pageSize: number = 20) {
+// Admin: list all users with pagination and optional name/email search.
+export async function getAllUsers(page: number = 1, pageSize: number = 20, search?: string) {
   const db = await getDb();
   if (!db) {
     console.warn("[Database] Cannot get users: database not available");
@@ -145,34 +145,57 @@ export async function getAllUsers(page: number = 1, pageSize: number = 20) {
   }
 
   const offset = (page - 1) * pageSize;
+  const normalizedSearch = search?.trim();
+  const filter = normalizedSearch
+    ? await (async () => {
+        const { like, or } = await import("drizzle-orm");
+        const keyword = `%${normalizedSearch}%`;
+        return or(like(users.name, keyword), like(users.email, keyword));
+      })()
+    : undefined;
+  const selectFields = {
+    id: users.id,
+    name: users.name,
+    email: users.email,
+    role: users.role,
+    loginMethod: users.loginMethod,
+    createdAt: users.createdAt,
+    lastSignedIn: users.lastSignedIn,
+    subscriptionStart: users.subscriptionStart,
+    subscriptionStatus: users.subscriptionStatus,
+    approvalStatus: users.approvalStatus,
+    reviewedAt: users.reviewedAt,
+    reviewedBy: users.reviewedBy,
+  };
+  const usersQuery = db.select(selectFields).from(users);
+  const countQuery = db.select({ count: users.id }).from(users);
   const [rows, countRows] = await Promise.all([
-    db.select({
-      id: users.id,
-      name: users.name,
-      email: users.email,
-      role: users.role,
-      loginMethod: users.loginMethod,
-      createdAt: users.createdAt,
-      lastSignedIn: users.lastSignedIn,
-      subscriptionStart: users.subscriptionStart,
-      subscriptionStatus: users.subscriptionStatus,
-      approvalStatus: users.approvalStatus,
-      reviewedAt: users.reviewedAt,
-      reviewedBy: users.reviewedBy,
-    }).from(users).limit(pageSize).offset(offset),
-    db.select({ count: users.id }).from(users),
+    (filter ? usersQuery.where(filter) : usersQuery).limit(pageSize).offset(offset),
+    filter ? countQuery.where(filter) : countQuery,
   ]);
 
   return { users: rows, total: countRows.length };
 }
 
-// Admin: list pending registration applications
-export async function getPendingRegistrationApplications() {
+// Admin: list pending registration applications with optional name/email search.
+export async function getPendingRegistrationApplications(search?: string) {
   const db = await getDb();
   if (!db) {
     console.warn("[Database] Cannot get pending applications: database not available");
     return [];
   }
+
+  const normalizedSearch = search?.trim();
+  const filter = normalizedSearch
+    ? await (async () => {
+        const { and, like, or } = await import("drizzle-orm");
+        const keyword = `%${normalizedSearch}%`;
+        return and(
+          eq(users.approvalStatus, 'pending'),
+          or(like(users.name, keyword), like(users.email, keyword)),
+        );
+      })()
+    : eq(users.approvalStatus, 'pending');
 
   return db.select({
     id: users.id,
@@ -182,7 +205,7 @@ export async function getPendingRegistrationApplications() {
     approvalStatus: users.approvalStatus,
     reviewedAt: users.reviewedAt,
     reviewedBy: users.reviewedBy,
-  }).from(users).where(eq(users.approvalStatus, 'pending')).orderBy(users.createdAt);
+  }).from(users).where(filter).orderBy(users.createdAt);
 }
 
 // Admin: approve or reject a registration application

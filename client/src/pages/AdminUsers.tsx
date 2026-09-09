@@ -25,12 +25,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { UserPlus, Trash2, PauseCircle, PlayCircle, Clock3, Check, X, Zap } from "lucide-react";
+import { UserPlus, Trash2, PauseCircle, PlayCircle, Clock3, Check, X, Zap, Search } from "lucide-react";
 
 export default function AdminUsers() {
   const { user } = useAuth();
   const [page, setPage] = useState(1);
   const pageSize = 20;
+  const [search, setSearch] = useState("");
+  const normalizedSearch = search.trim();
 
   // Reset password dialog state
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
@@ -45,8 +47,8 @@ export default function AdminUsers() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<{ id: number; name: string | null; email: string | null } | null>(null);
 
-  const { data, isLoading, refetch } = trpc.admin.getUsers.useQuery({ page, pageSize });
-  const { data: pendingApplications, refetch: refetchPending } = trpc.admin.getPendingApplications.useQuery();
+  const { data, isLoading, refetch } = trpc.admin.getUsers.useQuery({ page, pageSize, search: normalizedSearch || undefined });
+  const { data: pendingApplications, refetch: refetchPending } = trpc.admin.getPendingApplications.useQuery({ search: normalizedSearch || undefined });
   const { data: approvalMode, refetch: refetchApprovalMode } = trpc.admin.getRegistrationApprovalMode.useQuery();
 
   const updateApprovalModeMutation = trpc.admin.setRegistrationApprovalMode.useMutation({
@@ -323,6 +325,34 @@ export default function AdminUsers() {
           )}
         </section>
 
+        <section className="mb-6 rounded-lg border border-border bg-card p-4 sm:p-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-base font-semibold text-foreground">搜尋使用者</h2>
+              <p className="text-sm text-muted-foreground mt-1">可依姓名或完整 Email 篩選待審核申請與使用者名單。</p>
+            </div>
+            <div className="relative w-full sm:max-w-sm">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                type="search"
+                value={search}
+                onChange={(event) => {
+                  setSearch(event.target.value);
+                  setPage(1);
+                }}
+                placeholder="輸入姓名或 Email 搜尋"
+                aria-label="搜尋姓名或 Email"
+                className="pl-9"
+              />
+            </div>
+          </div>
+          {normalizedSearch && (
+            <p className="mt-3 text-sm text-muted-foreground">
+              目前顯示符合「<span className="font-medium text-foreground">{normalizedSearch}</span>」的結果。
+            </p>
+          )}
+        </section>
+
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-2xl font-bold text-foreground">註冊用戶名單</h2>
@@ -504,7 +534,7 @@ export default function AdminUsers() {
                 {data?.users.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
-                      尚無用戶資料
+                      {normalizedSearch ? "沒有符合搜尋條件的使用者" : "尚無用戶資料"}
                     </TableCell>
                   </TableRow>
                 )}

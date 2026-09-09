@@ -371,9 +371,11 @@ export const appRouter = router({
         };
       }),
 
-    getPendingApplications: adminProcedure.query(async () => {
-      return getPendingRegistrationApplications();
-    }),
+    getPendingApplications: adminProcedure
+      .input(z.object({ search: z.string().trim().max(100).optional() }))
+      .query(async ({ input }) => {
+        return getPendingRegistrationApplications(input.search);
+      }),
 
     reviewRegistration: adminProcedure
       .input(z.object({
@@ -392,9 +394,10 @@ export const appRouter = router({
       .input(z.object({
         page: z.number().min(1).default(1),
         pageSize: z.number().min(1).max(100).default(20),
+        search: z.string().trim().max(100).optional(),
       }))
       .query(async ({ input }) => {
-        return getAllUsers(input.page, input.pageSize);
+        return getAllUsers(input.page, input.pageSize, input.search);
       }),
 
     updateRole: adminProcedure
