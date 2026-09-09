@@ -97,11 +97,8 @@ export default function Login() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-100 outline-none transition-all text-gray-800"
-                placeholder={isRegister ? "請輸入完整 Email（例如：user@example.com）" : "Email 或 Email @ 前面的帳號"}
+                placeholder={isRegister ? "請輸入完整 Email（例如：user@example.com）" : "請輸入完整 Email"}
               />
-              {!isRegister && (
-                <p className="text-xs text-gray-400 mt-1">支援完整 Email 或 @ 前面的帳號名稱登入</p>
-              )}
             </div>
 
             <div>
