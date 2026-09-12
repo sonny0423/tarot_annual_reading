@@ -8,6 +8,7 @@ import {
   passwordResetTokens,
   registrationApprovalModeEvents,
   registrationApprovalSettings,
+  adminActionLogs,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -107,6 +108,13 @@ export async function getUserByEmail(email: string) {
 
   const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
   return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getUserById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+  return result[0];
 }
 
 export async function createEmailUser(
@@ -269,6 +277,44 @@ export async function setRegistrationApprovalMode(mode: RegistrationApprovalMode
   }
 
   return { mode, updatedAt: now, updatedBy: changedBy, changed };
+}
+
+export type AdminAction =
+  | "registration_approved"
+  | "registration_rejected"
+  | "registration_mode_changed"
+  | "user_created"
+  | "user_deleted"
+  | "role_changed"
+  | "password_reset"
+  | "subscription_status_changed";
+
+export async function recordAdminAction(input: {
+  action: AdminAction;
+  actorId: number;
+  targetUserId?: number | null;
+  targetLabel?: string | null;
+  detail?: string | null;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(adminActionLogs).values({
+    action: input.action,
+    actorId: input.actorId,
+    targetUserId: input.targetUserId ?? null,
+    targetLabel: input.targetLabel ?? null,
+    detail: input.detail ?? null,
+  });
+}
+
+export async function getRecentAdminActionLogs(limit = 30) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(adminActionLogs)
+    .orderBy(desc(adminActionLogs.createdAt))
+    .limit(limit);
 }
 
 // Admin: update user role

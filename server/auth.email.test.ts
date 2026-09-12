@@ -1,5 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { afterAll, beforeAll } from "vitest";
+import { afterAll, beforeAll, vi } from "vitest";
+vi.mock("./mailer", () => ({
+  sendPasswordResetEmail: vi.fn(async () => true),
+  sendRegistrationApprovedEmail: vi.fn(async () => true),
+}));
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
 import {
@@ -10,7 +14,7 @@ import {
   getUserByEmail,
   updateUserApprovalStatus,
 } from "./db";
-import { passwordResetTokens, registrationApprovalModeEvents, registrationApprovalSettings, users } from "../drizzle/schema";
+import { adminActionLogs, passwordResetTokens, registrationApprovalModeEvents, registrationApprovalSettings, users } from "../drizzle/schema";
 import { eq, inArray, like, or } from "drizzle-orm";
 
 // Mock cookie storage
@@ -41,9 +45,13 @@ async function cleanupAuthTestUsers() {
     .from(users)
     .where(or(...authTestEmailPatterns.map((pattern) => like(users.email, pattern))));
   const userIds = testUsers.map((user) => user.id);
-  if (userIds.length === 0) return;
-  await db.delete(passwordResetTokens).where(inArray(passwordResetTokens.userId, userIds));
-  await db.delete(users).where(inArray(users.id, userIds));
+  if (userIds.length > 0) {
+    await db.delete(passwordResetTokens).where(inArray(passwordResetTokens.userId, userIds));
+    await db.delete(users).where(inArray(users.id, userIds));
+  }
+  await db.delete(adminActionLogs).where(
+    or(...authTestEmailPatterns.map((pattern) => like(adminActionLogs.targetLabel, pattern))),
+  );
 }
 
 function createMockContext(withCookie?: string): TrpcContext {
@@ -87,6 +95,7 @@ describe("Email Auth", () => {
     if (!db) return;
     await cleanupAuthTestUsers();
     await db.delete(registrationApprovalModeEvents).where(eq(registrationApprovalModeEvents.changedBy, testModeAdminId));
+    await db.delete(adminActionLogs).where(eq(adminActionLogs.actorId, testModeAdminId));
     if (initialApprovalSetting) {
       await db.insert(registrationApprovalSettings).values(initialApprovalSetting).onDuplicateKeyUpdate({ set: initialApprovalSetting });
     } else {

@@ -64,8 +64,9 @@ describe("legacy Zeabur users schema compatibility", () => {
     expect(sql).toContain("ADD COLUMN `reviewedAt` timestamp");
     expect(sql).toContain("ADD COLUMN `reviewedBy` int");
     expect(sql).toContain("CREATE INDEX `users_approval_status_idx`");
+    expect(sql).toContain("CREATE TABLE IF NOT EXISTS `admin_action_logs`");
     expect(mocks.migrate).toHaveBeenCalledTimes(1);
-    expect(mocks.connection.end).toHaveBeenCalledTimes(3);
+    expect(mocks.connection.end).toHaveBeenCalledTimes(5);
   });
 
   it("skips all work when DATABASE_URL is unavailable", async () => {

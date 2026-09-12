@@ -107,3 +107,22 @@ export const registrationApprovalModeEvents = mysqlTable("registration_approval_
 }));
 
 export type RegistrationApprovalModeEvent = typeof registrationApprovalModeEvents.$inferSelect;
+
+/**
+ * Immutable audit trail for security-relevant administrator actions. Passwords
+ * and password hashes are intentionally never stored in this table.
+ */
+export const adminActionLogs = mysqlTable("admin_action_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  action: varchar("action", { length: 64 }).notNull(),
+  actorId: int("actorId").notNull(),
+  targetUserId: int("targetUserId"),
+  targetLabel: varchar("targetLabel", { length: 320 }),
+  detail: text("detail"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  createdAtIdx: index("admin_action_logs_created_at_idx").on(table.createdAt),
+  targetUserIdx: index("admin_action_logs_target_user_idx").on(table.targetUserId),
+}));
+
+export type AdminActionLog = typeof adminActionLogs.$inferSelect;

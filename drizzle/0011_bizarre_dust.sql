@@ -1,0 +1,2 @@
+-- Admin action log tables and indexes are created safely by server/migrate.ts
+-- before Drizzle records this legacy-compatible migration.

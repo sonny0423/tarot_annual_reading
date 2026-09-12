@@ -25,7 +25,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { UserPlus, Trash2, PauseCircle, PlayCircle, Clock3, Check, X, Zap, Search } from "lucide-react";
+import { UserPlus, Trash2, PauseCircle, PlayCircle, Clock3, Check, X, Zap, Search, ScrollText } from "lucide-react";
+
+const actionLabels: Record<string, string> = {
+  registration_approved: "核准註冊申請",
+  registration_rejected: "拒絕註冊申請",
+  registration_mode_changed: "切換註冊審核模式",
+  user_created: "新增使用者",
+  user_deleted: "刪除使用者",
+  role_changed: "調整角色",
+  password_reset: "重設密碼",
+  subscription_status_changed: "調整使用權限",
+};
 
 export default function AdminUsers() {
   const { user } = useAuth();
@@ -50,6 +61,7 @@ export default function AdminUsers() {
   const { data, isLoading, refetch } = trpc.admin.getUsers.useQuery({ page, pageSize, search: normalizedSearch || undefined });
   const { data: pendingApplications, refetch: refetchPending } = trpc.admin.getPendingApplications.useQuery({ search: normalizedSearch || undefined });
   const { data: approvalMode, refetch: refetchApprovalMode } = trpc.admin.getRegistrationApprovalMode.useQuery();
+  const { data: actionLogs, refetch: refetchActionLogs } = trpc.admin.getRecentActionLogs.useQuery();
 
   const updateApprovalModeMutation = trpc.admin.setRegistrationApprovalMode.useMutation({
     onSuccess: (result) => {
@@ -57,6 +69,7 @@ export default function AdminUsers() {
       refetchApprovalMode();
       refetchPending();
       refetch();
+      refetchActionLogs();
     },
     onError: (err) => {
       toast.error("切換註冊模式失敗：" + err.message);
@@ -68,6 +81,7 @@ export default function AdminUsers() {
       toast.success(result.message);
       refetchPending();
       refetch();
+      refetchActionLogs();
     },
     onError: (err) => {
       toast.error("審核失敗：" + err.message);
@@ -78,6 +92,7 @@ export default function AdminUsers() {
     onSuccess: () => {
       toast.success("角色已更新");
       refetch();
+      refetchActionLogs();
     },
     onError: (err) => {
       toast.error("更新失敗：" + err.message);
@@ -90,6 +105,7 @@ export default function AdminUsers() {
       setResetDialogOpen(false);
       setNewPassword("");
       setSelectedUser(null);
+      refetchActionLogs();
     },
     onError: (err) => {
       toast.error("重設失敗：" + err.message);
@@ -102,6 +118,7 @@ export default function AdminUsers() {
       setCreateDialogOpen(false);
       setCreateForm({ email: "", password: "", name: "", role: "user" });
       refetch();
+      refetchActionLogs();
     },
     onError: (err) => {
       toast.error("新增失敗：" + err.message);
@@ -114,6 +131,7 @@ export default function AdminUsers() {
       setDeleteDialogOpen(false);
       setUserToDelete(null);
       refetch();
+      refetchActionLogs();
     },
     onError: (err) => {
       toast.error("刪除失敗：" + err.message);
@@ -124,6 +142,7 @@ export default function AdminUsers() {
     onSuccess: () => {
       toast.success("訂閱狀態已更新");
       refetch();
+      refetchActionLogs();
     },
     onError: (err) => {
       toast.error("更新失敗：" + err.message);
@@ -258,6 +277,59 @@ export default function AdminUsers() {
             <div className="px-5 py-2 border-t border-inherit text-xs text-muted-foreground">
               最近模式紀錄：{approvalMode.events[0].mode === "instant" ? "課堂快速開放" : "人工審核"}，由管理員 #{approvalMode.events[0].changedBy} 於 {new Date(approvalMode.events[0].changedAt).toLocaleString("zh-TW")} 切換。
             </div>
+          )}
+        </section>
+
+        <section className="mb-6 rounded-lg border border-slate-200 bg-slate-50/70 overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-200">
+            <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+              <ScrollText className="w-5 h-5 text-slate-600" /> 管理員操作紀錄
+            </h2>
+            <p className="text-sm text-slate-600 mt-1">保留最近 30 筆管理操作；不會記錄任何密碼內容。</p>
+          </div>
+          {actionLogs && actionLogs.length > 0 ? (
+            <>
+              <div className="divide-y divide-slate-200 sm:hidden">
+                {actionLogs.map((log) => (
+                  <div key={log.id} className="px-5 py-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <Badge variant="outline">{actionLabels[log.action] ?? log.action}</Badge>
+                      <span className="shrink-0 text-xs text-muted-foreground">{new Date(log.createdAt).toLocaleString("zh-TW", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })}</span>
+                    </div>
+                    <p className="mt-2 truncate text-sm font-medium text-foreground">{log.targetLabel || "未指定目標帳號"}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">管理員 #{log.actorId} · {log.detail || "—"}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="hidden overflow-x-auto sm:block">
+                <Table>
+                <TableHeader>
+                  <TableRow className="border-slate-200 hover:bg-transparent">
+                    <TableHead>時間</TableHead>
+                    <TableHead>操作</TableHead>
+                    <TableHead>管理員</TableHead>
+                    <TableHead>目標帳號</TableHead>
+                    <TableHead>說明</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {actionLogs.map((log) => (
+                    <TableRow key={log.id} className="border-slate-200 hover:bg-slate-100/60">
+                      <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
+                        {new Date(log.createdAt).toLocaleString("zh-TW", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                      </TableCell>
+                      <TableCell><Badge variant="outline" className="whitespace-nowrap">{actionLabels[log.action] ?? log.action}</Badge></TableCell>
+                      <TableCell className="whitespace-nowrap text-sm">管理員 #{log.actorId}</TableCell>
+                      <TableCell className="max-w-56 truncate text-sm" title={log.targetLabel ?? undefined}>{log.targetLabel || "—"}</TableCell>
+                      <TableCell className="min-w-48 text-sm text-muted-foreground">{log.detail || "—"}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+                </Table>
+              </div>
+            </>
+          ) : (
+            <div className="px-5 py-8 text-center text-sm text-muted-foreground">目前還沒有管理員操作紀錄</div>
           )}
         </section>
 

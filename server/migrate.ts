@@ -84,6 +84,29 @@ async function ensureRegistrationApprovalModeSchema(databaseUrl: string) {
   }
 }
 
+async function ensureAdminActionLogSchema(databaseUrl: string) {
+  const connection = await createConnection(databaseUrl);
+  try {
+    await connection.query(
+      "CREATE TABLE IF NOT EXISTS `admin_action_logs` (`id` int AUTO_INCREMENT NOT NULL, `action` varchar(64) NOT NULL, `actorId` int NOT NULL, `targetUserId` int, `targetLabel` varchar(320), `detail` text, `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, CONSTRAINT `admin_action_logs_id` PRIMARY KEY (`id`))",
+    );
+    const indexes = [
+      ["admin_action_logs_created_at_idx", "`createdAt`"],
+      ["admin_action_logs_target_user_idx", "`targetUserId`"],
+    ] as const;
+    for (const [name, columns] of indexes) {
+      const [indexRows] = await connection.query(
+        `SELECT 1 AS present FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'admin_action_logs' AND INDEX_NAME = '${name}' LIMIT 1`,
+      );
+      if (Array.isArray(indexRows) && indexRows.length === 0) {
+        await connection.query(`CREATE INDEX \`${name}\` ON \`admin_action_logs\` (${columns})`);
+      }
+    }
+  } finally {
+    await connection.end();
+  }
+}
+
 export async function runMigrations() {
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) {
@@ -97,6 +120,7 @@ export async function runMigrations() {
     // the users fields expected by the current app exist before replaying history.
     await ensureLegacyUsersSchema(databaseUrl);
     await ensureRegistrationApprovalModeSchema(databaseUrl);
+    await ensureAdminActionLogSchema(databaseUrl);
     const db = drizzle(databaseUrl);
     // In dev (tsx): __dirname = server/, drizzle is at ../drizzle
     // In prod (built): __dirname = dist/, drizzle is at ./drizzle (copied by build script)
@@ -108,6 +132,7 @@ export async function runMigrations() {
     // A fresh database creates `users` during migration 0000, so run once more
     // after Drizzle has created its base tables.
     await ensureLegacyUsersSchema(databaseUrl);
+    await ensureAdminActionLogSchema(databaseUrl);
     console.log("[Migrate] Migrations completed successfully");
   } catch (err) {
     console.error("[Migrate] Migration failed:", err);

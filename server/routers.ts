@@ -4,8 +4,8 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, adminProcedure, router } from "./_core/trpc";
 import { sdk } from "./_core/sdk";
 import { z } from "zod";
-import { getAllTarotCards, getTarotCardById, getTarotCardsByIds, getUserByEmail, createEmailUser, getUserByOpenId, getAllUsers, getPendingRegistrationApplications, updateUserApprovalStatus, updateUserRole, createPasswordResetToken, getValidResetToken, markTokenUsed, updateUserPassword, deleteUser, initSubscriptionStart, updateSubscriptionStatus, getRecentRegistrationApprovalModeEvents, getRegistrationApprovalMode, setRegistrationApprovalMode } from "./db";
-import { sendPasswordResetEmail } from "./mailer";
+import { getAllTarotCards, getTarotCardById, getTarotCardsByIds, getUserByEmail, getUserById, createEmailUser, getUserByOpenId, getAllUsers, getPendingRegistrationApplications, updateUserApprovalStatus, updateUserRole, createPasswordResetToken, getValidResetToken, markTokenUsed, updateUserPassword, deleteUser, initSubscriptionStart, updateSubscriptionStatus, getRecentRegistrationApprovalModeEvents, getRegistrationApprovalMode, setRegistrationApprovalMode, getRecentAdminActionLogs, recordAdminAction } from "./db";
+import { sendPasswordResetEmail, sendRegistrationApprovedEmail } from "./mailer";
 import crypto from "crypto";
 import {
   calculateDayCard,
@@ -363,6 +363,13 @@ export const appRouter = router({
       .input(z.object({ mode: z.enum(["manual", "instant"]) }))
       .mutation(async ({ input, ctx }) => {
         const result = await setRegistrationApprovalMode(input.mode, ctx.user.id);
+        if (result.changed) {
+          await recordAdminAction({
+            action: "registration_mode_changed",
+            actorId: ctx.user.id,
+            detail: input.mode === "instant" ? "切換為課堂快速開放" : "切換為人工審核",
+          });
+        }
         return {
           ...result,
           message: input.mode === "instant"
@@ -377,16 +384,44 @@ export const appRouter = router({
         return getPendingRegistrationApplications(input.search);
       }),
 
+    getRecentActionLogs: adminProcedure.query(async () => getRecentAdminActionLogs()),
+
     reviewRegistration: adminProcedure
       .input(z.object({
         userId: z.number(),
         decision: z.enum(["approved", "rejected"]),
       }))
       .mutation(async ({ input, ctx }) => {
+        const targetUser = await getUserById(input.userId);
+        if (!targetUser) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "找不到此註冊申請" });
+        }
         await updateUserApprovalStatus(input.userId, input.decision, ctx.user.id);
+        let notificationSent: boolean | null = null;
+        if (input.decision === "approved" && targetUser.email) {
+          const protocol = ctx.req.headers["x-forwarded-proto"] || "https";
+          const host = ctx.req.headers["x-forwarded-host"] || ctx.req.headers.host;
+          notificationSent = await sendRegistrationApprovedEmail(
+            targetUser.email,
+            targetUser.name,
+            `${protocol}://${host}/login`,
+          );
+        }
+        await recordAdminAction({
+          action: input.decision === "approved" ? "registration_approved" : "registration_rejected",
+          actorId: ctx.user.id,
+          targetUserId: targetUser.id,
+          targetLabel: targetUser.email || targetUser.name,
+          detail: input.decision === "approved"
+            ? (notificationSent ? "已寄送帳號啟用通知" : "帳號已核准；通知信未能寄送")
+            : "已拒絕註冊申請",
+        });
         return {
           success: true,
-          message: input.decision === "approved" ? "註冊申請已核准" : "註冊申請已拒絕",
+          notificationSent,
+          message: input.decision === "approved"
+            ? (notificationSent ? "註冊申請已核准，並已寄送啟用通知" : "註冊申請已核准，但通知信暫時未能寄送")
+            : "註冊申請已拒絕",
         };
       }),
 
@@ -405,8 +440,16 @@ export const appRouter = router({
         userId: z.number(),
         role: z.enum(['user', 'admin', 'assistant']),
       }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
+        const targetUser = await getUserById(input.userId);
         await updateUserRole(input.userId, input.role);
+        await recordAdminAction({
+          action: "role_changed",
+          actorId: ctx.user.id,
+          targetUserId: input.userId,
+          targetLabel: targetUser?.email || targetUser?.name,
+          detail: `角色調整為 ${input.role}`,
+        });
         return { success: true };
       }),
 
@@ -415,9 +458,17 @@ export const appRouter = router({
         userId: z.number(),
         newPassword: z.string().min(8, "密碼至少需要 8 個字元"),
       }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
+        const targetUser = await getUserById(input.userId);
         const passwordHash = await bcrypt.hash(input.newPassword, 12);
         await updateUserPassword(input.userId, passwordHash);
+        await recordAdminAction({
+          action: "password_reset",
+          actorId: ctx.user.id,
+          targetUserId: input.userId,
+          targetLabel: targetUser?.email || targetUser?.name,
+          detail: "已由管理員重設密碼",
+        });
         return { success: true, message: "密碼已成功重設" };
       }),
 
@@ -428,7 +479,7 @@ export const appRouter = router({
         name: z.string().optional(),
         role: z.enum(['user', 'admin', 'assistant']).default('user'),
       }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
         const existing = await getUserByEmail(input.email);
         if (existing) {
           throw new TRPCError({ code: 'CONFLICT', message: '此帳號已被使用' });
@@ -440,6 +491,14 @@ export const appRouter = router({
           const newUser = await getUserByEmail(input.email);
           if (newUser) await updateUserRole(newUser.id, input.role);
         }
+        const createdUser = await getUserByEmail(input.email);
+        await recordAdminAction({
+          action: "user_created",
+          actorId: ctx.user.id,
+          targetUserId: createdUser?.id,
+          targetLabel: input.email,
+          detail: `新增帳號，角色為 ${input.role}`,
+        });
         return { success: true, message: '使用者已新增' };
       }),
 
@@ -452,7 +511,15 @@ export const appRouter = router({
         if (ctx.user.id === input.userId) {
           throw new TRPCError({ code: 'BAD_REQUEST', message: '不能刪除自己的帳號' });
         }
+        const targetUser = await getUserById(input.userId);
         await deleteUser(input.userId);
+        await recordAdminAction({
+          action: "user_deleted",
+          actorId: ctx.user.id,
+          targetUserId: input.userId,
+          targetLabel: targetUser?.email || targetUser?.name,
+          detail: "已刪除帳號",
+        });
         return { success: true, message: '使用者已刪除' };
       }),
 
@@ -461,8 +528,16 @@ export const appRouter = router({
         userId: z.number(),
         status: z.enum(['active', 'suspended', 'expired']),
       }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
+        const targetUser = await getUserById(input.userId);
         await updateSubscriptionStatus(input.userId, input.status);
+        await recordAdminAction({
+          action: "subscription_status_changed",
+          actorId: ctx.user.id,
+          targetUserId: input.userId,
+          targetLabel: targetUser?.email || targetUser?.name,
+          detail: `使用權限調整為 ${input.status}`,
+        });
         return { success: true };
       }),
   }),

@@ -8,6 +8,16 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+function escapeHtml(value: string) {
+  return value.replace(/[&<>'"]/g, (character) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "'": "&#39;",
+    '"': "&quot;",
+  })[character] ?? character);
+}
+
 export async function sendPasswordResetEmail(
   toEmail: string,
   resetUrl: string
@@ -44,6 +54,38 @@ export async function sendPasswordResetEmail(
     return true;
   } catch (error) {
     console.error("[Mailer] Failed to send email:", error);
+    return false;
+  }
+}
+
+export async function sendRegistrationApprovedEmail(
+  toEmail: string,
+  name: string | null | undefined,
+  loginUrl: string,
+): Promise<boolean> {
+  try {
+    const greeting = name?.trim() ? `${escapeHtml(name.trim())} 同學您好` : "您好";
+    await transporter.sendMail({
+      from: `"塔羅流年運勢" <${process.env.GMAIL_USER}>`,
+      to: toEmail,
+      subject: "註冊申請已核准 - 塔羅流年運勢",
+      html: `
+        <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #faf5ff; border-radius: 12px;">
+          <h2 style="color: #7c3aed; margin-bottom: 8px;">塔羅流年運勢</h2>
+          <h3 style="color: #1f2937; margin-bottom: 16px;">您的帳號已啟用</h3>
+          <p style="color: #4b5563; line-height: 1.7;">${greeting}，您的註冊申請已通過管理員審核，現在可以使用完整 Email 與設定的密碼登入系統。</p>
+          <div style="text-align: center; margin: 32px 0;">
+            <a href="${loginUrl}" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #7c3aed, #d97706); color: white; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">前往登入</a>
+          </div>
+          <p style="color: #6b7280; font-size: 14px; line-height: 1.6;">如果您未曾提出註冊申請，請忽略此郵件或聯繫管理員。</p>
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+          <p style="color: #9ca3af; font-size: 12px;">塔羅流年運勢查詢系統</p>
+        </div>
+      `,
+    });
+    return true;
+  } catch (error) {
+    console.error("[Mailer] Failed to send registration approval email:", error);
     return false;
   }
 }
